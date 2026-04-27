@@ -61,7 +61,7 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
     timers.push(setTimeout(() => setCursor(c => ({ ...c, visible: true })), 500));
     timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1200));
     timers.push(setTimeout(() => {
-      setCursor(c => ({ ...c, tapping: false }));
+      setCursor(c => ({ ...c, tapping: false, visible: false })); // 탭 후 즉시 숨김
       handleTap();
     }, 1450));
     return () => timers.forEach(clearTimeout);
