@@ -531,7 +531,9 @@ function PresentationPage() {
             <PhoneMockup>
               {SLIDES.slice(1, SLIDES.length - 1).map((s, idx) => {
                 const slideIdx = idx + 1;
-                return s.iframeRoute ? (
+                // 현재 슬라이드만 iframe 마운트 (동시 로드 시 sessionStorage 충돌 방지)
+                if (!s.iframeRoute || slideIdx !== current) return null;
+                return (
                   <iframe
                     key={`${slideIdx}-${visitCounts[slideIdx] ?? 0}`}
                     src={`${appOrigin}${s.iframeRoute}`}
@@ -541,10 +543,9 @@ function PresentationPage() {
                       top: 0, left: 0,
                       width: 390, height: 844,
                       border: "none",
-                      display: current === slideIdx ? "block" : "none",
                     }}
                   />
-                ) : null;
+                );
               })}
             </PhoneMockup>
           </div>
