@@ -171,7 +171,7 @@ function RecordPage() {
   return (
     <div className="app-shell">
       <div className="app-frame" style={{ position: "relative" }}>
-        {demo && <DemoCursor {...cursor} />}
+        {(demo1 || demo3) && <DemoCursor {...cursor} />}
         {/* 배경 — 선택 전: 연한 하늘 / 선택 후: 해당 무드 배경 */}
         <div
           className="absolute inset-0 transition-opacity duration-500"
