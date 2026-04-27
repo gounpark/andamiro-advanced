@@ -87,7 +87,7 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
             type="button"
             aria-label="뒤로"
             onClick={goBack}
-            className="absolute left-3 top-5 z-40 grid h-9 w-9 place-items-center rounded-full text-white/80 hover:text-white"
+            className="absolute left-3 top-[52px] z-40 grid h-9 w-9 place-items-center rounded-full text-white/80 hover:text-white"
           >
             <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
           </button>
@@ -161,7 +161,7 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
           type="button"
           aria-label="뒤로"
           onClick={goBack}
-          className="absolute left-3 top-5 z-40 grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground"
+          className="absolute left-3 top-[52px] z-40 grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground"
         >
           <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
         </button>
@@ -313,7 +313,7 @@ function FortunePageLegacy() {
           type="button"
           aria-label="뒤로"
           onClick={() => navigate({ to: "/advice", search: { empty: false } })}
-          className="absolute left-3 top-5 z-40 grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground"
+          className="absolute left-3 top-[52px] z-40 grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground"
         >
           <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
         </button>

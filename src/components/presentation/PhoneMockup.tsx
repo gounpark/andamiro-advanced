@@ -119,7 +119,7 @@ export function PhoneMockup({ children }: PhoneMockupProps) {
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "0 24px",
-                background: "white",
+                background: "transparent",
                 pointerEvents: "none",
               }}
             >

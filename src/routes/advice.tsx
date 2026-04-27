@@ -38,20 +38,22 @@ function AdviceWithData() {
   const summaryRef = useRef<HTMLElement>(null);
   const quoteRef = useRef<HTMLElement>(null);
 
-  // 순차 reveal 애니메이션
-  const [revealed, setRevealed] = useState(0);
+  // demo 모드: 즉시 전체 표시 / 일반 모드: 순차 reveal
+  const [revealed, setRevealed] = useState(demo ? 4 : 0);
   useEffect(() => {
+    if (demo) return; // demo면 이미 4로 세팅됨
     const timers = [
-      setTimeout(() => setRevealed(1), 200),   // 포춘쿠키 배너
-      setTimeout(() => setRevealed(2), 900),   // 점수 카드
-      setTimeout(() => setRevealed(3), 1800),  // 요약+태그
-      setTimeout(() => setRevealed(4), 2700),  // 인용 카드
+      setTimeout(() => setRevealed(1), 200),
+      setTimeout(() => setRevealed(2), 900),
+      setTimeout(() => setRevealed(3), 1800),
+      setTimeout(() => setRevealed(4), 2700),
     ];
     return () => timers.forEach(clearTimeout);
-  }, []);
+  }, [demo]);
 
-  // reveal 될 때마다 해당 섹션이 뷰에 들어오도록 부드럽게 스크롤
+  // reveal 될 때마다 스크롤 (일반 모드만)
   useEffect(() => {
+    if (demo) return;
     const targets: Record<number, React.RefObject<HTMLElement | null>> = {
       2: scoreRef,
       3: summaryRef,
@@ -66,17 +68,18 @@ function AdviceWithData() {
     if (overflow > 0) {
       container.scrollTo({ top: container.scrollTop + overflow, behavior: "smooth" });
     }
-  }, [revealed]);
+  }, [revealed, demo]);
 
-  // 데모: 포춘쿠키 배너 버튼 커서 클릭 → fortune 페이지로 이동
-  const [cursor, setCursor] = useState({ x: 195, y: 160, tapping: false, visible: false });
+  // 데모: 정적 화면 → 즉시 커서 등장 → 포춘쿠키 배너 클릭 → fortune 이동
+  // 배너는 header 바로 아래 mt-4 위치 (header ~106px + banner ~22px center ≈ y=130)
+  const [cursor, setCursor] = useState({ x: 195, y: 130, tapping: false, visible: false });
   useEffect(() => {
     if (!demo) return;
     const timers: ReturnType<typeof setTimeout>[] = [];
-    timers.push(setTimeout(() => setCursor({ x: 195, y: 104, tapping: false, visible: true }), 3200));
-    timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 3700));
-    timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 3950));
-    timers.push(setTimeout(() => { gotoPath("/fortune?demo=1"); }, 4150));
+    timers.push(setTimeout(() => setCursor({ x: 195, y: 130, tapping: false, visible: true }), 600));
+    timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1200));
+    timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 1450));
+    timers.push(setTimeout(() => { gotoPath("/fortune?demo=1"); }, 1650));
     return () => timers.forEach(clearTimeout);
   }, [demo]);
 
@@ -91,11 +94,11 @@ function AdviceWithData() {
       <div className="app-frame flex flex-col bg-white" style={{ position: "relative" }}>
         {demo && <DemoCursor {...cursor} />}
         {/* 헤더 */}
-        <header className="relative shrink-0 flex items-center justify-center px-4 pt-6 pb-4">
+        <header className="relative shrink-0 flex items-center justify-center px-4 pt-[52px] pb-4">
           <Link
             to="/"
             aria-label="뒤로"
-            className="absolute left-3 top-5 grid h-9 w-9 place-items-center rounded-full text-foreground/70"
+            className="absolute left-3 top-[50px] grid h-9 w-9 place-items-center rounded-full text-foreground/70"
           >
             <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
           </Link>

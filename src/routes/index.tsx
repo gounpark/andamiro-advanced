@@ -241,7 +241,7 @@ function Index() {
           />
 
         {/* 상단 로고 */}
-        <header className="relative z-10 flex items-center justify-start px-6 pt-6 pb-2">
+        <header className="relative z-10 flex items-center justify-start px-6 pt-[52px] pb-2">
           <h1 className="m-0 inline-flex">
             <img
               src={logoSvg}

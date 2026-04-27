@@ -252,11 +252,11 @@ function ChatPage() {
       <div className="app-frame flex flex-col" style={{ position: "relative" }}>
         {demo && <DemoCursor {...cursor} />}
         {/* 헤더 */}
-        <header className="relative flex shrink-0 items-center justify-center px-4 pt-6 pb-3 border-b border-black/5">
+        <header className="relative flex shrink-0 items-center justify-center px-4 pt-[52px] pb-3 border-b border-black/5">
           <Link
             to="/record"
             aria-label="뒤로"
-            className="absolute left-3 top-5 grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground"
+            className="absolute left-3 top-[50px] grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground"
           >
             <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
           </Link>
@@ -336,7 +336,7 @@ function ChatPage() {
         </div>
 
         {/* 입력 바 */}
-        <div className="shrink-0 border-t border-black/5 bg-white px-3 pt-2 pb-3">
+        <div className="shrink-0 border-t border-black/5 bg-white px-3 pt-2 pb-[44px]">
           <div className="flex items-center gap-1">
             <button
               type="button"

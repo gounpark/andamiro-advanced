@@ -116,7 +116,7 @@ function ReportWithData() {
         <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide pb-32">
           {/* 상단 블루 헤더 — 스크롤과 함께 흐름 */}
           <div
-            className="relative bg-[var(--primary)] text-white px-5 pt-6 pb-8 rounded-b-[24px]"
+            className="relative bg-[var(--primary)] text-white px-5 pt-[52px] pb-8 rounded-b-[24px]"
             style={fadeIn(1)}
           >
             <header className="relative flex items-center justify-center pb-4">

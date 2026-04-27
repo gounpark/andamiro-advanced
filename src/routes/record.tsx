@@ -198,7 +198,7 @@ function RecordPage() {
         {/* 콘텐츠 */}
         <div className="relative z-10 flex h-full flex-col">
           {/* 헤더 (뒤로가기) */}
-          <header className="flex items-center px-5 pt-6 pb-1">
+          <header className="flex items-center px-5 pt-[52px] pb-1">
             <Link
               to="/"
               aria-label="뒤로 가기"
@@ -277,7 +277,7 @@ function RecordPage() {
 
           {/* 하단 CTA 패널 — Figma 121:632 기준: 둥근 모서리 + 상단 ▲ 노치 */}
           <section
-            className="relative bg-white px-6 pt-5 pb-5 rounded-t-[24px]"
+            className="relative bg-white px-6 pt-5 pb-[46px] rounded-t-[24px]"
             style={{
               boxShadow:
                 "0 -8px 24px -6px rgba(20, 30, 60, 0.12), 0 -2px 6px -2px rgba(20, 30, 60, 0.06)",

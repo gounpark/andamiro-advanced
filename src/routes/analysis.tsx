@@ -213,11 +213,11 @@ function AnalysisPage() {
     <div className="app-shell">
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
         {/* 헤더 */}
-        <header className="relative shrink-0 flex items-center justify-center px-4 pt-6 pb-3 bg-white">
+        <header className="relative shrink-0 flex items-center justify-center px-4 pt-[52px] pb-3 bg-white">
           <Link
             to="/"
             aria-label="뒤로"
-            className="absolute left-3 top-5 grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground"
+            className="absolute left-3 top-[50px] grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground"
           >
             <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
           </Link>
