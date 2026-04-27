@@ -164,10 +164,12 @@ const DEFAULT_DATA = DAILY_DATA[21];
 
 function AnalysisPage() {
   const { day } = Route.useSearch();
-  const demo = new URLSearchParams(window.location.search).get("demo") === "1";
   const data: DailyData = (day && DAILY_DATA[day]) || DEFAULT_DATA;
   const { score, mood, metrics, summaryTitle, summaryBody, chatRecap, tomorrow } = data;
   const scrollRef = useRef<HTMLDivElement>(null);
+  const summaryRef = useRef<HTMLElement>(null);
+  const tomorrowRef = useRef<HTMLElement>(null);
+  const buttonsRef = useRef<HTMLDivElement>(null);
 
   // 순차 reveal: AI가 결과를 차례로 생성하는 것처럼
   const [revealed, setRevealed] = useState(0);
@@ -178,37 +180,33 @@ function AnalysisPage() {
       setTimeout(() => setRevealed(3), 1500),  // 메트릭
       setTimeout(() => setRevealed(4), 2400),  // 요약 카드
       setTimeout(() => setRevealed(5), 3400),  // 내일 카드
-      setTimeout(() => setRevealed(6), 4200),  // 버튼
+      setTimeout(() => setRevealed(6), 4400),  // 버튼
     ];
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  // 데모 모드: 자동 스크롤 (reveal 끝난 후 시작)
+  // reveal 될 때마다 해당 섹션이 뷰에 들어오도록 부드럽게 스크롤
   useEffect(() => {
-    if (!demo || !scrollRef.current) return;
-    const el = scrollRef.current;
-    let rafId: number;
-    let start: number | null = null;
-    const duration = 5500;
-    const totalScroll = 520;
-
-    const step = (ts: number) => {
-      if (!start) start = ts;
-      const elapsed = ts - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-      el.scrollTop = eased * totalScroll;
-      if (progress < 1) rafId = requestAnimationFrame(step);
+    const targets: Record<number, React.RefObject<HTMLElement | HTMLDivElement | null>> = {
+      4: summaryRef,
+      5: tomorrowRef,
+      6: buttonsRef,
     };
-
-    const t = setTimeout(() => { rafId = requestAnimationFrame(step); }, 4500);
-    return () => { clearTimeout(t); cancelAnimationFrame(rafId); };
-  }, [demo]);
+    const el = (targets[revealed] as React.RefObject<HTMLElement | null>)?.current;
+    const container = scrollRef.current;
+    if (!el || !container) return;
+    const containerRect = container.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    const overflow = elRect.bottom - containerRect.bottom + 28;
+    if (overflow > 0) {
+      container.scrollTo({ top: container.scrollTop + overflow, behavior: "smooth" });
+    }
+  }, [revealed]);
 
   const fadeIn = (n: number): React.CSSProperties => ({
     opacity: revealed >= n ? 1 : 0,
-    transform: revealed >= n ? "translateY(0)" : "translateY(14px)",
-    transition: "opacity 0.6s ease, transform 0.6s ease",
+    transform: revealed >= n ? "translateY(0)" : "translateY(18px)",
+    transition: "opacity 0.65s ease, transform 0.65s ease",
   });
 
   return (
@@ -252,7 +250,7 @@ function AnalysisPage() {
           </section>
 
           {/* 오늘 요약 카드 */}
-          <section className="mx-4 mt-4 rounded-2xl bg-white p-6 shadow-sm" style={fadeIn(4)}>
+          <section ref={summaryRef} className="mx-4 mt-6 rounded-2xl bg-white p-6 shadow-sm" style={fadeIn(4)}>
             <div className="flex flex-col items-center">
               <img src={iconChat} alt="" className="h-[52px] w-[52px] object-contain" />
               <h3 className="mt-2 font-bold text-foreground text-[17px] tracking-tight">
@@ -274,7 +272,7 @@ function AnalysisPage() {
           </section>
 
           {/* 내일은 이렇게 카드 */}
-          <section className="mx-4 mt-4 rounded-2xl bg-white p-6 shadow-sm" style={fadeIn(5)}>
+          <section ref={tomorrowRef} className="mx-4 mt-6 rounded-2xl bg-white p-6 shadow-sm" style={fadeIn(5)}>
             <div className="flex flex-col items-center">
               <img src={iconAiBook} alt="" className="h-[52px] w-[52px] object-contain" />
               <h3 className="mt-2 font-bold text-foreground text-[17px] tracking-tight">
@@ -302,7 +300,7 @@ function AnalysisPage() {
           </section>
 
           {/* 하단 버튼 */}
-          <div className="mx-4 mt-5 flex flex-col gap-2.5" style={fadeIn(6)}>
+          <div ref={buttonsRef} className="mx-4 mt-6 mb-6 flex flex-col gap-2.5" style={fadeIn(6)}>
             <Link
               to="/advice"
               search={{ empty: false }}

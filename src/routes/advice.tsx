@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { gotoPath } from "@/lib/navigate";
 import { ChevronLeft } from "lucide-react";
 import { EmptyDiaryState } from "@/components/EmptyDiaryState";
@@ -33,36 +33,57 @@ const TAGS = ["안정", "집중", "균형"];
 
 function AdviceWithData() {
   const demo = new URLSearchParams(window.location.search).get("demo") === "1";
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const scoreRef = useRef<HTMLElement>(null);
+  const summaryRef = useRef<HTMLElement>(null);
+  const quoteRef = useRef<HTMLElement>(null);
 
   // 순차 reveal 애니메이션
   const [revealed, setRevealed] = useState(0);
   useEffect(() => {
     const timers = [
       setTimeout(() => setRevealed(1), 200),   // 포춘쿠키 배너
-      setTimeout(() => setRevealed(2), 700),   // 점수 카드
-      setTimeout(() => setRevealed(3), 1400),  // 요약+태그
-      setTimeout(() => setRevealed(4), 2100),  // 인용 카드
+      setTimeout(() => setRevealed(2), 900),   // 점수 카드
+      setTimeout(() => setRevealed(3), 1800),  // 요약+태그
+      setTimeout(() => setRevealed(4), 2700),  // 인용 카드
     ];
     return () => timers.forEach(clearTimeout);
   }, []);
+
+  // reveal 될 때마다 해당 섹션이 뷰에 들어오도록 부드럽게 스크롤
+  useEffect(() => {
+    const targets: Record<number, React.RefObject<HTMLElement | null>> = {
+      2: scoreRef,
+      3: summaryRef,
+      4: quoteRef,
+    };
+    const el = targets[revealed]?.current;
+    const container = scrollRef.current;
+    if (!el || !container) return;
+    const containerRect = container.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    const overflow = elRect.bottom - containerRect.bottom + 28;
+    if (overflow > 0) {
+      container.scrollTo({ top: container.scrollTop + overflow, behavior: "smooth" });
+    }
+  }, [revealed]);
 
   // 데모: 포춘쿠키 배너 버튼 커서 클릭 → fortune 페이지로 이동
   const [cursor, setCursor] = useState({ x: 195, y: 160, tapping: false, visible: false });
   useEffect(() => {
     if (!demo) return;
     const timers: ReturnType<typeof setTimeout>[] = [];
-    // 배너는 화면 상단에 위치 (header ~60px + mt-3 + banner ~44px = ~60 + 12 + 22 ≈ y=100)
-    timers.push(setTimeout(() => setCursor({ x: 195, y: 104, tapping: false, visible: true }), 2800));
-    timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 3300));
-    timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 3550));
-    timers.push(setTimeout(() => { gotoPath("/fortune?demo=1"); }, 3750));
+    timers.push(setTimeout(() => setCursor({ x: 195, y: 104, tapping: false, visible: true }), 3200));
+    timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 3700));
+    timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 3950));
+    timers.push(setTimeout(() => { gotoPath("/fortune?demo=1"); }, 4150));
     return () => timers.forEach(clearTimeout);
   }, [demo]);
 
   const fadeIn = (n: number): React.CSSProperties => ({
     opacity: revealed >= n ? 1 : 0,
-    transform: revealed >= n ? "translateY(0)" : "translateY(12px)",
-    transition: "opacity 0.55s ease, transform 0.55s ease",
+    transform: revealed >= n ? "translateY(0)" : "translateY(18px)",
+    transition: "opacity 0.65s ease, transform 0.65s ease",
   });
 
   return (
@@ -81,12 +102,12 @@ function AdviceWithData() {
           <h1 className="font-semibold text-foreground text-[16px] tracking-tight">조언</h1>
         </header>
 
-        <div className="flex-1 overflow-y-auto scrollbar-hide pb-32 bg-white">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide pb-32 bg-white">
           {/* 포춘쿠키 알림 배너 */}
           <div style={fadeIn(1)}>
             <Link
               to="/fortune"
-              className="mx-4 mt-3 flex items-center gap-3 rounded-2xl bg-[#f4f6fa] px-3 py-2.5 active:scale-[0.99] transition"
+              className="mx-4 mt-4 flex items-center gap-3 rounded-2xl bg-[#f4f6fa] px-3 py-2.5 active:scale-[0.99] transition"
             >
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#3b6fff]">
                 <img
@@ -102,7 +123,7 @@ function AdviceWithData() {
           </div>
 
           {/* 점수 카드 */}
-          <section className="pt-5 pb-6 py-[40px] px-[28px] mt-[10px] mb-[20px]" style={fadeIn(2)}>
+          <section ref={scoreRef} className="pt-5 pb-6 py-[40px] px-[28px] mt-[12px] mb-[16px]" style={fadeIn(2)}>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-[12px] text-[#9a9aa3] tracking-tight">4월 20일 월요일</p>
@@ -125,9 +146,9 @@ function AdviceWithData() {
           </section>
 
           {/* 회색 배경 영역 */}
-          <div className="bg-[#f5f6f8] pt-10 pb-10 space-y-10 min-h-[420px]">
+          <div className="bg-[#f5f6f8] pt-6 pb-10 space-y-5">
             {/* 한줄 요약 + 태그 */}
-            <section className="mx-6 rounded-2xl bg-white p-5" style={fadeIn(3)}>
+            <section ref={summaryRef} className="mx-4 rounded-2xl bg-white p-5 shadow-sm" style={fadeIn(3)}>
               <p className="text-[13.5px] leading-[1.65] text-foreground/85 tracking-tight">
                 오늘은 블루(파란색)이 당신에게 긍정적인 에너지를 가져다 줄 거예요!{" "}
                 <span className="text-[var(--primary)]">💙</span>
@@ -145,7 +166,7 @@ function AdviceWithData() {
             </section>
 
             {/* 인용 카드 + 채팅 말풍선 */}
-            <section className="mx-6 rounded-2xl bg-white p-5" style={fadeIn(4)}>
+            <section ref={quoteRef} className="mx-4 rounded-2xl bg-white p-5 shadow-sm" style={fadeIn(4)}>
               <div className="flex flex-col items-center">
                 <img src={quoteRight} alt="" className="h-10 w-10 object-contain" />
                 <h3 className="mt-1 font-bold text-foreground text-[15.5px] tracking-tight">

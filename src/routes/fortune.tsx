@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { DemoCursor } from "@/components/DemoCursor";
 import { ChevronLeft } from "lucide-react";
 import cookieClosed from "@/assets/report/fortune-cookie-closed.png";
 import rays from "@/assets/report/fortune-rays.png";
@@ -43,6 +44,7 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
   const navigate = useNavigate();
   // idle → shaking(0.7s) → cracked(1.1s) → revealed
   const [stage, setStage] = useState<"idle" | "shaking" | "cracked" | "revealed">("idle");
+  const [cursor, setCursor] = useState({ x: 195, y: 420, tapping: false, visible: false });
 
   const handleTap = () => {
     if (stage !== "idle") return;
@@ -52,11 +54,17 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
     window.setTimeout(() => setStage("revealed"), 1200 + 900);
   };
 
-  // 데모 모드: 자동으로 쿠키 탭 (3.5초 후 — 아이들 플로팅 충분히 보여주기)
+  // 데모 모드: 정적 화면으로 시작 → 커서 바로 등장 → 탭
   useEffect(() => {
     if (!demo) return;
-    const t = setTimeout(handleTap, 3500);
-    return () => clearTimeout(t);
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    timers.push(setTimeout(() => setCursor(c => ({ ...c, visible: true })), 500));
+    timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1200));
+    timers.push(setTimeout(() => {
+      setCursor(c => ({ ...c, tapping: false }));
+      handleTap();
+    }, 1450));
+    return () => timers.forEach(clearTimeout);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demo]);
 
@@ -137,6 +145,7 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
   return (
     <div className="app-shell">
       <div className="app-frame relative flex flex-col bg-white overflow-hidden">
+        {demo && <DemoCursor {...cursor} />}
         <img src={cookieCracked} alt="" aria-hidden className="hidden" loading="eager" decoding="async" />
         <img src={cookieResult} alt="" aria-hidden className="hidden" loading="eager" decoding="async" />
         <img
@@ -194,7 +203,8 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
               <img
                 src={cookieClosed}
                 alt="포춘쿠키"
-                className="w-[260px] h-auto select-none drop-shadow-xl fortune-float"
+                // demo mode → no floating (static), normal mode → floating
+                className={`w-[260px] h-auto select-none drop-shadow-xl ${demo ? "" : "fortune-float"}`}
                 draggable={false}
               />
             </button>

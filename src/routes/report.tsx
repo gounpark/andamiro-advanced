@@ -65,73 +65,78 @@ const INSIGHTS = [
 ];
 
 function ReportWithData() {
-  const demo = new URLSearchParams(window.location.search).get("demo") === "1";
   const scrollRef = useRef<HTMLDivElement>(null);
+  const energyRef = useRef<HTMLElement>(null);
+  const bubbleRef = useRef<HTMLElement>(null);
+  const insightsRef = useRef<HTMLElement>(null);
+  const fortuneRef = useRef<HTMLElement>(null);
 
   // 순차 reveal 애니메이션
   const [revealed, setRevealed] = useState(0);
   useEffect(() => {
     const timers = [
-      setTimeout(() => setRevealed(1), 300),   // 에너지 차트
-      setTimeout(() => setRevealed(2), 1000),  // 버블 감정 순위
-      setTimeout(() => setRevealed(3), 2000),  // 패턴 인사이트
-      setTimeout(() => setRevealed(4), 2800),  // 포춘쿠키 카드
+      setTimeout(() => setRevealed(1), 200),   // 블루 헤더
+      setTimeout(() => setRevealed(2), 1000),  // 에너지 차트
+      setTimeout(() => setRevealed(3), 2000),  // 버블 감정 순위
+      setTimeout(() => setRevealed(4), 3100),  // 패턴 인사이트
+      setTimeout(() => setRevealed(5), 4100),  // 포춘쿠키 카드
     ];
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  // 데모 모드: 자동 스크롤 (reveal 끝난 후 시작)
+  // reveal 될 때마다 해당 섹션이 뷰에 들어오도록 부드럽게 스크롤
   useEffect(() => {
-    if (!demo || !scrollRef.current) return;
-    const el = scrollRef.current;
-    let rafId: number;
-    let start: number | null = null;
-    const duration = 5000;
-    const totalScroll = 420;
-    const t = setTimeout(() => {
-      const step = (ts: number) => {
-        if (!start) start = ts;
-        const p = Math.min((ts - start) / duration, 1);
-        const e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
-        el.scrollTop = e * totalScroll;
-        if (p < 1) rafId = requestAnimationFrame(step);
-      };
-      rafId = requestAnimationFrame(step);
-    }, 3200);
-    return () => { clearTimeout(t); cancelAnimationFrame(rafId); };
-  }, [demo]);
+    const targets: Record<number, React.RefObject<HTMLElement | null>> = {
+      2: energyRef,
+      3: bubbleRef,
+      4: insightsRef,
+      5: fortuneRef,
+    };
+    const el = targets[revealed]?.current;
+    const container = scrollRef.current;
+    if (!el || !container) return;
+    const containerRect = container.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    const overflow = elRect.bottom - containerRect.bottom + 28;
+    if (overflow > 0) {
+      container.scrollTo({ top: container.scrollTop + overflow, behavior: "smooth" });
+    }
+  }, [revealed]);
 
   const fadeIn = (n: number): React.CSSProperties => ({
     opacity: revealed >= n ? 1 : 0,
-    transform: revealed >= n ? "translateY(0)" : "translateY(14px)",
-    transition: "opacity 0.6s ease, transform 0.6s ease",
+    transform: revealed >= n ? "translateY(0)" : "translateY(18px)",
+    transition: "opacity 0.65s ease, transform 0.65s ease",
   });
 
   return (
     <div className="app-shell">
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
-        {/* 상단 블루 헤더 */}
-        <div className="relative bg-[var(--primary)] text-white px-5 pt-6 pb-8 rounded-b-[24px]">
-          <header className="relative flex items-center justify-center pb-4">
-            <Link
-              to="/"
-              aria-label="뒤로"
-              className="absolute left-0 grid h-9 w-9 place-items-center rounded-full text-white/90 hover:text-white"
-            >
-              <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
-            </Link>
-            <h1 className="font-semibold text-[16px] tracking-tight">리포트</h1>
-          </header>
-          <p className="text-[13px] text-white/80 tracking-tight">4월의 감정은 어땠을까요?</p>
-          <h2 className="mt-1 font-bold text-[20px] leading-[1.35] tracking-tight">
-            한 달의 마음 흐름을 돌아보세요!
-          </h2>
-        </div>
+        {/* 스크롤 전체 (헤더 포함) */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide pb-32">
+          {/* 상단 블루 헤더 — 스크롤과 함께 흐름 */}
+          <div
+            className="relative bg-[var(--primary)] text-white px-5 pt-6 pb-8 rounded-b-[24px]"
+            style={fadeIn(1)}
+          >
+            <header className="relative flex items-center justify-center pb-4">
+              <Link
+                to="/"
+                aria-label="뒤로"
+                className="absolute left-0 grid h-9 w-9 place-items-center rounded-full text-white/90 hover:text-white"
+              >
+                <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
+              </Link>
+              <h1 className="font-semibold text-[16px] tracking-tight">리포트</h1>
+            </header>
+            <p className="text-[13px] text-white/80 tracking-tight">4월의 감정은 어땠을까요?</p>
+            <h2 className="mt-1 font-bold text-[20px] leading-[1.35] tracking-tight">
+              한 달의 마음 흐름을 돌아보세요!
+            </h2>
+          </div>
 
-        {/* 스크롤 본문 */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide -mt-3 pb-32">
           {/* 요일별 에너지 */}
-          <section className="mx-4 rounded-2xl bg-white p-5 shadow-sm" style={fadeIn(1)}>
+          <section ref={energyRef} className="mx-4 mt-5 rounded-2xl bg-white p-5 shadow-sm" style={fadeIn(2)}>
             <p className="text-[11px] text-[#9a9aa3] tracking-tight">한 주의 흐름</p>
             <h3 className="mt-1 font-bold text-foreground text-[16px] tracking-tight">요일별 에너지</h3>
             <div className="mt-5 flex h-[140px] items-end justify-between gap-2">
@@ -148,14 +153,14 @@ function ReportWithData() {
           </section>
 
           {/* 이번 달 감정 순위 (버블) */}
-          <section className="mx-4 mt-3 rounded-2xl bg-white p-5 shadow-sm" style={fadeIn(2)}>
+          <section ref={bubbleRef} className="mx-4 mt-5 rounded-2xl bg-white p-5 shadow-sm" style={fadeIn(3)}>
             <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#999]">감정 리포트</p>
             <h3 className="mt-1 font-bold text-[#1a1a1a] text-[17px] tracking-tight">이번 달 감정 순위</h3>
             <BubbleCluster />
           </section>
 
           {/* 패턴 인사이트 */}
-          <section className="mx-4 mt-3 rounded-2xl bg-white p-5 shadow-sm" style={fadeIn(3)}>
+          <section ref={insightsRef} className="mx-4 mt-5 rounded-2xl bg-white p-5 shadow-sm" style={fadeIn(4)}>
             <div className="flex flex-col items-center">
               <div className="grid h-9 w-9 place-items-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)]">
                 <Sparkles className="h-4 w-4" />
@@ -168,8 +173,8 @@ function ReportWithData() {
                   key={i}
                   className="flex items-start gap-3 rounded-xl border border-dashed border-[#d9dbe1] bg-white px-3 py-3"
                   style={{
-                    opacity: revealed >= 3 ? 1 : 0,
-                    transform: revealed >= 3 ? "translateY(0)" : "translateY(10px)",
+                    opacity: revealed >= 4 ? 1 : 0,
+                    transform: revealed >= 4 ? "translateY(0)" : "translateY(10px)",
                     transition: `opacity 0.5s ease ${i * 0.2 + 0.1}s, transform 0.5s ease ${i * 0.2 + 0.1}s`,
                   }}
                 >
@@ -183,7 +188,7 @@ function ReportWithData() {
           </section>
 
           {/* 포춘쿠키 연결 카드 */}
-          <section className="mx-4 mt-3 mb-4 rounded-2xl overflow-hidden shadow-sm" style={fadeIn(4)}>
+          <section ref={fortuneRef} className="mx-4 mt-5 mb-6 rounded-2xl overflow-hidden shadow-sm" style={fadeIn(5)}>
             <div
               className="flex items-center gap-4 px-5 py-4"
               style={{ background: "linear-gradient(135deg, #FFF8EC 0%, #FFF3D6 100%)" }}
