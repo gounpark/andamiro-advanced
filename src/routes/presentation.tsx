@@ -54,7 +54,8 @@ const SLIDES: SlideData[] = [
     body: "지금 가장 가까운 감정을 고르면 기록의 맥락이 자연스럽게 시작됩니다.",
     narration: "홈에서 기록 버튼을 누르면 감정 선택 화면으로 이어집니다. 지금 기분과 가장 가까운 것을 골라보세요.",
     accent: "#FFCA2D",
-    iframeRoute: "/?demo=2&nosplash=1",
+    // 홈→기록 이동 없이 감정선택 화면 바로 표시 (배포 환경 iframe 내 재이동 시 지연 방지)
+    iframeRoute: "/record?demo=3&nosplash=1",
   },
   {
     category: "주요 기능 02",
@@ -62,7 +63,8 @@ const SLIDES: SlideData[] = [
     body: "감정을 선택하면 AI가 자연스러운 대화로 오늘의 기록을 함께 완성합니다.",
     narration: "오늘의 감정을 선택하면 AI가 친근한 대화로 기록을 시작합니다. 대화하듯 편하게 이어가다 보면 오늘 하루가 자연스럽게 정리돼요.",
     accent: "#4B82F5",
-    iframeRoute: "/record?demo=1&nosplash=1",
+    // 기록→채팅 이동 없이 채팅 화면 바로 표시 (배포 환경 iframe 내 재이동 시 지연 방지)
+    iframeRoute: "/chat?mood=good&demo=1&nosplash=1",
   },
   {
     category: "주요 기능 03",
@@ -92,9 +94,10 @@ const SLIDES: SlideData[] = [
     category: "주요 기능 06",
     title: "포춘쿠키: 하루를 마무리하는 작은 선물",
     body: "감정 기록을 마치면 오늘의 포춘쿠키가 기다리고 있습니다.",
-    narration: "하루를 마무리하는 포춘쿠키. 조언 화면에서 포춘쿠키 버튼을 누르면 오늘의 행운 메시지가 펼쳐집니다.",
+    narration: "하루를 마무리하는 포춘쿠키. 쿠키를 탭하면 오늘의 행운 메시지가 펼쳐집니다.",
     accent: "#FFCA2D",
-    iframeRoute: "/advice?empty=false&demo=1&nosplash=1",
+    // advice→fortune 이동 없이 fortune 화면 바로 표시 (배포 환경 iframe 내 재이동 시 지연 방지)
+    iframeRoute: "/fortune?demo=1&nosplash=1",
   },
   {
     category: "마무리",
