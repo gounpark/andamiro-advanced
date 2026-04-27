@@ -58,12 +58,12 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
   useEffect(() => {
     if (!demo) return;
     const timers: ReturnType<typeof setTimeout>[] = [];
-    timers.push(setTimeout(() => setCursor(c => ({ ...c, visible: true })), 500));
-    timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1200));
+    timers.push(setTimeout(() => setCursor(c => ({ ...c, visible: true })), 1200));
+    timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 2000));
     timers.push(setTimeout(() => {
       setCursor(c => ({ ...c, tapping: false, visible: false })); // 탭 후 즉시 숨김
       handleTap();
-    }, 1450));
+    }, 2250));
     return () => timers.forEach(clearTimeout);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demo]);
@@ -203,8 +203,7 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
               <img
                 src={cookieClosed}
                 alt="포춘쿠키"
-                // demo mode → no floating (static), normal mode → floating
-                className={`w-[260px] h-auto select-none drop-shadow-xl ${demo ? "" : "fortune-float"}`}
+                className="w-[260px] h-auto select-none drop-shadow-xl fortune-float"
                 draggable={false}
               />
             </button>
