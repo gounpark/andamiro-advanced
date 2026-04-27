@@ -174,6 +174,8 @@ function PresentationPage() {
   const audioCacheRef = useRef<Map<number, string>>(new Map());
   const subtitleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevCurrentRef = useRef<number | null>(null);
+  // 오디오 겹침 방지: 각 playAudio 호출에 고유 ID 부여, 완료 시점에 최신 ID와 다르면 폐기
+  const audioGenIdRef = useRef(0);
 
   const appOrigin = getAppOrigin();
 
@@ -195,42 +197,50 @@ function PresentationPage() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const stopAudio = useCallback(() => {
+    audioGenIdRef.current += 1; // 진행 중인 모든 async 요청 무효화
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
+      audioRef.current = null;
     }
     if (subtitleTimerRef.current) clearTimeout(subtitleTimerRef.current);
     setSubtitle("");
+    setIsAudioLoading(false);
   }, []);
 
   const playAudio = useCallback(async (index: number) => {
     stopAudio();
+    const genId = ++audioGenIdRef.current; // 이 호출만의 고유 ID
+
     const narration = SLIDES[index].narration;
-    if (!narration) return; // 마지막 슬라이드 등 나레이션 없는 경우 스킵
+    if (!narration) return;
     setSubtitle(narration);
 
     if (audioCacheRef.current.has(index)) {
+      if (genId !== audioGenIdRef.current) return; // 이미 다른 요청이 왔음
       const url = audioCacheRef.current.get(index)!;
       const audio = new Audio(url);
       audioRef.current = audio;
       audio.play().catch(() => {});
-      audio.addEventListener("ended", () => setSubtitle(""));
+      audio.addEventListener("ended", () => { if (genId === audioGenIdRef.current) setSubtitle(""); });
       return;
     }
 
     setIsAudioLoading(true);
     try {
       const url = await generateAudio(narration);
+      if (genId !== audioGenIdRef.current) return; // 완료됐지만 이미 다른 슬라이드로 이동
       audioCacheRef.current.set(index, url);
       const audio = new Audio(url);
       audioRef.current = audio;
       audio.play().catch(() => {});
-      audio.addEventListener("ended", () => setSubtitle(""));
+      audio.addEventListener("ended", () => { if (genId === audioGenIdRef.current) setSubtitle(""); });
     } catch (err) {
+      if (genId !== audioGenIdRef.current) return;
       console.error("Audio generation failed:", err);
       subtitleTimerRef.current = setTimeout(() => setSubtitle(""), 8000);
     } finally {
-      setIsAudioLoading(false);
+      if (genId === audioGenIdRef.current) setIsAudioLoading(false);
     }
   }, [stopAudio]);
 
