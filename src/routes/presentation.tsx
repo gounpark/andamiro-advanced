@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Volume2, Loader2 } from "lucide-react";
 
 import { PhoneMockup } from "@/components/presentation/PhoneMockup";
 import logoSvg from "@/assets/icons/logo.svg";
+import { getAppOrigin } from "@/lib/navigate";
 
 // ── ElevenLabs config ──────────────────────────────────────────────────────
 const ELEVENLABS_KEY = "sk_9f0c84f481ad9649b42396edc97fcd0be1e66771f281f0c2";
@@ -174,7 +175,7 @@ function PresentationPage() {
   const subtitleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevCurrentRef = useRef<number | null>(null);
 
-  const appOrigin = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+  const appOrigin = getAppOrigin();
 
   // Load Pretendard font
   useEffect(() => {

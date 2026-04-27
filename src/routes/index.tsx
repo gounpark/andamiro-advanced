@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { gotoPath } from "@/lib/navigate";
 import { useState, useEffect } from "react";
 import { DemoCursor } from "@/components/DemoCursor";
 import { ArrowRight, ChevronLeft, ChevronRight, ChevronRight as ChevronRightSm } from "lucide-react";
@@ -184,7 +185,7 @@ function Index() {
       timers.push(setTimeout(() => setCursor({ x: 195, y: 160, tapping: false, visible: true }), 700));
       timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1100));
       timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 1300));
-      timers.push(setTimeout(() => { window.location.href = "/record?demo=3"; }, 1500));
+      timers.push(setTimeout(() => { gotoPath("/record?demo=3"); }, 1500));
     } else {
       // demo=1 (소개): 노란날(16일) 클릭 → 초록날(21일) 클릭 → 기록 버튼 클릭 → /record
       timers.push(setTimeout(() => setCursor({ x: 195, y: 550, tapping: false, visible: true }), 500));
@@ -198,7 +199,7 @@ function Index() {
       timers.push(setTimeout(() => setCursor({ x: 195, y: 668, tapping: false, visible: true }), 5600));
       timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 6000));
       timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 6200));
-      timers.push(setTimeout(() => { window.location.href = "/analysis?day=21"; }, 6300));
+      timers.push(setTimeout(() => { gotoPath("/analysis?day=21"); }, 6300));
     }
     return () => timers.forEach(clearTimeout);
   // eslint-disable-next-line react-hooks/exhaustive-deps

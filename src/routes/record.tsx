@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { gotoPath } from "@/lib/navigate";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { DemoCursor } from "@/components/DemoCursor";
@@ -127,7 +128,7 @@ function RecordPage() {
     timers.push(setTimeout(() => setCursor({ x: ctaX, y: ctaY, tapping: false, visible: true }), 700));
     timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1200));
     timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 1450));
-    timers.push(setTimeout(() => { window.location.href = "/chat?mood=good&demo=1"; }, 1650));
+    timers.push(setTimeout(() => { gotoPath("/chat?mood=good&demo=1"); }, 1650));
 
     return () => timers.forEach(clearTimeout);
   }, [demo1]); // eslint-disable-line react-hooks/exhaustive-deps

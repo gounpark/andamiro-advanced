@@ -6,4 +6,9 @@
 // You can pass additional config via defineConfig({ vite: { ... } }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-export default defineConfig();
+// GitHub Pages 배포 시 VITE_BASE=/andamiro-demo/ 환경변수로 base 경로 주입
+export default defineConfig({
+  vite: {
+    base: process.env.VITE_BASE ?? "/",
+  },
+});

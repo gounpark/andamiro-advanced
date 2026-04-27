@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>안다미로</title>
+    <script>
+      // GitHub Pages SPA 라우팅 트릭:
+      // 서브 경로(/record, /chat 등) 접근 시 GitHub Pages가 이 파일을 서빙.
+      // 현재 경로를 sessionStorage에 저장한 뒤 루트(index.html)로 리다이렉트.
+      var l = window.location;
+      sessionStorage.setItem(
+        "ghpages_redirect",
+        JSON.stringify({ path: l.pathname, search: l.search, hash: l.hash })
+      );
+      l.replace(
+        l.protocol + "//" + l.host + l.pathname.split("/").slice(0, 2).join("/") + "/?p=1"
+      );
+    </script>
+  </head>
+  <body></body>
+</html>

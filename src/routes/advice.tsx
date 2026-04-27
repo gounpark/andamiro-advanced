@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import React, { useEffect, useState } from "react";
+import { gotoPath } from "@/lib/navigate";
 import { ChevronLeft } from "lucide-react";
 import { EmptyDiaryState } from "@/components/EmptyDiaryState";
 import { BottomNav } from "@/components/BottomNav";
@@ -54,7 +55,7 @@ function AdviceWithData() {
     timers.push(setTimeout(() => setCursor({ x: 195, y: 104, tapping: false, visible: true }), 2800));
     timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 3300));
     timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 3550));
-    timers.push(setTimeout(() => { window.location.href = "/fortune?demo=1"; }, 3750));
+    timers.push(setTimeout(() => { gotoPath("/fortune?demo=1"); }, 3750));
     return () => timers.forEach(clearTimeout);
   }, [demo]);
 

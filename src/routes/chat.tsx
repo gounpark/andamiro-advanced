@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { gotoPath } from "@/lib/navigate";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, Plus, Mic, ArrowUp } from "lucide-react";
 import { DemoCursor } from "@/components/DemoCursor";
