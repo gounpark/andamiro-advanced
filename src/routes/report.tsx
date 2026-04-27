@@ -51,11 +51,11 @@ const BUBBLES: BubbleData[] = [
   { label: "불안함", days: 3, size: 64,  left: 282.17, top: 138.77, variant: "muted-2", z: 11, delay: 0.92 },
 ];
 const BUBBLE_GRADIENTS: Record<BubbleVariant, string> = {
-  "main":    "linear-gradient(135deg, #FF6B9D, #FF8E53)",
-  "soft":    "linear-gradient(135deg, #A78BFA, #7C3AED)",
-  "soft-2":  "linear-gradient(135deg, #34D399, #059669)",
-  "muted":   "linear-gradient(135deg, #94A3B8, #64748B)",
-  "muted-2": "linear-gradient(135deg, #FBBF24, #D97706)",
+  "main":    "linear-gradient(135deg, #5B82F0, #4268DC)",   // 진한 파랑 (설렘)
+  "soft":    "linear-gradient(135deg, #85AADC, #6D92CA)",   // 중간 파랑 (평온함)
+  "soft-2":  "linear-gradient(135deg, #96BCDE, #7EA4CC)",   // 연한 파랑 (활기참)
+  "muted":   "linear-gradient(135deg, #C0CADA, #AABACA)",   // 회색 (무기력)
+  "muted-2": "linear-gradient(135deg, #ABBBD8, #92A8C8)",   // 연한 회청 (불안함)
 };
 
 const INSIGHTS = [
@@ -65,7 +65,6 @@ const INSIGHTS = [
 ];
 
 function ReportWithData() {
-  const max = Math.max(...WEEK_VALUES);
   const demo = new URLSearchParams(window.location.search).get("demo") === "1";
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -139,8 +138,7 @@ function ReportWithData() {
               {WEEK_VALUES.map((v, i) => (
                 <div key={i} className="flex flex-1 flex-col items-center gap-2">
                   <div
-                    className="w-full rounded-md bg-[var(--primary)]/30 data-[peak=true]:bg-[var(--primary)]"
-                    data-peak={v === max}
+                    className="w-full rounded-md bg-[var(--primary)]/25"
                     style={{ height: `${(v / 100) * 110}px` }}
                   />
                   <span className="text-[11px] text-[#9a9aa3]">{WEEKDAYS[i]}</span>

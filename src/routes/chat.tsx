@@ -210,13 +210,8 @@ function ChatPage() {
       }, 40);
     }, 6000));
 
-    // 9.0s: 커서 "대화 종료" 버튼 위 등장 (스크롤 후 버튼은 화면 하단에 위치)
-    timers.push(setTimeout(() => setCursor({ x: 70, y: 752, tapping: false, visible: true }), 9000));
-    // 9.6s: 탭
-    timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 9600));
-    timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 9850));
-    // 10.0s: 분석 화면으로 이동
-    timers.push(setTimeout(() => { window.location.href = "/analysis?day=21"; }, 10000));
+    // 8.5s: 마지막 봇 답장 후 커서가 "대화 종료" 버튼 위에 올라가고 플로우 끝
+    timers.push(setTimeout(() => setCursor({ x: 55, y: 540, tapping: false, visible: true }), 8500));
 
     return () => {
       timers.forEach(clearTimeout);
@@ -295,32 +290,36 @@ function ChatPage() {
 
           {/* 메시지 */}
           <div className="flex flex-col gap-3">
-            {messages.map((m) => (
-              <div key={m.id}>
-                {m.role === "user" ? (
-                  <div className="flex justify-end">
-                    <div className="max-w-[78%] rounded-2xl rounded-tr-md bg-[var(--primary)] px-4 py-2.5 text-white text-[14px] leading-snug shadow-sm animate-in fade-in slide-in-from-bottom-1 duration-300">
-                      {m.text}
+            {(() => {
+              // 마지막 canEnd 봇 메시지 id만 찾아서 그 위에만 "대화 종료" 버튼 표시
+              const lastCanEndId = [...messages].reverse().find(m => m.role === "bot" && m.canEnd)?.id;
+              return messages.map((m) => (
+                <div key={m.id}>
+                  {m.role === "user" ? (
+                    <div className="flex justify-end">
+                      <div className="max-w-[78%] rounded-2xl rounded-tr-md bg-[var(--primary)] px-4 py-2.5 text-white text-[14px] leading-snug shadow-sm animate-in fade-in slide-in-from-bottom-1 duration-300">
+                        {m.text}
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-start gap-2">
-                    <div className="max-w-[80%] rounded-2xl rounded-tl-md bg-[#f1f3f6] px-4 py-2.5 text-foreground text-[14px] leading-snug whitespace-pre-line animate-in fade-in slide-in-from-bottom-1 duration-300">
-                      {m.text}
+                  ) : (
+                    <div className="flex flex-col items-start gap-2">
+                      <div className="max-w-[80%] rounded-2xl rounded-tl-md bg-[#f1f3f6] px-4 py-2.5 text-foreground text-[14px] leading-snug whitespace-pre-line animate-in fade-in slide-in-from-bottom-1 duration-300">
+                        {m.text}
+                      </div>
+                      {m.canEnd && m.id === lastCanEndId && (
+                        <button
+                          type="button"
+                          onClick={endConversation}
+                          className="rounded-full bg-[var(--primary)]/10 px-3 py-1.5 text-[12px] font-medium text-[var(--primary)] hover:bg-[var(--primary)]/15 transition"
+                        >
+                          대화 종료
+                        </button>
+                      )}
                     </div>
-                    {m.canEnd && (
-                      <button
-                        type="button"
-                        onClick={endConversation}
-                        className="rounded-full bg-[var(--primary)]/10 px-3 py-1.5 text-[12px] font-medium text-[var(--primary)] hover:bg-[var(--primary)]/15 transition"
-                      >
-                        대화 종료
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
+                  )}
+                </div>
+              ));
+            })()}
             {isTyping && (
               <div className="flex items-start animate-in fade-in duration-200">
                 <div className="rounded-2xl rounded-tl-md bg-[#f1f3f6] px-4 py-3">
