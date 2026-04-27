@@ -117,29 +117,55 @@ function RecordPage() {
   const [selected, setSelected] = useState<MoodKey | null>(demo1 ? "good" : null);
 
   // 커서 상태 (데모 모드)
-  const [cursor, setCursor] = useState({ x: 195, y: 690, tapping: false, visible: false });
+  const [cursor, setCursor] = useState({ x: 195, y: 700, tapping: false, visible: false });
+  const frameRef = useRef<HTMLDivElement>(null);
+  const startBtnRef = useRef<HTMLButtonElement>(null);
+  const pickerWrapRef = useRef<HTMLDivElement>(null);
 
   // demo=1: good 미리 선택 상태 → 커서가 시작하기 버튼 클릭 → 채팅으로 이동
   useEffect(() => {
     if (!demo1) return;
+    const raf = requestAnimationFrame(() => {
+      const btn = startBtnRef.current;
+      const frame = frameRef.current;
+      if (btn && frame) {
+        const br = btn.getBoundingClientRect();
+        const fr = frame.getBoundingClientRect();
+        setCursor(c => ({
+          ...c,
+          x: br.left - fr.left + br.width / 2,
+          y: br.top - fr.top + br.height / 2,
+        }));
+      }
+    });
     const timers: ReturnType<typeof setTimeout>[] = [];
-    const ctaX = 195, ctaY = 810;
-
-    timers.push(setTimeout(() => setCursor({ x: ctaX, y: ctaY, tapping: false, visible: true }), 700));
+    timers.push(setTimeout(() => setCursor(c => ({ ...c, visible: true })), 700));
     timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1200));
     timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 1450));
-    timers.push(setTimeout(() => { gotoPath("/chat?mood=good&demo=1"); }, 1650));
-
-    return () => timers.forEach(clearTimeout);
+    timers.push(setTimeout(() => { gotoPath("/chat?mood=good&demo=1&nosplash=1"); }, 1650));
+    return () => { cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
   }, [demo1]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // demo=3: 감정 순환 선택 애니메이션 (화면 전환 없이 종료)
+  // MoodPicker 첫 번째 슬롯(indicator 위치) 기준: paddingLeft=24, chip diameter=72, pt=48
   useEffect(() => {
     if (!demo3) return;
+    const raf = requestAnimationFrame(() => {
+      const picker = pickerWrapRef.current;
+      const frame = frameRef.current;
+      if (picker && frame) {
+        const pr = picker.getBoundingClientRect();
+        const fr = frame.getBoundingClientRect();
+        // 첫 번째 슬롯 center: paddingLeft(24) + chipRadius(36), pt(48) + chipRadius(36)
+        setCursor(c => ({
+          ...c,
+          x: pr.left - fr.left + 24 + 36,
+          y: pr.top - fr.top + 48 + 36,
+        }));
+      }
+    });
     const timers: ReturnType<typeof setTimeout>[] = [];
-
-    const pickerX = 120, pickerY = 688;
-    timers.push(setTimeout(() => setCursor({ x: pickerX, y: pickerY, tapping: false, visible: true }), 400));
+    timers.push(setTimeout(() => setCursor(c => ({ ...c, visible: true })), 400));
 
     const sequence: MoodKey[] = ["best", "good", "okay", "bad", "worst", "good"];
     const delays =              [800,   1700,  2600,  3500,  4400,  5300];
@@ -148,7 +174,7 @@ function RecordPage() {
       timers.push(setTimeout(() => { setCursor(c => ({ ...c, tapping: false })); setSelected(mood); }, delays[i]));
     });
 
-    return () => timers.forEach(clearTimeout);
+    return () => { cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
   }, [demo3]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const current = selected ? MOODS.find((m) => m.key === selected)! : null;
@@ -171,7 +197,7 @@ function RecordPage() {
 
   return (
     <div className="app-shell">
-      <div className="app-frame" style={{ position: "relative" }}>
+      <div ref={frameRef} className="app-frame" style={{ position: "relative" }}>
         {(demo1 || demo3) && <DemoCursor {...cursor} />}
         {/* 배경 — 선택 전: 연한 하늘 / 선택 후: 해당 무드 배경 */}
         <div
@@ -269,11 +295,13 @@ function RecordPage() {
           </div>
 
           {/* 무드 선택 — 순환 슬라이딩 트랙 */}
-          <MoodPicker
-            moods={MOODS}
-            selected={selected}
-            onSelect={(k) => setSelected(k)}
-          />
+          <div ref={pickerWrapRef}>
+            <MoodPicker
+              moods={MOODS}
+              selected={selected}
+              onSelect={(k) => setSelected(k)}
+            />
+          </div>
 
           {/* 하단 CTA 패널 — Figma 121:632 기준: 둥근 모서리 + 상단 ▲ 노치 */}
           <section
@@ -311,6 +339,7 @@ function RecordPage() {
             </h2>
 
             <button
+              ref={startBtnRef}
               type="button"
               disabled={!hasSelection}
               onClick={() => {

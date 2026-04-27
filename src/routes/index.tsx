@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { gotoPath } from "@/lib/navigate";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { DemoCursor } from "@/components/DemoCursor";
 import { ArrowRight, ChevronLeft, ChevronRight, ChevronRight as ChevronRightSm } from "lucide-react";
 import cloverEmptySvg from "@/assets/icons/clover-empty.svg";
@@ -173,6 +173,11 @@ function Index() {
 
   // 커서 상태 (데모 모드)
   const [cursor, setCursor] = useState({ x: 195, y: 300, tapping: false, visible: false });
+  const frameRef = useRef<HTMLDivElement>(null);
+  const ctaBtnRef = useRef<HTMLAnchorElement>(null);
+  // 캘린더 날짜 셀 ref (day 16 = 노란날, day 21 = 초록날)
+  const day16Ref = useRef<HTMLDivElement>(null);
+  const day21Ref = useRef<HTMLDivElement>(null);
 
   // 데모 모드
   useEffect(() => {
@@ -180,28 +185,59 @@ function Index() {
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     if (demoToRecord) {
-      // demo=2 (주요기능01): 상단 "오늘 기록 남기러 가기" CTA 버튼 클릭
-      timers.push(setTimeout(() => setCursor({ x: 195, y: 350, tapping: false, visible: true }), 300));
-      timers.push(setTimeout(() => setCursor({ x: 195, y: 160, tapping: false, visible: true }), 700));
-      timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1100));
-      timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 1300));
-      timers.push(setTimeout(() => { gotoPath("/record?demo=3"); }, 1500));
+      // demo=2 (주요기능01): 상단 "오늘 기록 남기러 가기" CTA 버튼 클릭 (DOM 위치 기반)
+      const raf = requestAnimationFrame(() => {
+        const btn = ctaBtnRef.current;
+        const frame = frameRef.current;
+        if (btn && frame) {
+          const br = btn.getBoundingClientRect();
+          const fr = frame.getBoundingClientRect();
+          const cx = br.left - fr.left + br.width / 2;
+          const cy = br.top - fr.top + br.height / 2;
+          // 화면 아래에서 CTA 위치로 이동 후 클릭
+          setCursor({ x: cx, y: cy + 180, tapping: false, visible: false });
+          timers.push(setTimeout(() => setCursor({ x: cx, y: cy + 180, tapping: false, visible: true }), 300));
+          timers.push(setTimeout(() => setCursor({ x: cx, y: cy, tapping: false, visible: true }), 700));
+          timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1100));
+          timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 1300));
+        }
+      });
+      timers.push(setTimeout(() => { gotoPath("/record?demo=3&nosplash=1"); }, 1500));
+      return () => { cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
     } else {
-      // demo=1 (소개): 노란날(16일) 클릭 → 초록날(21일) 클릭 → 기록 버튼 클릭 → /record
-      timers.push(setTimeout(() => setCursor({ x: 195, y: 550, tapping: false, visible: true }), 500));
-      timers.push(setTimeout(() => setCursor({ x: 244, y: 407, tapping: false, visible: true }), 900));
-      timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1300));
-      timers.push(setTimeout(() => { setCursor(c => ({ ...c, tapping: false })); setSelectedDay(16); }, 1500));
-      timers.push(setTimeout(() => setCursor({ x: 146, y: 465, tapping: false, visible: true }), 3500));
-      timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 3900));
-      timers.push(setTimeout(() => { setCursor(c => ({ ...c, tapping: false })); setSelectedDay(21); }, 4100));
-      // 21일 기록 중 "평온함" 항목 클릭 → 분석 화면으로 이동
-      timers.push(setTimeout(() => setCursor({ x: 195, y: 668, tapping: false, visible: true }), 5600));
-      timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 6000));
-      timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 6200));
-      timers.push(setTimeout(() => { gotoPath("/analysis?day=21"); }, 6300));
+      // demo=1 (소개): 날짜 셀 위치를 DOM에서 읽어 클릭
+      const raf = requestAnimationFrame(() => {
+        const frame = frameRef.current;
+        if (!frame) return;
+        const fr = frame.getBoundingClientRect();
+
+        const getCenter = (el: HTMLElement | null) => {
+          if (!el) return null;
+          const r = el.getBoundingClientRect();
+          return { x: r.left - fr.left + r.width / 2, y: r.top - fr.top + r.height / 2 };
+        };
+        const p16 = getCenter(day16Ref.current);
+        const p21 = getCenter(day21Ref.current);
+
+        if (p16) {
+          timers.push(setTimeout(() => setCursor({ x: p16.x, y: p16.y + 100, tapping: false, visible: true }), 500));
+          timers.push(setTimeout(() => setCursor({ x: p16.x, y: p16.y, tapping: false, visible: true }), 900));
+          timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1300));
+          timers.push(setTimeout(() => { setCursor(c => ({ ...c, tapping: false })); setSelectedDay(16); }, 1500));
+        }
+        if (p21) {
+          timers.push(setTimeout(() => setCursor({ x: p21.x, y: p21.y, tapping: false, visible: true }), 3500));
+          timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 3900));
+          timers.push(setTimeout(() => { setCursor(c => ({ ...c, tapping: false })); setSelectedDay(21); }, 4100));
+        }
+        // 21일 기록 항목 클릭 → 분석 화면 (세로 중앙 아래쪽 항목)
+        timers.push(setTimeout(() => setCursor({ x: 195, y: 668, tapping: false, visible: true }), 5600));
+        timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 6000));
+        timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 6200));
+        timers.push(setTimeout(() => { gotoPath("/analysis?day=21&nosplash=1"); }, 6300));
+      });
+      return () => { cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
     }
-    return () => timers.forEach(clearTimeout);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demo, demoToRecord]);
 
@@ -217,7 +253,7 @@ function Index() {
 
   return (
     <div className="app-shell">
-      <div className="app-frame" style={{ position: "relative" }}>
+      <div ref={frameRef} className="app-frame" style={{ position: "relative" }}>
         {demo && <DemoCursor {...cursor} />}
         {/* 스크롤 영역 — 흰 배경이 스크롤 끝까지 이어지도록 내부에서 그라디언트→흰색 흐름 구성 */}
         <div className="absolute inset-0 overflow-y-auto pb-[126px] bg-white">
@@ -264,6 +300,7 @@ function Index() {
           </p>
 
           <Link
+            ref={ctaBtnRef}
             to="/record"
             onPointerEnter={preloadRecordAssets}
             onTouchStart={preloadRecordAssets}
@@ -315,7 +352,11 @@ function Index() {
 
             {/* 날짜 셀 */}
             {weeks.flat().map((cell, i) => (
-              <div key={i} className="flex justify-center">
+              <div
+                key={i}
+                className="flex justify-center"
+                ref={cell.day === 16 ? day16Ref : cell.day === 21 ? day21Ref : undefined}
+              >
                 <DayCell
                   day={cell.day}
                   state={cell.state}

@@ -37,6 +37,8 @@ function AdviceWithData() {
   const scoreRef = useRef<HTMLElement>(null);
   const summaryRef = useRef<HTMLElement>(null);
   const quoteRef = useRef<HTMLElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const bannerRef = useRef<HTMLAnchorElement>(null);
 
   // demo 모드: 즉시 전체 표시 / 일반 모드: 순차 reveal
   const [revealed, setRevealed] = useState(demo ? 4 : 0);
@@ -70,17 +72,30 @@ function AdviceWithData() {
     }
   }, [revealed, demo]);
 
-  // 데모: 정적 화면 → 즉시 커서 등장 → 포춘쿠키 배너 클릭 → fortune 이동
-  // 배너는 header 바로 아래 mt-4 위치 (header ~106px + banner ~22px center ≈ y=130)
-  const [cursor, setCursor] = useState({ x: 195, y: 130, tapping: false, visible: false });
+  // 데모: 정적 화면 → 커서 등장 → 포춘쿠키 배너 클릭 → fortune 이동
+  const [cursor, setCursor] = useState({ x: 195, y: 150, tapping: false, visible: false });
   useEffect(() => {
     if (!demo) return;
+    // rAF로 실제 배너 DOM 위치를 읽어 커서 정확히 맞춤
+    const raf = requestAnimationFrame(() => {
+      const banner = bannerRef.current;
+      const frame = frameRef.current;
+      if (banner && frame) {
+        const br = banner.getBoundingClientRect();
+        const fr = frame.getBoundingClientRect();
+        setCursor(c => ({
+          ...c,
+          x: br.left - fr.left + br.width / 2,
+          y: br.top - fr.top + br.height / 2,
+        }));
+      }
+    });
     const timers: ReturnType<typeof setTimeout>[] = [];
-    timers.push(setTimeout(() => setCursor({ x: 195, y: 130, tapping: false, visible: true }), 600));
+    timers.push(setTimeout(() => setCursor(c => ({ ...c, visible: true })), 600));
     timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1200));
     timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 1450));
-    timers.push(setTimeout(() => { gotoPath("/fortune?demo=1"); }, 1650));
-    return () => timers.forEach(clearTimeout);
+    timers.push(setTimeout(() => { gotoPath("/fortune?demo=1&nosplash=1"); }, 1650));
+    return () => { cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
   }, [demo]);
 
   const fadeIn = (n: number): React.CSSProperties => ({
@@ -91,7 +106,7 @@ function AdviceWithData() {
 
   return (
     <div className="app-shell">
-      <div className="app-frame flex flex-col bg-white" style={{ position: "relative" }}>
+      <div ref={frameRef} className="app-frame flex flex-col bg-white" style={{ position: "relative" }}>
         {demo && <DemoCursor {...cursor} />}
         {/* 헤더 */}
         <header className="relative shrink-0 flex items-center justify-center px-4 pt-[52px] pb-4">
@@ -109,6 +124,7 @@ function AdviceWithData() {
           {/* 포춘쿠키 알림 배너 */}
           <div style={fadeIn(1)}>
             <Link
+              ref={bannerRef}
               to="/fortune"
               className="mx-4 mt-4 flex items-center gap-3 rounded-2xl bg-[#f4f6fa] px-3 py-2.5 active:scale-[0.99] transition"
             >

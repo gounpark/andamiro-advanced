@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DemoCursor } from "@/components/DemoCursor";
 import { ChevronLeft } from "lucide-react";
 import cookieClosed from "@/assets/report/fortune-cookie-closed.png";
@@ -42,9 +42,11 @@ function FortuneRoute() {
  * ========================================================= */
 function FortunePageV2({ demo }: { demo?: boolean }) {
   const navigate = useNavigate();
+  const frameRef = useRef<HTMLDivElement>(null);
+  const cookieRef = useRef<HTMLButtonElement>(null);
   // idle → shaking(0.7s) → cracked(1.1s) → revealed
   const [stage, setStage] = useState<"idle" | "shaking" | "cracked" | "revealed">("idle");
-  const [cursor, setCursor] = useState({ x: 195, y: 420, tapping: false, visible: false });
+  const [cursor, setCursor] = useState({ x: 195, y: 430, tapping: false, visible: false });
 
   const handleTap = () => {
     if (stage !== "idle") return;
@@ -57,6 +59,20 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
   // 데모 모드: 정적 화면으로 시작 → 커서 바로 등장 → 탭
   useEffect(() => {
     if (!demo) return;
+    // rAF로 실제 쿠키 버튼 위치를 읽어 커서 정확히 맞춤
+    const raf = requestAnimationFrame(() => {
+      const cookie = cookieRef.current;
+      const frame = frameRef.current;
+      if (cookie && frame) {
+        const cr = cookie.getBoundingClientRect();
+        const fr = frame.getBoundingClientRect();
+        setCursor(c => ({
+          ...c,
+          x: cr.left - fr.left + cr.width / 2,
+          y: cr.top - fr.top + cr.height / 2,
+        }));
+      }
+    });
     const timers: ReturnType<typeof setTimeout>[] = [];
     timers.push(setTimeout(() => setCursor(c => ({ ...c, visible: true })), 1200));
     timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 2000));
@@ -64,7 +80,7 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
       setCursor(c => ({ ...c, tapping: false, visible: false })); // 탭 후 즉시 숨김
       handleTap();
     }, 2250));
-    return () => timers.forEach(clearTimeout);
+    return () => { cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demo]);
 
@@ -144,7 +160,7 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
   // ===== Idle / Cracked: 밝은 배경 =====
   return (
     <div className="app-shell">
-      <div className="app-frame relative flex flex-col bg-white overflow-hidden">
+      <div ref={frameRef} className="app-frame relative flex flex-col bg-white overflow-hidden">
         {demo && <DemoCursor {...cursor} />}
         <img src={cookieCracked} alt="" aria-hidden className="hidden" loading="eager" decoding="async" />
         <img src={cookieResult} alt="" aria-hidden className="hidden" loading="eager" decoding="async" />
@@ -195,6 +211,7 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
         <div className="relative z-10 flex-1 flex items-center justify-center px-8">
           {stage === "idle" ? (
             <button
+              ref={cookieRef}
               type="button"
               onClick={handleTap}
               aria-label="포춘쿠키 열기"
