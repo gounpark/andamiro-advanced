@@ -304,7 +304,7 @@ function PresentationPage() {
           style={{ background: "linear-gradient(160deg, #f0f6ff 0%, #fff 60%)" }}
         >
           <div className="flex flex-col items-center gap-7 text-center px-10" style={{ maxWidth: 560 }}>
-            <img src="/favicon.png" alt="안다미로" style={{ width: 120, height: 120, objectFit: "contain" }} />
+            <img src={`${import.meta.env.BASE_URL}favicon.png`} alt="안다미로" style={{ width: 120, height: 120, objectFit: "contain" }} />
             <div>
               <h1 style={{ fontSize: 34, fontWeight: 800, color: "#111", letterSpacing: "-0.03em", lineHeight: 1.15 }}>
                 AI 감정일기, 안다미로

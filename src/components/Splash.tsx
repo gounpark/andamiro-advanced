@@ -18,8 +18,12 @@ export function Splash() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    // nosplash=1 파라미터가 있으면 스킵
+    // nosplash=1 파라미터 또는 /presentation 경로면 스킵
     if (new URLSearchParams(window.location.search).get("nosplash") === "1") {
+      setVisible(false);
+      return;
+    }
+    if (window.location.pathname.includes("presentation")) {
       setVisible(false);
       return;
     }
