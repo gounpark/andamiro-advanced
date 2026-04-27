@@ -46,7 +46,7 @@ const SLIDES: SlideData[] = [
     body: "월간 달력에서 기록을 확인하고, 날짜를 눌러 그날의 일기를 바로 볼 수 있어요.",
     narration: "안녕하세요, 안다미로를 소개할게요. 달력에서 초록은 오늘, 노란색은 기록이 있는 날이에요. 날짜를 누르면 그날의 기록을 바로 확인할 수 있어요.",
     accent: "#4B82F5",
-    iframeRoute: "/intro",
+    iframeRoute: "/intro?nosplash=1",
   },
   {
     category: "주요 기능 01",
@@ -62,7 +62,7 @@ const SLIDES: SlideData[] = [
     body: "감정을 선택하면 AI가 자연스러운 대화로 오늘의 기록을 함께 완성합니다.",
     narration: "오늘의 감정을 선택하면 AI가 친근한 대화로 기록을 시작합니다. 대화하듯 편하게 이어가다 보면 오늘 하루가 자연스럽게 정리돼요.",
     accent: "#4B82F5",
-    iframeRoute: "/record?demo=1",
+    iframeRoute: "/record?demo=1&nosplash=1",
   },
   {
     category: "주요 기능 03",
@@ -70,7 +70,7 @@ const SLIDES: SlideData[] = [
     body: "감정 점수·요약·AI 조언으로 하루를 더 명확하게 돌아봅니다.",
     narration: "대화 후 감정 점수와 AI 요약을 확인해보세요.",
     accent: "#FF7A50",
-    iframeRoute: "/analysis?day=21&demo=1",
+    iframeRoute: "/analysis?day=21&demo=1&nosplash=1",
   },
   {
     category: "주요 기능 04",
@@ -78,7 +78,7 @@ const SLIDES: SlideData[] = [
     body: "감정의 흐름과 에너지 변화를 시각적으로 확인합니다.",
     narration: "기록이 쌓이면 한 달의 감정 패턴을 한눈에 볼 수 있어요.",
     accent: "#4B82F5",
-    iframeRoute: "/report?demo=1",
+    iframeRoute: "/report?demo=1&nosplash=1",
   },
   {
     category: "주요 기능 05",
@@ -86,7 +86,7 @@ const SLIDES: SlideData[] = [
     body: "기록과 분석을 바탕으로 오늘의 나에게 필요한 조언을 전달합니다.",
     narration: "오늘의 기록을 바탕으로 나에게 딱 맞는 조언을 받아보세요.",
     accent: "#11A858",
-    iframeRoute: "/advice?empty=false",
+    iframeRoute: "/advice?empty=false&nosplash=1",
   },
   {
     category: "주요 기능 06",
@@ -94,7 +94,7 @@ const SLIDES: SlideData[] = [
     body: "감정 기록을 마치면 오늘의 포춘쿠키가 기다리고 있습니다.",
     narration: "하루를 마무리하는 포춘쿠키. 조언 화면에서 포춘쿠키 버튼을 누르면 오늘의 행운 메시지가 펼쳐집니다.",
     accent: "#FFCA2D",
-    iframeRoute: "/advice?empty=false&demo=1",
+    iframeRoute: "/advice?empty=false&demo=1&nosplash=1",
   },
   {
     category: "마무리",

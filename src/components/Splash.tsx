@@ -18,6 +18,11 @@ export function Splash() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    // iframe 내부면 스킵 (프레젠테이션 데모 중 스플래시가 데모를 가리는 문제 방지)
+    if (window !== window.top) {
+      setVisible(false);
+      return;
+    }
     // nosplash=1 파라미터 또는 /presentation 경로면 스킵
     if (new URLSearchParams(window.location.search).get("nosplash") === "1") {
       setVisible(false);
