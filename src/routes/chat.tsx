@@ -175,79 +175,54 @@ function ChatPage() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, isTyping]);
 
-  // 데모 모드: 칩 → 2번째 메시지 → 3번째 메시지 → 커서가 "대화 종료" 위에 표시
+  // 데모 모드: 메시지가 하나씩 툭툭 떨어지는 방식 (타이핑 애니메이션 없음 — 리렌더 부담 제거)
   useEffect(() => {
     if (!demo) return;
 
-    // cancelled 플래그로 cleanup 후 모든 콜백 실행 차단
     let cancelled = false;
-    const activeTimers: ReturnType<typeof setTimeout>[] = [];
-    let t2Interval: ReturnType<typeof setInterval> | undefined;
-    let t3Interval: ReturnType<typeof setInterval> | undefined;
+    const timers: ReturnType<typeof setTimeout>[] = [];
 
-    // 모든 setTimeout을 추적 + cancelled 가드 적용
     const track = (fn: () => void, delay: number) => {
       const t = setTimeout(() => {
         if (cancelled) return;
         fn();
       }, delay);
-      activeTimers.push(t);
-      return t;
+      timers.push(t);
     };
 
-    // demo 전용 send: 봇 응답 타이머도 track()으로 등록
-    const demSend = (text: string) => {
-      if (cancelled) return;
-      const trimmed = text.trim();
-      if (!trimmed) return;
-      setMessages(m => [...m, { id: crypto.randomUUID(), role: "user", text: trimmed }]);
+    const addUser = (text: string) => {
+      setMessages(m => [...m, { id: crypto.randomUUID(), role: "user", text }]);
       setShowChips(false);
-      setInput("");
       setIsTyping(true);
-      const thinkMs = Math.min(1800, 700 + trimmed.length * 35);
-      track(() => {
-        setIsTyping(false);
-        setMessages(m => [
-          ...m,
-          { id: crypto.randomUUID(), role: "bot", text: pickReply(trimmed), canEnd: true },
-        ]);
-      }, thinkMs);
     };
 
-    // 1.2s: 칩 선택
-    track(() => demSend(greeting.chips[1]), 1200);
+    const addBot = (replyTo: string) => {
+      setIsTyping(false);
+      setMessages(m => [
+        ...m,
+        { id: crypto.randomUUID(), role: "bot", text: pickReply(replyTo), canEnd: true },
+      ]);
+    };
 
-    // 3.2s: 두 번째 메시지 타이핑 (70ms/char)
+    // 1.2s: 첫 번째 사용자 메시지 (칩)
+    const msg1 = greeting.chips[1];
+    track(() => addUser(msg1), 1200);
+    // 2.4s: 봇 응답 1
+    track(() => addBot(msg1), 2400);
+
+    // 4.0s: 두 번째 사용자 메시지
     const msg2 = "오늘 기분 좋은 일이 있었어요";
-    let idx2 = 0;
-    track(() => {
-      t2Interval = setInterval(() => {
-        if (cancelled) { clearInterval(t2Interval); return; }
-        idx2++;
-        setInput(msg2.slice(0, idx2));
-        if (idx2 >= msg2.length) {
-          clearInterval(t2Interval);
-          track(() => demSend(msg2), 300);
-        }
-      }, 70);
-    }, 3200);
+    track(() => addUser(msg2), 4000);
+    // 5.4s: 봇 응답 2
+    track(() => addBot(msg2), 5400);
 
-    // 6.5s: 세 번째 메시지 타이핑 (70ms/char)
+    // 7.0s: 세 번째 사용자 메시지
     const msg3 = "친구랑 오랜만에 만났거든요";
-    let idx3 = 0;
-    track(() => {
-      t3Interval = setInterval(() => {
-        if (cancelled) { clearInterval(t3Interval); return; }
-        idx3++;
-        setInput(msg3.slice(0, idx3));
-        if (idx3 >= msg3.length) {
-          clearInterval(t3Interval);
-          track(() => demSend(msg3), 300);
-        }
-      }, 70);
-    }, 6500);
+    track(() => addUser(msg3), 7000);
+    // 8.4s: 봇 응답 3
+    track(() => addBot(msg3), 8400);
 
-    // 10s: 커서를 "대화 종료" 버튼 위에 표시 (DOM ref로 정확한 위치 측정)
+    // 9.5s: 커서를 "대화 종료" 버튼 위에 표시 (DOM ref로 정확한 위치 측정)
     track(() => {
       requestAnimationFrame(() => {
         if (cancelled) return;
@@ -264,13 +239,11 @@ function ChatPage() {
           });
         }
       });
-    }, 10000);
+    }, 9500);
 
     return () => {
       cancelled = true;
-      activeTimers.forEach(clearTimeout);
-      if (t2Interval) clearInterval(t2Interval);
-      if (t3Interval) clearInterval(t3Interval);
+      timers.forEach(clearTimeout);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demo]);
