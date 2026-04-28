@@ -168,54 +168,107 @@ function ChatPage() {
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [cursor, setCursor] = useState({ x: 50, y: 700, tapping: false, visible: false });
+  const frameRef = useRef<HTMLDivElement>(null);
+  const endBtnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, isTyping]);
 
-  // 데모 모드: 칩 → 2번째 메시지 → 3번째 메시지 → 커서가 "대화 종료" 클릭 → 분석화면
+  // 데모 모드: 칩 → 2번째 메시지 → 3번째 메시지 → 커서가 "대화 종료" 위에 표시
   useEffect(() => {
     if (!demo) return;
-    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    // cancelled 플래그로 cleanup 후 모든 콜백 실행 차단
+    let cancelled = false;
+    const activeTimers: ReturnType<typeof setTimeout>[] = [];
     let t2Interval: ReturnType<typeof setInterval> | undefined;
     let t3Interval: ReturnType<typeof setInterval> | undefined;
 
-    // 1.2s: 칩 클릭 ("😊 기분이 아주 좋아요")
-    timers.push(setTimeout(() => send(greeting.chips[1]), 1200));
+    // 모든 setTimeout을 추적 + cancelled 가드 적용
+    const track = (fn: () => void, delay: number) => {
+      const t = setTimeout(() => {
+        if (cancelled) return;
+        fn();
+      }, delay);
+      activeTimers.push(t);
+      return t;
+    };
 
-    // 3.2s: 두 번째 메시지 타이핑 (40ms/char, 빠른 타이핑)
+    // demo 전용 send: 봇 응답 타이머도 track()으로 등록
+    const demSend = (text: string) => {
+      if (cancelled) return;
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      setMessages(m => [...m, { id: crypto.randomUUID(), role: "user", text: trimmed }]);
+      setShowChips(false);
+      setInput("");
+      setIsTyping(true);
+      const thinkMs = Math.min(1800, 700 + trimmed.length * 35);
+      track(() => {
+        setIsTyping(false);
+        setMessages(m => [
+          ...m,
+          { id: crypto.randomUUID(), role: "bot", text: pickReply(trimmed), canEnd: true },
+        ]);
+      }, thinkMs);
+    };
+
+    // 1.2s: 칩 선택
+    track(() => demSend(greeting.chips[1]), 1200);
+
+    // 3.2s: 두 번째 메시지 타이핑 (70ms/char)
     const msg2 = "오늘 기분 좋은 일이 있었어요";
     let idx2 = 0;
-    timers.push(setTimeout(() => {
+    track(() => {
       t2Interval = setInterval(() => {
+        if (cancelled) { clearInterval(t2Interval); return; }
         idx2++;
         setInput(msg2.slice(0, idx2));
         if (idx2 >= msg2.length) {
           clearInterval(t2Interval);
-          setTimeout(() => send(msg2), 300);
+          track(() => demSend(msg2), 300);
         }
-      }, 40);
-    }, 3200));
+      }, 70);
+    }, 3200);
 
-    // 6.0s: 세 번째 메시지 타이핑
+    // 6.5s: 세 번째 메시지 타이핑 (70ms/char)
     const msg3 = "친구랑 오랜만에 만났거든요";
     let idx3 = 0;
-    timers.push(setTimeout(() => {
+    track(() => {
       t3Interval = setInterval(() => {
+        if (cancelled) { clearInterval(t3Interval); return; }
         idx3++;
         setInput(msg3.slice(0, idx3));
         if (idx3 >= msg3.length) {
           clearInterval(t3Interval);
-          setTimeout(() => send(msg3), 300);
+          track(() => demSend(msg3), 300);
         }
-      }, 40);
-    }, 6000));
+      }, 70);
+    }, 6500);
 
-    // 8.5s: 마지막 봇 답장 후 커서가 "대화 종료" 버튼 위에 올라가고 플로우 끝
-    timers.push(setTimeout(() => setCursor({ x: 55, y: 540, tapping: false, visible: true }), 8500));
+    // 10s: 커서를 "대화 종료" 버튼 위에 표시 (DOM ref로 정확한 위치 측정)
+    track(() => {
+      requestAnimationFrame(() => {
+        if (cancelled) return;
+        const btn = endBtnRef.current;
+        const frame = frameRef.current;
+        if (btn && frame) {
+          const br = btn.getBoundingClientRect();
+          const fr = frame.getBoundingClientRect();
+          setCursor({
+            x: br.left - fr.left + br.width / 2,
+            y: br.top - fr.top + br.height / 2,
+            tapping: false,
+            visible: true,
+          });
+        }
+      });
+    }, 10000);
 
     return () => {
-      timers.forEach(clearTimeout);
+      cancelled = true;
+      activeTimers.forEach(clearTimeout);
       if (t2Interval) clearInterval(t2Interval);
       if (t3Interval) clearInterval(t3Interval);
     };
@@ -249,7 +302,7 @@ function ChatPage() {
 
   return (
     <div className="app-shell">
-      <div className="app-frame flex flex-col" style={{ position: "relative" }}>
+      <div ref={frameRef} className="app-frame flex flex-col" style={{ position: "relative" }}>
         {demo && <DemoCursor {...cursor} />}
         {/* 헤더 */}
         <header className="relative flex shrink-0 items-center justify-center px-4 pt-[52px] pb-3 border-b border-black/5">
@@ -309,6 +362,7 @@ function ChatPage() {
                       </div>
                       {m.canEnd && m.id === lastCanEndId && (
                         <button
+                          ref={endBtnRef}
                           type="button"
                           onClick={endConversation}
                           className="rounded-full bg-[var(--primary)]/10 px-3 py-1.5 text-[12px] font-medium text-[var(--primary)] hover:bg-[var(--primary)]/15 transition"
