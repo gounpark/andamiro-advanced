@@ -44,7 +44,7 @@ const SLIDES: SlideData[] = [
     category: "소개",
     title: "AI 감정일기, 안다미로",
     body: "월간 달력에서 기록을 확인하고, 날짜를 눌러 그날의 일기를 바로 볼 수 있어요.",
-    narration: "안녕하세요, 안다미로를 소개할게요. 달력에서 초록은 오늘, 노란색은 기록이 있는 날이에요. 날짜를 누르면 그날의 기록을 바로 확인할 수 있어요.",
+    narration: "안녕하세요, 안다미로를 소개할게요. 달력에서 노란색은 기록이 있는 날, 초록은 오늘이에요. 날짜를 누르면 그날의 기록을 바로 확인할 수 있어요.",
     accent: "#4B82F5",
     iframeRoute: "/intro?nosplash=1",
   },
@@ -54,8 +54,8 @@ const SLIDES: SlideData[] = [
     body: "지금 가장 가까운 감정을 고르면 기록의 맥락이 자연스럽게 시작됩니다.",
     narration: "홈에서 기록 버튼을 누르면 감정 선택 화면으로 이어집니다. 지금 기분과 가장 가까운 것을 골라보세요.",
     accent: "#FFCA2D",
-    // 홈→기록 이동 없이 감정선택 화면 바로 표시 (배포 환경 iframe 내 재이동 시 지연 방지)
-    iframeRoute: "/record?demo=3&nosplash=1",
+    // 홈에서 기록 CTA 버튼 클릭 → 감정선택 이동 (주요기능01 시작 장면)
+    iframeRoute: "/?demo=2&nosplash=1",
   },
   {
     category: "주요 기능 02",
@@ -63,8 +63,8 @@ const SLIDES: SlideData[] = [
     body: "감정을 선택하면 AI가 자연스러운 대화로 오늘의 기록을 함께 완성합니다.",
     narration: "오늘의 감정을 선택하면 AI가 친근한 대화로 기록을 시작합니다. 대화하듯 편하게 이어가다 보면 오늘 하루가 자연스럽게 정리돼요.",
     accent: "#4B82F5",
-    // 기록→채팅 이동 없이 채팅 화면 바로 표시 (배포 환경 iframe 내 재이동 시 지연 방지)
-    iframeRoute: "/chat?mood=good&demo=1&nosplash=1",
+    // 감정선택에서 시작하기 클릭 → 채팅 이동 (주요기능02 시작 장면)
+    iframeRoute: "/record?demo=1&nosplash=1",
   },
   {
     category: "주요 기능 03",
@@ -72,7 +72,8 @@ const SLIDES: SlideData[] = [
     body: "감정 점수·요약·AI 조언으로 하루를 더 명확하게 돌아봅니다.",
     narration: "대화 후 감정 점수와 AI 요약을 확인해보세요.",
     accent: "#FF7A50",
-    iframeRoute: "/analysis?day=21&demo=1&nosplash=1",
+    // 채팅 대화 → 대화종료 클릭 → 분석 이동 (주요기능03 시작 장면)
+    iframeRoute: "/chat?mood=good&demo=1&nosplash=1",
   },
   {
     category: "주요 기능 04",
@@ -80,7 +81,8 @@ const SLIDES: SlideData[] = [
     body: "감정의 흐름과 에너지 변화를 시각적으로 확인합니다.",
     narration: "기록이 쌓이면 한 달의 감정 패턴을 한눈에 볼 수 있어요.",
     accent: "#4B82F5",
-    iframeRoute: "/report?demo=1&nosplash=1",
+    // 홈에서 리포트 탭 클릭 → 리포트 이동 (주요기능04 시작 장면)
+    iframeRoute: "/?demo=4&nosplash=1",
   },
   {
     category: "주요 기능 05",
@@ -88,7 +90,8 @@ const SLIDES: SlideData[] = [
     body: "기록과 분석을 바탕으로 오늘의 나에게 필요한 조언을 전달합니다.",
     narration: "오늘의 기록을 바탕으로 나에게 딱 맞는 조언을 받아보세요.",
     accent: "#11A858",
-    iframeRoute: "/advice?empty=false&nosplash=1",
+    // 홈에서 조언 탭 클릭 → 조언 이동 (주요기능05 시작 장면)
+    iframeRoute: "/?demo=5&nosplash=1",
   },
   {
     category: "주요 기능 06",
@@ -96,8 +99,8 @@ const SLIDES: SlideData[] = [
     body: "감정 기록을 마치면 오늘의 포춘쿠키가 기다리고 있습니다.",
     narration: "하루를 마무리하는 포춘쿠키. 쿠키를 탭하면 오늘의 행운 메시지가 펼쳐집니다.",
     accent: "#FFCA2D",
-    // advice→fortune 이동 없이 fortune 화면 바로 표시 (배포 환경 iframe 내 재이동 시 지연 방지)
-    iframeRoute: "/fortune?demo=1&nosplash=1",
+    // 조언에서 포춘쿠키 배너 클릭 → 포춘쿠키 이동 (주요기능06 시작 장면)
+    iframeRoute: "/advice?empty=false&demo=1&nosplash=1",
   },
   {
     category: "마무리",

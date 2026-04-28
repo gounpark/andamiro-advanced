@@ -1,6 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import React, { useEffect, useRef, useState } from "react";
-import { gotoPath } from "@/lib/navigate";
 import { ChevronLeft } from "lucide-react";
 import { EmptyDiaryState } from "@/components/EmptyDiaryState";
 import { BottomNav } from "@/components/BottomNav";
@@ -10,8 +9,9 @@ import fortuneCookieIcon from "@/assets/advice/fortune-cookie-icon.svg";
 import quoteRight from "@/assets/advice/quote-right.png";
 
 export const Route = createFileRoute("/advice")({
-  validateSearch: (s: Record<string, unknown>) => ({
+  validateSearch: (s: Record<string, unknown>): { empty: boolean; demo?: string } => ({
     empty: s.empty === "1" || s.empty === 1 || s.empty === true ? true : false,
+    demo: s.demo != null ? String(s.demo) : undefined,
   }),
   head: () => ({
     meta: [
@@ -32,7 +32,9 @@ function AdvicePage() {
 const TAGS = ["안정", "집중", "균형"];
 
 function AdviceWithData() {
-  const demo = new URLSearchParams(window.location.search).get("demo") === "1";
+  const navigate = useNavigate();
+  const { demo: demoParam } = Route.useSearch();
+  const demo = demoParam === "1";
   const scrollRef = useRef<HTMLDivElement>(null);
   const scoreRef = useRef<HTMLElement>(null);
   const summaryRef = useRef<HTMLElement>(null);
@@ -94,7 +96,7 @@ function AdviceWithData() {
     timers.push(setTimeout(() => setCursor(c => ({ ...c, visible: true })), 600));
     timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1200));
     timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 1450));
-    timers.push(setTimeout(() => { gotoPath("/fortune?demo=1&nosplash=1"); }, 1650));
+    timers.push(setTimeout(() => { navigate({ to: "/fortune", search: { demo: "1" } as { demo: string } }); }, 1650));
     return () => { cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
   }, [demo]);
 
@@ -126,6 +128,7 @@ function AdviceWithData() {
             <Link
               ref={bannerRef}
               to="/fortune"
+              search={{}}
               className="mx-4 mt-4 flex items-center gap-3 rounded-2xl bg-[#f4f6fa] px-3 py-2.5 active:scale-[0.99] transition"
             >
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#3b6fff]">

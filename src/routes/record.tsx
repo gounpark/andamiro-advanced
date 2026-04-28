@@ -1,5 +1,4 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { gotoPath } from "@/lib/navigate";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { DemoCursor } from "@/components/DemoCursor";
@@ -142,7 +141,7 @@ function RecordPage() {
     timers.push(setTimeout(() => setCursor(c => ({ ...c, visible: true })), 700));
     timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1200));
     timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 1450));
-    timers.push(setTimeout(() => { gotoPath("/chat?mood=good&demo=1&nosplash=1"); }, 1650));
+    timers.push(setTimeout(() => { navigate({ to: "/chat", search: { mood: "good", demo: "1" } as { mood: "good"; demo: string } }); }, 1650));
     return () => { cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
   }, [demo1]); // eslint-disable-line react-hooks/exhaustive-deps
 

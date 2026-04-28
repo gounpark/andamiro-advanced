@@ -17,6 +17,9 @@ import cookieCracked from "@/assets/report/fortune-cookie-cracked.png";
 const USE_V2 = true;
 
 export const Route = createFileRoute("/fortune")({
+  validateSearch: (s: Record<string, unknown>): { demo?: string } => ({
+    demo: s.demo != null ? String(s.demo) : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "오늘의 운세 — 안다미로" },

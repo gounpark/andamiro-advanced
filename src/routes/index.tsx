@@ -1,5 +1,4 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { gotoPath } from "@/lib/navigate";
 import { useState, useEffect, useRef } from "react";
 import { DemoCursor } from "@/components/DemoCursor";
 import { ArrowRight, ChevronLeft, ChevronRight, ChevronRight as ChevronRightSm } from "lucide-react";
@@ -163,9 +162,11 @@ function DayCell({
 
 function Index() {
   const demoParam = new URLSearchParams(window.location.search).get("demo");
-  // demo=1: 날짜 선택만 / demo=2: 날짜 선택 → 기록 버튼 클릭 → /record 이동
-  const demo = demoParam === "1" || demoParam === "2";
+  // demo=1: 날짜 선택만 / demo=2: CTA 클릭 → /record / demo=4: 리포트탭 클릭 → /report / demo=5: 조언탭 클릭 → /advice
+  const demo = demoParam === "1" || demoParam === "2" || demoParam === "4" || demoParam === "5";
   const demoToRecord = demoParam === "2";
+  const demoToReport = demoParam === "4";
+  const demoToAdvice = demoParam === "5";
   const navigate = useNavigate();
   const weeks = buildCalendar();
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
@@ -182,35 +183,77 @@ function Index() {
   // 데모 모드
   useEffect(() => {
     if (!demo) return;
+    let cancelled = false;
     const timers: ReturnType<typeof setTimeout>[] = [];
+    const track = (fn: () => void, delay: number) => {
+      const t = setTimeout(() => { if (!cancelled) fn(); }, delay);
+      timers.push(t);
+      return t;
+    };
 
     if (demoToRecord) {
-      // demo=2 (주요기능01): 상단 "오늘 기록 남기러 가기" CTA 버튼 클릭 (DOM 위치 기반)
+      // demo=2 (주요기능01): "오늘 기록 남기러 가기" CTA 버튼 클릭
       const raf = requestAnimationFrame(() => {
         const btn = ctaBtnRef.current;
         const frame = frameRef.current;
-        if (btn && frame) {
-          const br = btn.getBoundingClientRect();
-          const fr = frame.getBoundingClientRect();
-          const cx = br.left - fr.left + br.width / 2;
-          const cy = br.top - fr.top + br.height / 2;
-          // 화면 아래에서 CTA 위치로 이동 후 클릭
-          setCursor({ x: cx, y: cy + 180, tapping: false, visible: false });
-          timers.push(setTimeout(() => setCursor({ x: cx, y: cy + 180, tapping: false, visible: true }), 300));
-          timers.push(setTimeout(() => setCursor({ x: cx, y: cy, tapping: false, visible: true }), 700));
-          timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1100));
-          timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 1300));
-        }
+        if (!btn || !frame) return;
+        const br = btn.getBoundingClientRect();
+        const fr = frame.getBoundingClientRect();
+        const cx = br.left - fr.left + br.width / 2;
+        const cy = br.top - fr.top + br.height / 2;
+        setCursor({ x: cx, y: cy + 180, tapping: false, visible: false });
+        track(() => setCursor({ x: cx, y: cy + 180, tapping: false, visible: true }), 300);
+        track(() => setCursor({ x: cx, y: cy, tapping: false, visible: true }), 700);
+        track(() => setCursor(c => ({ ...c, tapping: true })), 1100);
+        track(() => setCursor(c => ({ ...c, tapping: false })), 1300);
+        track(() => navigate({ to: "/record", search: { demo: "3" } as Record<string, string> }), 1500);
       });
-      timers.push(setTimeout(() => { gotoPath("/record?demo=3&nosplash=1"); }, 1500));
-      return () => { cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
+      return () => { cancelled = true; cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
+
+    } else if (demoToReport) {
+      // demo=4 (주요기능04): 하단 리포트 탭 클릭
+      const raf = requestAnimationFrame(() => {
+        const frame = frameRef.current;
+        const tab = frame?.querySelector<HTMLElement>('#nav-tab-report');
+        if (!tab || !frame) return;
+        const tr = tab.getBoundingClientRect();
+        const fr = frame.getBoundingClientRect();
+        const cx = tr.left - fr.left + tr.width / 2;
+        const cy = tr.top - fr.top + tr.height / 2;
+        setCursor({ x: cx, y: cy + 80, tapping: false, visible: false });
+        track(() => setCursor({ x: cx, y: cy + 80, tapping: false, visible: true }), 300);
+        track(() => setCursor({ x: cx, y: cy, tapping: false, visible: true }), 700);
+        track(() => setCursor(c => ({ ...c, tapping: true })), 1100);
+        track(() => setCursor(c => ({ ...c, tapping: false })), 1300);
+        track(() => navigate({ to: "/report", search: { demo: true } }), 1500);
+      });
+      return () => { cancelled = true; cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
+
+    } else if (demoToAdvice) {
+      // demo=5 (주요기능05): 하단 조언 탭 클릭
+      const raf = requestAnimationFrame(() => {
+        const frame = frameRef.current;
+        const tab = frame?.querySelector<HTMLElement>('#nav-tab-advice');
+        if (!tab || !frame) return;
+        const tr = tab.getBoundingClientRect();
+        const fr = frame.getBoundingClientRect();
+        const cx = tr.left - fr.left + tr.width / 2;
+        const cy = tr.top - fr.top + tr.height / 2;
+        setCursor({ x: cx, y: cy + 80, tapping: false, visible: false });
+        track(() => setCursor({ x: cx, y: cy + 80, tapping: false, visible: true }), 300);
+        track(() => setCursor({ x: cx, y: cy, tapping: false, visible: true }), 700);
+        track(() => setCursor(c => ({ ...c, tapping: true })), 1100);
+        track(() => setCursor(c => ({ ...c, tapping: false })), 1300);
+        track(() => navigate({ to: "/advice", search: { empty: false } }), 1500);
+      });
+      return () => { cancelled = true; cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
+
     } else {
-      // demo=1 (소개): 날짜 셀 위치를 DOM에서 읽어 클릭
+      // demo=1 (소개): 날짜 셀 클릭 → 분석 화면 이동
       const raf = requestAnimationFrame(() => {
         const frame = frameRef.current;
         if (!frame) return;
         const fr = frame.getBoundingClientRect();
-
         const getCenter = (el: HTMLElement | null) => {
           if (!el) return null;
           const r = el.getBoundingClientRect();
@@ -220,26 +263,26 @@ function Index() {
         const p21 = getCenter(day21Ref.current);
 
         if (p16) {
-          timers.push(setTimeout(() => setCursor({ x: p16.x, y: p16.y + 100, tapping: false, visible: true }), 500));
-          timers.push(setTimeout(() => setCursor({ x: p16.x, y: p16.y, tapping: false, visible: true }), 900));
-          timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1300));
-          timers.push(setTimeout(() => { setCursor(c => ({ ...c, tapping: false })); setSelectedDay(16); }, 1500));
+          track(() => setCursor({ x: p16.x, y: p16.y + 100, tapping: false, visible: true }), 500);
+          track(() => setCursor({ x: p16.x, y: p16.y, tapping: false, visible: true }), 900);
+          track(() => setCursor(c => ({ ...c, tapping: true })), 1300);
+          track(() => { setCursor(c => ({ ...c, tapping: false })); setSelectedDay(16); }, 1500);
         }
         if (p21) {
-          timers.push(setTimeout(() => setCursor({ x: p21.x, y: p21.y, tapping: false, visible: true }), 3500));
-          timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 3900));
-          timers.push(setTimeout(() => { setCursor(c => ({ ...c, tapping: false })); setSelectedDay(21); }, 4100));
+          track(() => setCursor({ x: p21.x, y: p21.y, tapping: false, visible: true }), 3500);
+          track(() => setCursor(c => ({ ...c, tapping: true })), 3900);
+          track(() => { setCursor(c => ({ ...c, tapping: false })); setSelectedDay(21); }, 4100);
         }
-        // 21일 기록 항목 클릭 → 분석 화면 (세로 중앙 아래쪽 항목)
-        timers.push(setTimeout(() => setCursor({ x: 195, y: 668, tapping: false, visible: true }), 5600));
-        timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 6000));
-        timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 6200));
-        timers.push(setTimeout(() => { gotoPath("/analysis?day=21&nosplash=1"); }, 6300));
+        // 21일 기록 항목 클릭 → 분석 화면
+        track(() => setCursor({ x: 195, y: 668, tapping: false, visible: true }), 5600);
+        track(() => setCursor(c => ({ ...c, tapping: true })), 6000);
+        track(() => setCursor(c => ({ ...c, tapping: false })), 6200);
+        track(() => navigate({ to: "/analysis", search: { day: 21 } }), 6300);
       });
-      return () => { cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
+      return () => { cancelled = true; cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [demo, demoToRecord]);
+  }, [demo, demoToRecord, demoToReport, demoToAdvice]);
 
   // 홈 진입 직후 idle 시간에 record 이미지들을 미리 캐시
   useEffect(() => {

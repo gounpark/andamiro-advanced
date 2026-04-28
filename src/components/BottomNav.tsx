@@ -26,6 +26,7 @@ export function BottomNav({ active }: { active: Tab }) {
       <NavItem
         to="/report"
         label="리포트"
+        linkId="nav-tab-report"
         active={active === "report"}
         activeIcon={<img src={tabReportActive} alt="" className="h-[26px] w-[26px]" />}
         inactiveIcon={<img src={tabReport} alt="" className="h-[26px] w-[26px]" />}
@@ -33,6 +34,7 @@ export function BottomNav({ active }: { active: Tab }) {
       <NavItem
         to="/advice"
         label="조언"
+        linkId="nav-tab-advice"
         active={active === "advice"}
         activeIcon={<img src={tabAdviceActive} alt="" className="h-[26px] w-[26px]" />}
         inactiveIcon={<img src={tabAdvice} alt="" className="h-[26px] w-[26px]" />}
@@ -54,17 +56,20 @@ function NavItem({
   active,
   activeIcon,
   inactiveIcon,
+  linkId,
 }: {
   to: "/" | "/report" | "/advice" | "/my";
   label: string;
   active: boolean;
   activeIcon: React.ReactNode;
   inactiveIcon: React.ReactNode;
+  linkId?: string;
 }) {
   const color = active ? "text-[var(--primary)]" : "text-[#b1b1b1]";
   return (
     <Link
       to={to}
+      id={linkId}
       className={`flex flex-col items-center gap-1.5 ${color} transition-colors`}
     >
       {active ? activeIcon : inactiveIcon}

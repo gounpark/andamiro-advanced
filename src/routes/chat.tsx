@@ -1,5 +1,4 @@
-import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { gotoPath } from "@/lib/navigate";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, Plus, Mic, ArrowUp } from "lucide-react";
 import { DemoCursor } from "@/components/DemoCursor";
@@ -8,11 +7,13 @@ type MoodKey = "best" | "good" | "okay" | "bad" | "worst";
 
 type Search = {
   mood?: MoodKey;
+  demo?: string;
 };
 
 export const Route = createFileRoute("/chat")({
   validateSearch: (search: Record<string, unknown>): Search => ({
     mood: (search.mood as MoodKey) ?? "good",
+    demo: search.demo != null ? String(search.demo) : undefined,
   }),
   head: () => ({
     meta: [
@@ -157,8 +158,8 @@ function pickReply(text: string): string {
 }
 
 function ChatPage() {
-  const { mood = "good" } = useSearch({ from: "/chat" }) as Search;
-  const demo = new URLSearchParams(window.location.search).get("demo") === "1";
+  const { mood = "good", demo: demoParam } = Route.useSearch();
+  const demo = demoParam === "1";
   const navigate = useNavigate();
   const greeting = MOOD_GREETING[mood] ?? MOOD_GREETING.good;
 
@@ -240,6 +241,14 @@ function ChatPage() {
         }
       });
     }, 9500);
+
+    // 10.2s: 탭 애니메이션
+    track(() => setCursor(c => ({ ...c, tapping: true })), 10200);
+    // 10.5s: 탭 해제 후 분석 화면으로 이동
+    track(() => {
+      setCursor(c => ({ ...c, tapping: false }));
+      navigate({ to: "/analysis", search: { day: 21 } });
+    }, 10500);
 
     return () => {
       cancelled = true;
