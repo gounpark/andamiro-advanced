@@ -176,17 +176,13 @@ function ReportWithData() {
           >
             {/* 헤더 */}
             <div className="flex flex-col items-center gap-2.5">
-              <div
-                className="grid place-items-center rounded-[20px] shrink-0"
-                style={{ width: 50, height: 50, background: "#e9f5fe" }}
-              >
-                <img src={insightHeaderIcon} alt="" className="w-[25px] h-[25px] object-contain" />
-              </div>
+              {/* SVG 자체에 #E9F5FE 배경 + 스파클 포함 */}
+              <img src={insightHeaderIcon} alt="" className="w-[50px] h-[50px]" />
               <p className="font-bold text-[#222] text-[20px] tracking-tight">패턴 인사이트</p>
             </div>
 
             {/* 인사이트 목록 */}
-            <div className="mt-6 flex flex-col gap-4">
+            <div className="mt-6 flex flex-col gap-[20px]">
               {INSIGHTS.map((item, i) => (
                 <div
                   key={i}
