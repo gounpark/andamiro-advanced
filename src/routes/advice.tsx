@@ -96,7 +96,7 @@ function AdviceWithData() {
     timers.push(setTimeout(() => setCursor(c => ({ ...c, visible: true })), 600));
     timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1200));
     timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 1450));
-    timers.push(setTimeout(() => { navigate({ to: "/fortune", search: { demo: "1" } as { demo: string } }); }, 1650));
+    timers.push(setTimeout(() => { navigate({ to: "/fortune", search: { demo: "1" } }); }, 1650));
     return () => { cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
   }, [demo]);
 

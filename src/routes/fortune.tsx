@@ -35,7 +35,8 @@ const FORTUNE_DATE = "목요일, 오전 10:48";
 const FORTUNE_CHIPS = ["오후 3시", "커피 타임", "여유 한 잔"];
 
 function FortuneRoute() {
-  const demo = new URLSearchParams(window.location.search).get("demo") === "1";
+  const { demo: demoParam } = Route.useSearch();
+  const demo = demoParam === "1";
   return USE_V2 ? <FortunePageV2 demo={demo} /> : <FortunePageLegacy />;
 }
 

@@ -206,7 +206,7 @@ function Index() {
         track(() => setCursor({ x: cx, y: cy, tapping: false, visible: true }), 700);
         track(() => setCursor(c => ({ ...c, tapping: true })), 1100);
         track(() => setCursor(c => ({ ...c, tapping: false })), 1300);
-        track(() => navigate({ to: "/record", search: { demo: "3" } as Record<string, string> }), 1500);
+        track(() => navigate({ to: "/record", search: { demo: "3" } }), 1500);
       });
       return () => { cancelled = true; cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
 

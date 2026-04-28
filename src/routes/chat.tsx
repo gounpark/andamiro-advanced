@@ -159,71 +159,89 @@ function pickReply(text: string): string {
 
 function ChatPage() {
   const { mood = "good", demo: demoParam } = Route.useSearch();
-  const demo = demoParam === "1";
+  const demo1 = demoParam === "1"; // 주요기능02: 칩선택→대화 애니메이션 → 대화종료에 커서만 (화면전환 없음)
+  const demo2 = demoParam === "2"; // 주요기능03: 정적 완료 화면 → 대화종료 클릭 → 분석 이동
   const navigate = useNavigate();
   const greeting = MOOD_GREETING[mood] ?? MOOD_GREETING.good;
 
-  const [messages, setMessages] = useState<Msg[]>([]);
-  const [showChips, setShowChips] = useState(true);
+  // demo=2: 정적 완료 메시지 미리 세팅
+  const [messages, setMessages] = useState<Msg[]>(() => {
+    if (!demo2) return [];
+    const msg1 = greeting.chips[1];
+    const msg2 = "오늘 기분 좋은 일이 있었어요";
+    const msg3 = "친구랑 오랜만에 만났거든요";
+    return [
+      { id: "d1", role: "user", text: msg1 },
+      { id: "d2", role: "bot", text: pickReply(msg1), canEnd: true },
+      { id: "d3", role: "user", text: msg2 },
+      { id: "d4", role: "bot", text: pickReply(msg2), canEnd: true },
+      { id: "d5", role: "user", text: msg3 },
+      { id: "d6", role: "bot", text: pickReply(msg3), canEnd: true },
+    ];
+  });
+  const [showChips, setShowChips] = useState(!demo2);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [cursor, setCursor] = useState({ x: 50, y: 700, tapping: false, visible: false });
   const frameRef = useRef<HTMLDivElement>(null);
   const endBtnRef = useRef<HTMLButtonElement>(null);
+  const chip1Ref = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, isTyping]);
 
-  // 데모 모드: 메시지가 하나씩 툭툭 떨어지는 방식 (타이핑 애니메이션 없음 — 리렌더 부담 제거)
+  // ── demo=1 (주요기능02): 칩 선택 → 대화 애니메이션 → 대화종료 커서 hover (화면 전환 없음) ──
   useEffect(() => {
-    if (!demo) return;
-
+    if (!demo1) return;
     let cancelled = false;
     const timers: ReturnType<typeof setTimeout>[] = [];
-
     const track = (fn: () => void, delay: number) => {
-      const t = setTimeout(() => {
-        if (cancelled) return;
-        fn();
-      }, delay);
+      const t = setTimeout(() => { if (!cancelled) fn(); }, delay);
       timers.push(t);
     };
-
     const addUser = (text: string) => {
       setMessages(m => [...m, { id: crypto.randomUUID(), role: "user", text }]);
       setShowChips(false);
       setIsTyping(true);
     };
-
     const addBot = (replyTo: string) => {
       setIsTyping(false);
-      setMessages(m => [
-        ...m,
-        { id: crypto.randomUUID(), role: "bot", text: pickReply(replyTo), canEnd: true },
-      ]);
+      setMessages(m => [...m, { id: crypto.randomUUID(), role: "bot", text: pickReply(replyTo), canEnd: true }]);
     };
 
-    // 1.2s: 첫 번째 사용자 메시지 (칩)
-    const msg1 = greeting.chips[1];
-    track(() => addUser(msg1), 1200);
-    // 2.4s: 봇 응답 1
-    track(() => addBot(msg1), 2400);
-
-    // 4.0s: 두 번째 사용자 메시지
+    const msg1 = greeting.chips[1]; // "😊 기분이 아주 좋아요"
     const msg2 = "오늘 기분 좋은 일이 있었어요";
-    track(() => addUser(msg2), 4000);
-    // 5.4s: 봇 응답 2
-    track(() => addBot(msg2), 5400);
-
-    // 7.0s: 세 번째 사용자 메시지
     const msg3 = "친구랑 오랜만에 만났거든요";
-    track(() => addUser(msg3), 7000);
-    // 8.4s: 봇 응답 3
-    track(() => addBot(msg3), 8400);
 
-    // 9.5s: 커서를 "대화 종료" 버튼 위에 표시 (DOM ref로 정확한 위치 측정)
+    // rAF로 칩 위치 읽어 커서 배치
+    const raf = requestAnimationFrame(() => {
+      if (cancelled) return;
+      const chip = chip1Ref.current;
+      const frame = frameRef.current;
+      if (chip && frame) {
+        const cr = chip.getBoundingClientRect();
+        const fr = frame.getBoundingClientRect();
+        const cx = cr.left - fr.left + cr.width / 2;
+        const cy = cr.top - fr.top + cr.height / 2;
+        setCursor({ x: cx, y: cy + 60, tapping: false, visible: false });
+        track(() => setCursor({ x: cx, y: cy + 60, tapping: false, visible: true }), 400);
+        track(() => setCursor({ x: cx, y: cy, tapping: false, visible: true }), 800);
+        track(() => setCursor(c => ({ ...c, tapping: true })), 1200);
+        track(() => { setCursor(c => ({ ...c, tapping: false })); addUser(msg1); }, 1500);
+      } else {
+        track(() => addUser(msg1), 900);
+      }
+    });
+
+    track(() => addBot(msg1), 2900);
+    track(() => addUser(msg2), 4600);
+    track(() => addBot(msg2), 6000);
+    track(() => addUser(msg3), 7700);
+    track(() => addBot(msg3), 9100);
+
+    // 대화종료 버튼으로 커서 이동 (hover만, 화면 전환 없음)
     track(() => {
       requestAnimationFrame(() => {
         if (cancelled) return;
@@ -232,30 +250,45 @@ function ChatPage() {
         if (btn && frame) {
           const br = btn.getBoundingClientRect();
           const fr = frame.getBoundingClientRect();
-          setCursor({
-            x: br.left - fr.left + br.width / 2,
-            y: br.top - fr.top + br.height / 2,
-            tapping: false,
-            visible: true,
-          });
+          setCursor({ x: br.left-fr.left+br.width/2, y: br.top-fr.top+br.height/2, tapping: false, visible: true });
         }
       });
-    }, 9500);
+    }, 10400);
+    track(() => setCursor(c => ({ ...c, tapping: true })), 11100);
+    track(() => setCursor(c => ({ ...c, tapping: false, visible: false })), 11400); // 멈춤
 
-    // 10.2s: 탭 애니메이션
-    track(() => setCursor(c => ({ ...c, tapping: true })), 10200);
-    // 10.5s: 탭 해제 후 분석 화면으로 이동
-    track(() => {
-      setCursor(c => ({ ...c, tapping: false }));
-      navigate({ to: "/analysis", search: { day: 21 } });
-    }, 10500);
-
-    return () => {
-      cancelled = true;
-      timers.forEach(clearTimeout);
-    };
+    return () => { cancelled = true; cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [demo]);
+  }, [demo1]);
+
+  // ── demo=2 (주요기능03): 정적 완료 화면 → 대화종료 클릭 → 분석 이동 ──
+  useEffect(() => {
+    if (!demo2) return;
+    let cancelled = false;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const track = (fn: () => void, delay: number) => {
+      const t = setTimeout(() => { if (!cancelled) fn(); }, delay);
+      timers.push(t);
+    };
+    // 1s: 커서 등장 (대화종료 버튼 위치 측정)
+    track(() => {
+      requestAnimationFrame(() => {
+        if (cancelled) return;
+        const btn = endBtnRef.current;
+        const frame = frameRef.current;
+        if (btn && frame) {
+          const br = btn.getBoundingClientRect();
+          const fr = frame.getBoundingClientRect();
+          setCursor({ x: br.left-fr.left+br.width/2, y: br.top-fr.top+br.height/2, tapping: false, visible: true });
+        }
+      });
+    }, 1000);
+    track(() => setCursor(c => ({ ...c, tapping: true })), 1700);
+    track(() => { setCursor(c => ({ ...c, tapping: false })); navigate({ to: "/analysis", search: { day: 21 } }); }, 2000);
+
+    return () => { cancelled = true; timers.forEach(clearTimeout); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [demo2]);
 
   const send = (text: string) => {
     const trimmed = text.trim();
@@ -285,7 +318,7 @@ function ChatPage() {
   return (
     <div className="app-shell">
       <div ref={frameRef} className="app-frame flex flex-col" style={{ position: "relative" }}>
-        {demo && <DemoCursor {...cursor} />}
+        {(demo1 || demo2) && <DemoCursor {...cursor} />}
         {/* 헤더 */}
         <header className="relative flex shrink-0 items-center justify-center px-4 pt-[52px] pb-3 border-b border-black/5">
           <Link
@@ -311,9 +344,10 @@ function ChatPage() {
           {/* 추천 칩 */}
           {showChips && (
             <div className="flex flex-wrap gap-2 mb-5 animate-in fade-in slide-in-from-top-1 duration-300">
-              {greeting.chips.map((c) => (
+              {greeting.chips.map((c, chipIdx) => (
                 <button
                   key={c}
+                  ref={chipIdx === 1 ? chip1Ref : undefined}
                   type="button"
                   onClick={() => send(c)}
                   className="rounded-full border border-[var(--primary)]/40 bg-white px-3.5 py-2 text-[13px] font-medium text-[var(--primary)] hover:bg-[var(--primary)]/5 active:scale-[0.98] transition"

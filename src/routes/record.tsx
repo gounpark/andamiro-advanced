@@ -24,6 +24,9 @@ import bgBad from "@/assets/moods/bg-bad.webp?url";
 import bgWorst from "@/assets/moods/bg-worst.webp?url";
 
 export const Route = createFileRoute("/record")({
+  validateSearch: (s: Record<string, unknown>): { demo?: string } => ({
+    demo: s.demo != null ? String(s.demo) : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "기분 선택 — 안다미로" },
@@ -107,7 +110,7 @@ if (typeof window !== "undefined") {
 }
 
 function RecordPage() {
-  const demoParam = new URLSearchParams(window.location.search).get("demo");
+  const { demo: demoParam } = Route.useSearch();
   // demo=1: "good" 미리 선택 + 시작하기 클릭 → 채팅 이동 (주요기능 02)
   // demo=3: 감정 순환 선택만 (화면 전환 없음, 주요기능 01 마지막 장면)
   const demo1 = demoParam === "1";
@@ -141,7 +144,7 @@ function RecordPage() {
     timers.push(setTimeout(() => setCursor(c => ({ ...c, visible: true })), 700));
     timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1200));
     timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 1450));
-    timers.push(setTimeout(() => { navigate({ to: "/chat", search: { mood: "good", demo: "1" } as { mood: "good"; demo: string } }); }, 1650));
+    timers.push(setTimeout(() => { navigate({ to: "/chat", search: { mood: "good", demo: "1" } }); }, 1650));
     return () => { cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
   }, [demo1]); // eslint-disable-line react-hooks/exhaustive-deps
 

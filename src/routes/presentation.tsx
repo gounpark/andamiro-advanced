@@ -72,8 +72,8 @@ const SLIDES: SlideData[] = [
     body: "감정 점수·요약·AI 조언으로 하루를 더 명확하게 돌아봅니다.",
     narration: "대화 후 감정 점수와 AI 요약을 확인해보세요.",
     accent: "#FF7A50",
-    // 채팅 대화 → 대화종료 클릭 → 분석 이동 (주요기능03 시작 장면)
-    iframeRoute: "/chat?mood=good&demo=1&nosplash=1",
+    // 완료된 채팅 정적 화면 → 대화종료 클릭 → 분석 이동 (주요기능03)
+    iframeRoute: "/chat?mood=good&demo=2&nosplash=1",
   },
   {
     category: "주요 기능 04",
