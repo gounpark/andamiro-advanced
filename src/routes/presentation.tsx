@@ -64,7 +64,8 @@ const SLIDES: SlideData[] = [
     narration: "오늘의 감정을 선택하면 AI가 친근한 대화로 기록을 시작합니다. 대화하듯 편하게 이어가다 보면 오늘 하루가 자연스럽게 정리돼요.",
     accent: "#4B82F5",
     // 기록→채팅 이동 없이 채팅 화면 바로 표시 (배포 환경 iframe 내 재이동 시 지연 방지)
-    iframeRoute: "/chat?mood=good&demo=1&nosplash=1",
+    // 디버깅: demo 제거하여 자동 타이핑 OFF — 멈춤 원인이 demo인지 확인용
+    iframeRoute: "/chat?mood=good&nosplash=1",
   },
   {
     category: "주요 기능 03",
