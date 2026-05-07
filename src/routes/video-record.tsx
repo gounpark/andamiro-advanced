@@ -254,9 +254,9 @@ function VideoRecordPage() {
               ref={previewRef}
               src={recordedUrl}
               playsInline
-              controls
+              autoPlay
+              loop
               className="absolute inset-0 w-full h-full object-cover"
-              style={{ transform: "scaleX(-1)" }}
             />
           )}
 
@@ -402,7 +402,7 @@ function VideoRecordPage() {
 
         {/* 음성 인식 텍스트 오버레이 */}
         {recordState === "recording" && (speechActive || displayTranscript) && (
-          <div className="absolute z-20 bottom-[140px] left-3 right-3">
+          <div className="absolute z-20 bottom-[180px] left-3 right-3">
             <div className="rounded-2xl bg-black/65 px-4 py-3 backdrop-blur-sm">
               {speechActive && (
                 <div className="flex items-center gap-1.5 mb-1.5">

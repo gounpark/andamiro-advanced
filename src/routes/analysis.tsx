@@ -20,9 +20,12 @@ export const Route = createFileRoute("/analysis")({
       { name: "theme-color", content: "#ffffff" },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>): { day?: number } => {
+  validateSearch: (search: Record<string, unknown>): { day?: number; demo?: boolean } => {
     const n = typeof search.day === "number" ? search.day : Number(search.day);
-    return Number.isFinite(n) && n > 0 ? { day: n } : {};
+    return {
+      ...(Number.isFinite(n) && n > 0 ? { day: n } : {}),
+      ...(search.demo === true || search.demo === "true" ? { demo: true } : {}),
+    };
   },
   component: AnalysisPage,
 });
@@ -170,8 +173,31 @@ const DAILY_DATA: Record<number, DailyData> = {
 
 const DEFAULT_DATA = DAILY_DATA[21];
 
+const DEMO_RECORD: VideoRecord = {
+  videoUrl: "",
+  aiMood: "good",
+  aiMoodLabel: "좋아요!",
+  aiConfidence: 0.72,
+  rawExpressions: { happy: 0.62, neutral: 0.28, surprised: 0.1 },
+  userMood: null,
+  userMoodLabel: null,
+  transcript: "오늘 팀 미팅에서 발표를 잘 마쳤어요. 준비를 많이 했는데 반응이 좋아서 기분이 너무 좋았고, 퇴근하면서 동료랑 같이 커피 한 잔 했는데 그것도 즐거웠어요.",
+  emotionTimeline: [
+    { sec: 0,  expressions: { neutral: 0.7, happy: 0.2, surprised: 0.05, sad: 0.02, angry: 0.02, fearful: 0.01 } },
+    { sec: 3,  expressions: { neutral: 0.55, happy: 0.35, surprised: 0.06, sad: 0.02, angry: 0.01, fearful: 0.01 } },
+    { sec: 6,  expressions: { neutral: 0.3, happy: 0.6, surprised: 0.07, sad: 0.01, angry: 0.01, fearful: 0.01 } },
+    { sec: 9,  expressions: { neutral: 0.25, happy: 0.68, surprised: 0.04, sad: 0.01, angry: 0.01, fearful: 0.01 } },
+    { sec: 12, expressions: { neutral: 0.4, happy: 0.45, surprised: 0.08, sad: 0.03, angry: 0.02, fearful: 0.02 } },
+    { sec: 15, expressions: { neutral: 0.5, happy: 0.35, surprised: 0.1, sad: 0.02, angry: 0.02, fearful: 0.01 } },
+    { sec: 18, expressions: { neutral: 0.35, happy: 0.55, surprised: 0.06, sad: 0.02, angry: 0.01, fearful: 0.01 } },
+    { sec: 21, expressions: { neutral: 0.3, happy: 0.62, surprised: 0.05, sad: 0.01, angry: 0.01, fearful: 0.01 } },
+    { sec: 24, expressions: { neutral: 0.45, happy: 0.42, surprised: 0.09, sad: 0.02, angry: 0.01, fearful: 0.01 } },
+    { sec: 27, expressions: { neutral: 0.28, happy: 0.65, surprised: 0.04, sad: 0.01, angry: 0.01, fearful: 0.01 } },
+  ],
+};
+
 function AnalysisPage() {
-  const { day } = Route.useSearch();
+  const { day, demo } = Route.useSearch();
   const data: DailyData = (day && DAILY_DATA[day]) || DEFAULT_DATA;
   const { score, mood, metrics, summaryTitle, summaryBody, chatRecap, tomorrow } = data;
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -179,12 +205,12 @@ function AnalysisPage() {
   const tomorrowRef = useRef<HTMLElement>(null);
   const buttonsRef = useRef<HTMLDivElement>(null);
 
-  const [videoRecord, setVideoRecordState] = useState<VideoRecord | null>(null);
+  const [videoRecord] = useState<VideoRecord | null>(() =>
+    demo ? DEMO_RECORD : getVideoRecord()
+  );
   useEffect(() => {
-    const rec = getVideoRecord();
-    if (rec) setVideoRecordState(rec);
-    return () => { clearVideoRecord(); };
-  }, []);
+    if (!demo) return () => { clearVideoRecord(); };
+  }, [demo]);
 
   // 영상 기록이 있으면 감정 리포트 화면으로 전환
   if (videoRecord) {
@@ -641,7 +667,7 @@ function EmotionReportPage({ record }: { record: VideoRecord }) {
             {record.videoUrl ? (
               <div className="rounded-2xl overflow-hidden bg-black aspect-video">
                 <video src={record.videoUrl} controls playsInline
-                  className="w-full h-full object-cover" style={{ transform: "scaleX(-1)" }} />
+                  className="w-full h-full object-cover" />
               </div>
             ) : (
               <div className="rounded-2xl bg-[#f3f4f8] aspect-video flex items-center justify-center">

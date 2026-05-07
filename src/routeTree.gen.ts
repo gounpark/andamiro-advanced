@@ -16,6 +16,7 @@ import { Route as PresentationRouteImport } from './routes/presentation'
 import { Route as MyRouteImport } from './routes/my'
 import { Route as IntroRouteImport } from './routes/intro'
 import { Route as FortuneRouteImport } from './routes/fortune'
+import { Route as DiaryRouteImport } from './routes/diary'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as AdviceRouteImport } from './routes/advice'
@@ -56,6 +57,11 @@ const FortuneRoute = FortuneRouteImport.update({
   path: '/fortune',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DiaryRoute = DiaryRouteImport.update({
+  id: '/diary',
+  path: '/diary',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChatRoute = ChatRouteImport.update({
   id: '/chat',
   path: '/chat',
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/advice': typeof AdviceRoute
   '/analysis': typeof AnalysisRoute
   '/chat': typeof ChatRoute
+  '/diary': typeof DiaryRoute
   '/fortune': typeof FortuneRoute
   '/intro': typeof IntroRoute
   '/my': typeof MyRoute
@@ -95,6 +102,7 @@ export interface FileRoutesByTo {
   '/advice': typeof AdviceRoute
   '/analysis': typeof AnalysisRoute
   '/chat': typeof ChatRoute
+  '/diary': typeof DiaryRoute
   '/fortune': typeof FortuneRoute
   '/intro': typeof IntroRoute
   '/my': typeof MyRoute
@@ -109,6 +117,7 @@ export interface FileRoutesById {
   '/advice': typeof AdviceRoute
   '/analysis': typeof AnalysisRoute
   '/chat': typeof ChatRoute
+  '/diary': typeof DiaryRoute
   '/fortune': typeof FortuneRoute
   '/intro': typeof IntroRoute
   '/my': typeof MyRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/advice'
     | '/analysis'
     | '/chat'
+    | '/diary'
     | '/fortune'
     | '/intro'
     | '/my'
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/advice'
     | '/analysis'
     | '/chat'
+    | '/diary'
     | '/fortune'
     | '/intro'
     | '/my'
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/advice'
     | '/analysis'
     | '/chat'
+    | '/diary'
     | '/fortune'
     | '/intro'
     | '/my'
@@ -164,6 +176,7 @@ export interface RootRouteChildren {
   AdviceRoute: typeof AdviceRoute
   AnalysisRoute: typeof AnalysisRoute
   ChatRoute: typeof ChatRoute
+  DiaryRoute: typeof DiaryRoute
   FortuneRoute: typeof FortuneRoute
   IntroRoute: typeof IntroRoute
   MyRoute: typeof MyRoute
@@ -224,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FortuneRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/diary': {
+      id: '/diary'
+      path: '/diary'
+      fullPath: '/diary'
+      preLoaderRoute: typeof DiaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/chat': {
       id: '/chat'
       path: '/chat'
@@ -260,6 +280,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdviceRoute: AdviceRoute,
   AnalysisRoute: AnalysisRoute,
   ChatRoute: ChatRoute,
+  DiaryRoute: DiaryRoute,
   FortuneRoute: FortuneRoute,
   IntroRoute: IntroRoute,
   MyRoute: MyRoute,
