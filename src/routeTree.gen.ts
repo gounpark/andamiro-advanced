@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VideoRecordRouteImport } from './routes/video-record'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as RecordRouteImport } from './routes/record'
 import { Route as PresentationRouteImport } from './routes/presentation'
@@ -20,6 +21,11 @@ import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as AdviceRouteImport } from './routes/advice'
 import { Route as IndexRouteImport } from './routes/index'
 
+const VideoRecordRoute = VideoRecordRouteImport.update({
+  id: '/video-record',
+  path: '/video-record',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReportRoute = ReportRouteImport.update({
   id: '/report',
   path: '/report',
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/presentation': typeof PresentationRoute
   '/record': typeof RecordRoute
   '/report': typeof ReportRoute
+  '/video-record': typeof VideoRecordRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/presentation': typeof PresentationRoute
   '/record': typeof RecordRoute
   '/report': typeof ReportRoute
+  '/video-record': typeof VideoRecordRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/presentation': typeof PresentationRoute
   '/record': typeof RecordRoute
   '/report': typeof ReportRoute
+  '/video-record': typeof VideoRecordRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/presentation'
     | '/record'
     | '/report'
+    | '/video-record'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/presentation'
     | '/record'
     | '/report'
+    | '/video-record'
   id:
     | '__root__'
     | '/'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/presentation'
     | '/record'
     | '/report'
+    | '/video-record'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -158,10 +170,18 @@ export interface RootRouteChildren {
   PresentationRoute: typeof PresentationRoute
   RecordRoute: typeof RecordRoute
   ReportRoute: typeof ReportRoute
+  VideoRecordRoute: typeof VideoRecordRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/video-record': {
+      id: '/video-record'
+      path: '/video-record'
+      fullPath: '/video-record'
+      preLoaderRoute: typeof VideoRecordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/report': {
       id: '/report'
       path: '/report'
@@ -246,6 +266,7 @@ const rootRouteChildren: RootRouteChildren = {
   PresentationRoute: PresentationRoute,
   RecordRoute: RecordRoute,
   ReportRoute: ReportRoute,
+  VideoRecordRoute: VideoRecordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

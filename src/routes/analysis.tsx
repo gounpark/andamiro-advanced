@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import React, { useEffect, useRef, useState } from "react";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Video } from "lucide-react";
+import { getVideoRecord, clearVideoRecord, type VideoRecord } from "@/lib/videoStore";
 import iconChat from "@/assets/analysis/insight-icon-container.svg";
 import iconAiBook from "@/assets/analysis/preparation-header-icon.svg";
 
@@ -171,6 +172,15 @@ function AnalysisPage() {
   const tomorrowRef = useRef<HTMLElement>(null);
   const buttonsRef = useRef<HTMLDivElement>(null);
 
+  // 영상 기록 데이터 (video-record 페이지에서 왔을 때)
+  const [videoRecord, setVideoRecordState] = useState<VideoRecord | null>(null);
+  useEffect(() => {
+    const rec = getVideoRecord();
+    if (rec) setVideoRecordState(rec);
+    // 컴포넌트 언마운트 시 스토어 정리
+    return () => { clearVideoRecord(); };
+  }, []);
+
   // 순차 reveal: AI가 결과를 차례로 생성하는 것처럼
   const [revealed, setRevealed] = useState(0);
   useEffect(() => {
@@ -227,6 +237,11 @@ function AnalysisPage() {
         </header>
 
         <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide pb-10">
+          {/* 영상 기록 섹션 */}
+          {videoRecord && (
+            <VideoSection record={videoRecord} />
+          )}
+
           {/* 점수 카드 */}
           <section className="bg-white px-5 pt-8 pb-10">
             <div style={fadeIn(1)}>
@@ -413,5 +428,76 @@ function MetricBar({ label, value }: { label: string; value: number }) {
         />
       </div>
     </div>
+  );
+}
+
+function VideoSection({ record }: { record: VideoRecord }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  return (
+    <section className="bg-white px-5 pt-6 pb-6 border-b border-[#f0f0f0]">
+      {/* 헤더 */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="grid h-8 w-8 place-items-center rounded-full bg-[var(--primary)]/10">
+          <Video className="h-4 w-4 text-[var(--primary)]" />
+        </div>
+        <div>
+          <p className="text-[13px] text-[#9a9aa3] tracking-tight">영상 기록</p>
+          <h2 className="font-bold text-foreground text-[16px] tracking-tight leading-none mt-0.5">
+            오늘의 영상 일기
+          </h2>
+        </div>
+      </div>
+
+      {/* 영상 미리보기 */}
+      {record.videoUrl ? (
+        <div className="rounded-2xl overflow-hidden bg-black aspect-video mb-4">
+          <video
+            ref={videoRef}
+            src={record.videoUrl}
+            controls
+            playsInline
+            className="w-full h-full object-cover"
+            style={{ transform: "scaleX(-1)" }}
+          />
+        </div>
+      ) : (
+        <div className="rounded-2xl bg-[#f3f4f8] aspect-video mb-4 flex items-center justify-center">
+          <p className="text-[13px] text-[#999]">녹화 없이 기록되었어요</p>
+        </div>
+      )}
+
+      {/* 감정 비교 */}
+      <div className="flex gap-3">
+        {/* AI 감지 */}
+        <div className="flex-1 rounded-xl bg-cyan-50 border border-cyan-100 px-3.5 py-3">
+          <p className="text-[11px] font-semibold text-cyan-600 tracking-tight mb-1">
+            🤖 AI 분석 감정
+          </p>
+          <p className="font-bold text-foreground text-[14px] tracking-tight">
+            {record.aiMood && record.aiMood !== "surprised"
+              ? record.aiMoodLabel
+              : record.aiMood === "surprised"
+              ? "😮 놀람"
+              : "감지 안 됨"}
+          </p>
+          {record.aiConfidence > 0 && (
+            <p className="text-[11px] text-[#999] mt-0.5">
+              {Math.round(record.aiConfidence * 100)}% 확신
+            </p>
+          )}
+        </div>
+
+        {/* 사용자 선택 */}
+        <div className="flex-1 rounded-xl bg-[var(--primary)]/5 border border-[var(--primary)]/15 px-3.5 py-3">
+          <p className="text-[11px] font-semibold text-[var(--primary)] tracking-tight mb-1">
+            👤 내가 선택한 감정
+          </p>
+          <p className="font-bold text-foreground text-[14px] tracking-tight">
+            {record.userMoodLabel ?? "-"}
+          </p>
+        </div>
+      </div>
+    </section>
   );
 }

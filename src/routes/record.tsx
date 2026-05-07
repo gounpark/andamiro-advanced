@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Video } from "lucide-react";
 import { DemoCursor } from "@/components/DemoCursor";
 
 import moodBest from "@/assets/moods/mood-best.webp";
@@ -355,6 +355,24 @@ function RecordPage() {
               }`}
             >
               시작하기
+            </button>
+
+            {/* 영상으로 기록하기 */}
+            <button
+              type="button"
+              disabled={!hasSelection}
+              onClick={() => {
+                if (!selected) return;
+                navigate({ to: "/video-record", search: { mood: selected } });
+              }}
+              className={`mt-2.5 flex w-full items-center justify-center gap-2 rounded-2xl border py-3.5 font-semibold text-[15px] tracking-tight transition-all ${
+                hasSelection
+                  ? "border-[var(--primary)]/30 bg-white text-[var(--primary)] hover:bg-[var(--primary)]/5 active:scale-[0.99]"
+                  : "border-[#e8e8ec] bg-white text-[#a8a8b0] cursor-not-allowed"
+              }`}
+            >
+              <Video className="h-4.5 w-4.5" strokeWidth={2} />
+              영상으로 기록하기
             </button>
           </section>
         </div>
