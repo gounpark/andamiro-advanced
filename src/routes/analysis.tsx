@@ -568,8 +568,8 @@ function EmotionGraph({ timeline }: { timeline: EmotionSnapshot[] }) {
     </div>
   );
 
-  const W = 300, H = 100;
-  const PL = 10, PR = 10, PT = 8, PB = 12;
+  const W = 300, H = 160;
+  const PL = 10, PR = 10, PT = 12, PB = 16;
   const maxSec = timeline[timeline.length - 1].sec || 1;
 
   const toX = (sec: number) => PL + (sec / maxSec) * (W - PL - PR);
@@ -582,7 +582,7 @@ function EmotionGraph({ timeline }: { timeline: EmotionSnapshot[] }) {
 
   return (
     <div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 100 }}>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 160 }}>
         {/* 그리드 라인 */}
         {[0.25, 0.5, 0.75].map(v => (
           <line key={v} x1={PL} y1={toY(v)} x2={W - PR} y2={toY(v)}
@@ -701,7 +701,8 @@ function EmotionReportPage({ record }: { record: VideoRecord }) {
                 {record.videoUrl ? (
                   <div className="rounded-2xl overflow-hidden bg-black aspect-video">
                     <video src={record.videoUrl} controls playsInline
-                      className="w-full h-full object-cover" />
+                      className="w-full h-full object-cover"
+                      style={{ transform: "scaleX(-1)" }} />
                   </div>
                 ) : (
                   <div className="rounded-2xl bg-[#f3f4f8] aspect-video flex flex-col items-center justify-center gap-2">
