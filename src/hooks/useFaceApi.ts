@@ -27,9 +27,10 @@ async function ensureModelsLoaded(): Promise<void> {
   modelsLoadPromise = (async () => {
     // face-api.js dynamic import (무거운 번들 lazy-load)
     const faceapi = await import("face-api.js");
+    const base = import.meta.env.BASE_URL.replace(/\/$/, "");
     await Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri("/models"),
-      faceapi.nets.faceExpressionNet.loadFromUri("/models"),
+      faceapi.nets.tinyFaceDetector.loadFromUri(`${base}/models`),
+      faceapi.nets.faceExpressionNet.loadFromUri(`${base}/models`),
     ]);
   })();
   return modelsLoadPromise;
