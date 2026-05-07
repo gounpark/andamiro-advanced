@@ -1,8 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import React, { useEffect, useRef, useState } from "react";
-import { ChevronLeft, Video } from "lucide-react";
-import { getVideoRecord, clearVideoRecord, type VideoRecord } from "@/lib/videoStore";
+import { ChevronLeft, Trash2 } from "lucide-react";
+import { getVideoRecord, clearVideoRecord, type VideoRecord, type EmotionSnapshot, type MoodKey } from "@/lib/videoStore";
 import { saveDiaryEntry, todayString } from "@/lib/diaryStore";
+
+import moodBest from "@/assets/moods/mood-best.webp";
+import moodGood from "@/assets/moods/mood-good.webp";
+import moodOkay from "@/assets/moods/mood-okay.webp";
+import moodBad from "@/assets/moods/mood-bad.webp";
+import moodWorst from "@/assets/moods/mood-worst.webp";
 import iconChat from "@/assets/analysis/insight-icon-container.svg";
 import iconAiBook from "@/assets/analysis/preparation-header-icon.svg";
 
@@ -173,26 +179,17 @@ function AnalysisPage() {
   const tomorrowRef = useRef<HTMLElement>(null);
   const buttonsRef = useRef<HTMLDivElement>(null);
 
-  // 영상 기록 데이터 (video-record 페이지에서 왔을 때)
   const [videoRecord, setVideoRecordState] = useState<VideoRecord | null>(null);
   useEffect(() => {
     const rec = getVideoRecord();
-    if (rec) {
-      setVideoRecordState(rec);
-      // localStorage에 저장
-      saveDiaryEntry({
-        date: todayString(),
-        userMood: rec.userMood ?? "okay",
-        userMoodLabel: rec.userMoodLabel ?? "-",
-        aiMood: rec.aiMood,
-        aiMoodLabel: rec.aiMoodLabel,
-        aiConfidence: rec.aiConfidence,
-        transcript: rec.transcript,
-        hasVideo: !!rec.videoUrl,
-      });
-    }
+    if (rec) setVideoRecordState(rec);
     return () => { clearVideoRecord(); };
   }, []);
+
+  // 영상 기록이 있으면 감정 리포트 화면으로 전환
+  if (videoRecord) {
+    return <EmotionReportPage record={videoRecord} />;
+  }
 
   // 순차 reveal: AI가 결과를 차례로 생성하는 것처럼
   const [revealed, setRevealed] = useState(0);
@@ -250,10 +247,6 @@ function AnalysisPage() {
         </header>
 
         <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide pb-10">
-          {/* 영상 기록 섹션 */}
-          {videoRecord && (
-            <VideoSection record={videoRecord} />
-          )}
 
           {/* 점수 카드 */}
           <section className="bg-white px-5 pt-8 pb-10">
@@ -444,85 +437,337 @@ function MetricBar({ label, value }: { label: string; value: number }) {
   );
 }
 
-function VideoSection({ record }: { record: VideoRecord }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
+// ─────────────────────────────────────────────
+// 감정 리포트 전체 페이지
+// ─────────────────────────────────────────────
+
+const MOOD_META: Record<MoodKey, { label: string; thumb: string; emoji: string }> = {
+  best:  { label: "최고예요!", thumb: moodBest,  emoji: "🤩" },
+  good:  { label: "좋아요!",   thumb: moodGood,  emoji: "😊" },
+  okay:  { label: "보통이에요", thumb: moodOkay,  emoji: "😐" },
+  bad:   { label: "별로예요",  thumb: moodBad,   emoji: "😔" },
+  worst: { label: "최악이에요", thumb: moodWorst, emoji: "😭" },
+};
+const MOODS = (["best","good","okay","bad","worst"] as MoodKey[]).map(k => ({ key: k, ...MOOD_META[k] }));
+
+const EMOTION_KO: Record<string, string> = {
+  neutral: "평온", happy: "기쁨", sad: "슬픔",
+  angry: "긴장", fearful: "두려움", disgusted: "불쾌", surprised: "놀람",
+};
+const EMOTION_COLORS: Record<string, string> = {
+  neutral: "#94a3b8", happy: "#fbbf24", angry: "#f87171",
+  sad: "#60a5fa", surprised: "#c084fc",
+};
+const GRAPH_EMOTIONS = ["neutral", "happy", "angry", "sad", "surprised"];
+
+function formatSec(s: number) {
+  return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+}
+
+interface EmotionStats {
+  strongest: { emotion: string; value: number; sec: number };
+  longest:   { emotion: string; durationSec: number; startSec: number };
+  biggestChange: { sec: number; delta: number; toEmotion: string };
+}
+
+function computeStats(timeline: EmotionSnapshot[]): EmotionStats | null {
+  if (timeline.length < 2) return null;
+
+  // 가장 강한 감정
+  let strongest = { emotion: "neutral", value: 0, sec: 0 };
+  for (const snap of timeline) {
+    for (const [emotion, value] of Object.entries(snap.expressions)) {
+      if (emotion === "neutral") continue;
+      if ((value ?? 0) > strongest.value) strongest = { emotion, value: value ?? 0, sec: snap.sec };
+    }
+  }
+
+  // 가장 오래 지속된 감정 (run-length)
+  let longest = { emotion: "neutral", durationSec: 0, startSec: 0 };
+  let cur = { emotion: "", durationSec: 0, startSec: 0 };
+  for (const snap of timeline) {
+    const [dom] = Object.entries(snap.expressions)
+      .reduce<[string, number]>((mx, [k, v]) => (v ?? 0) > mx[1] ? [k, v ?? 0] : mx, ["neutral", 0]);
+    if (dom === cur.emotion) {
+      cur.durationSec++;
+    } else {
+      if (cur.durationSec > longest.durationSec) longest = { ...cur };
+      cur = { emotion: dom, durationSec: 1, startSec: snap.sec };
+    }
+  }
+  if (cur.durationSec > longest.durationSec) longest = { ...cur };
+
+  // 변화가 가장 컸던 구간
+  let biggestChange = { sec: 0, delta: 0, toEmotion: "neutral" };
+  for (let i = 1; i < timeline.length; i++) {
+    const prev = timeline[i - 1].expressions;
+    const curr = timeline[i].expressions;
+    let delta = 0;
+    for (const k of Object.keys(curr)) delta += Math.abs((curr[k] ?? 0) - (prev[k] ?? 0));
+    if (delta > biggestChange.delta) {
+      const [dom] = Object.entries(curr)
+        .reduce<[string, number]>((mx, [k, v]) => (v ?? 0) > mx[1] ? [k, v ?? 0] : mx, ["neutral", 0]);
+      biggestChange = { sec: timeline[i].sec, delta, toEmotion: dom };
+    }
+  }
+
+  return { strongest, longest, biggestChange };
+}
+
+function generateQuestions(stats: EmotionStats | null, timeline: EmotionSnapshot[]): string[] {
+  if (!stats || timeline.length < 3) return [];
+  const questions: string[] = [];
+
+  if (stats.biggestChange.delta > 0.25) {
+    const label = EMOTION_KO[stats.biggestChange.toEmotion] ?? stats.biggestChange.toEmotion;
+    questions.push(
+      `${formatSec(stats.biggestChange.sec)} 즈음에 표정 변화가 있었어요.\n` +
+      `${label}에 가까운 반응이 추정됐는데, 그때 어떤 생각을 하고 있었나요?`
+    );
+  }
+  if (stats.strongest.value > 0.4 && stats.strongest.emotion !== "neutral") {
+    const label = EMOTION_KO[stats.strongest.emotion] ?? stats.strongest.emotion;
+    questions.push(
+      `${formatSec(stats.strongest.sec)} 지점에서 ${label} 반응이 가장 높게 추정됐어요.\n` +
+      `그 순간 이야기하던 내용이 무엇이었나요?`
+    );
+  }
+  return questions.slice(0, 2);
+}
+
+function EmotionGraph({ timeline }: { timeline: EmotionSnapshot[] }) {
+  if (timeline.length < 2) return (
+    <div className="flex items-center justify-center h-[100px] text-[13px] text-[#bbb]">
+      데이터가 충분하지 않아요
+    </div>
+  );
+
+  const W = 300, H = 100;
+  const PL = 10, PR = 10, PT = 8, PB = 12;
+  const maxSec = timeline[timeline.length - 1].sec || 1;
+
+  const toX = (sec: number) => PL + (sec / maxSec) * (W - PL - PR);
+  const toY = (val: number) => PT + (1 - Math.min(1, Math.max(0, val))) * (H - PT - PB);
+
+  // X축 레이블 (최대 5개)
+  const tickCount = Math.min(5, timeline.length);
+  const tickInterval = Math.ceil(maxSec / (tickCount - 1));
+  const ticks = Array.from({ length: tickCount }, (_, i) => Math.min(i * tickInterval, maxSec));
 
   return (
-    <section className="bg-white px-5 pt-6 pb-6 border-b border-[#f0f0f0]">
-      {/* 헤더 */}
-      <div className="flex items-center gap-2 mb-4">
-        <div className="grid h-8 w-8 place-items-center rounded-full bg-[var(--primary)]/10">
-          <Video className="h-4 w-4 text-[var(--primary)]" />
-        </div>
-        <div>
-          <p className="text-[13px] text-[#9a9aa3] tracking-tight">영상 기록</p>
-          <h2 className="font-bold text-foreground text-[16px] tracking-tight leading-none mt-0.5">
-            오늘의 영상 일기
-          </h2>
-        </div>
+    <div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 100 }}>
+        {/* 그리드 라인 */}
+        {[0.25, 0.5, 0.75].map(v => (
+          <line key={v} x1={PL} y1={toY(v)} x2={W - PR} y2={toY(v)}
+            stroke="#f0f0f0" strokeWidth="1" />
+        ))}
+        {/* 감정 라인 */}
+        {GRAPH_EMOTIONS.map(emotion => {
+          const pts = timeline
+            .map(s => `${toX(s.sec).toFixed(1)},${toY(s.expressions[emotion] ?? 0).toFixed(1)}`)
+            .join(" ");
+          return (
+            <polyline key={emotion} points={pts} fill="none"
+              stroke={EMOTION_COLORS[emotion]} strokeWidth="1.8"
+              strokeLinecap="round" strokeLinejoin="round" opacity="0.85" />
+          );
+        })}
+      </svg>
+      {/* X축 시간 레이블 */}
+      <div className="flex justify-between px-2 -mt-1">
+        {ticks.map(t => (
+          <span key={t} className="text-[9px] text-[#bbb]">{formatSec(t)}</span>
+        ))}
       </div>
+    </div>
+  );
+}
 
-      {/* 영상 미리보기 */}
-      {record.videoUrl ? (
-        <div className="rounded-2xl overflow-hidden bg-black aspect-video mb-4">
-          <video
-            ref={videoRef}
-            src={record.videoUrl}
-            controls
-            playsInline
-            className="w-full h-full object-cover"
-            style={{ transform: "scaleX(-1)" }}
-          />
-        </div>
-      ) : (
-        <div className="rounded-2xl bg-[#f3f4f8] aspect-video mb-4 flex items-center justify-center">
-          <p className="text-[13px] text-[#999]">녹화 없이 기록되었어요</p>
-        </div>
-      )}
+function EmotionReportPage({ record }: { record: VideoRecord }) {
+  const navigate = useNavigate();
+  const [selectedMood, setSelectedMood] = useState<MoodKey | null>(null);
+  const [saved, setSaved] = useState(false);
 
-      {/* 감정 비교 */}
-      <div className="flex gap-3">
-        {/* AI 감지 */}
-        <div className="flex-1 rounded-xl bg-cyan-50 border border-cyan-100 px-3.5 py-3">
-          <p className="text-[11px] font-semibold text-cyan-600 tracking-tight mb-1">
-            🤖 AI 분석 감정
-          </p>
-          <p className="font-bold text-foreground text-[14px] tracking-tight">
-            {record.aiMood && record.aiMood !== "surprised"
-              ? record.aiMoodLabel
-              : record.aiMood === "surprised"
-              ? "😮 놀람"
-              : "감지 안 됨"}
-          </p>
-          {record.aiConfidence > 0 && (
-            <p className="text-[11px] text-[#999] mt-0.5">
-              {Math.round(record.aiConfidence * 100)}% 확신
-            </p>
+  const stats = computeStats(record.emotionTimeline ?? []);
+  const questions = generateQuestions(stats, record.emotionTimeline ?? []);
+
+  const handleSave = () => {
+    const mood = selectedMood ?? "okay";
+    saveDiaryEntry({
+      date: todayString(),
+      userMood: mood,
+      userMoodLabel: MOOD_META[mood].label,
+      aiMood: record.aiMood,
+      aiMoodLabel: record.aiMoodLabel,
+      aiConfidence: record.aiConfidence,
+      transcript: record.transcript,
+      hasVideo: !!record.videoUrl,
+    });
+    setSaved(true);
+    setTimeout(() => navigate({ to: "/" }), 400);
+  };
+
+  return (
+    <div className="app-shell">
+      <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
+        {/* 헤더 */}
+        <header className="relative shrink-0 flex items-center justify-center px-4 pt-[52px] pb-3 bg-white border-b border-[#f0f0f0]">
+          <button type="button" onClick={() => navigate({ to: "/" })}
+            className="absolute left-3 top-[50px] grid h-9 w-9 place-items-center rounded-full text-foreground/70">
+            <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
+          </button>
+          <h1 className="font-semibold text-foreground text-[16px] tracking-tight">오늘의 감정 리포트</h1>
+          <button type="button" onClick={() => navigate({ to: "/record" })}
+            className="absolute right-3 top-[50px] grid h-9 w-9 place-items-center rounded-full text-foreground/40">
+            <Trash2 className="h-4.5 w-4.5" />
+          </button>
+        </header>
+
+        <div className="flex-1 overflow-y-auto scrollbar-hide pb-10">
+          {/* 녹화 시간 */}
+          {record.videoUrl && (
+            <div className="bg-white px-5 pt-2 pb-1 border-b border-[#f5f5f5]">
+              <p className="text-[12px] text-[#9a9aa3] tracking-tight">
+                녹화 시간 {formatSec((record.emotionTimeline ?? []).length > 0
+                  ? (record.emotionTimeline[record.emotionTimeline.length - 1]?.sec ?? 0)
+                  : 0)}
+              </p>
+            </div>
           )}
-        </div>
 
-        {/* 사용자 선택 */}
-        <div className="flex-1 rounded-xl bg-[var(--primary)]/5 border border-[var(--primary)]/15 px-3.5 py-3">
-          <p className="text-[11px] font-semibold text-[var(--primary)] tracking-tight mb-1">
-            👤 내가 선택한 감정
-          </p>
-          <p className="font-bold text-foreground text-[14px] tracking-tight">
-            {record.userMoodLabel ?? "-"}
-          </p>
+          {/* 영상 미리보기 */}
+          <div className="bg-white px-5 pt-4 pb-5">
+            {record.videoUrl ? (
+              <div className="rounded-2xl overflow-hidden bg-black aspect-video">
+                <video src={record.videoUrl} controls playsInline
+                  className="w-full h-full object-cover" style={{ transform: "scaleX(-1)" }} />
+              </div>
+            ) : (
+              <div className="rounded-2xl bg-[#f3f4f8] aspect-video flex items-center justify-center">
+                <p className="text-[13px] text-[#999]">녹화 없이 기록되었어요</p>
+              </div>
+            )}
+          </div>
+
+          {/* 감정 흐름 그래프 */}
+          {(record.emotionTimeline ?? []).length >= 2 && (
+            <section className="mx-4 mt-2 rounded-2xl bg-white p-5 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-bold text-foreground text-[15px] tracking-tight">감정 흐름</h2>
+                <span className="text-[10px] text-[#bbb]">ⓘ AI 추정값</span>
+              </div>
+              {/* 범례 */}
+              <div className="flex flex-wrap gap-x-3 gap-y-1 mb-3">
+                {GRAPH_EMOTIONS.map(e => (
+                  <div key={e} className="flex items-center gap-1">
+                    <span className="h-2 w-2 rounded-full shrink-0" style={{ background: EMOTION_COLORS[e] }} />
+                    <span className="text-[11px] text-[#666]">{EMOTION_KO[e]}</span>
+                  </div>
+                ))}
+              </div>
+              <EmotionGraph timeline={record.emotionTimeline ?? []} />
+            </section>
+          )}
+
+          {/* 주요 감정 변화 요약 */}
+          {stats && (
+            <section className="mx-4 mt-4 rounded-2xl bg-white p-5 shadow-sm">
+              <h2 className="font-bold text-foreground text-[15px] tracking-tight mb-3">주요 감정 변화</h2>
+              <div className="flex flex-col gap-2.5">
+                <SummaryRow
+                  icon="💪"
+                  label="가장 강하게 나타난 감정"
+                  value={`${EMOTION_KO[stats.strongest.emotion] ?? stats.strongest.emotion}  (${formatSec(stats.strongest.sec)} 지점)`}
+                />
+                <SummaryRow
+                  icon="⏱"
+                  label="가장 오래 지속된 감정"
+                  value={`${EMOTION_KO[stats.longest.emotion] ?? stats.longest.emotion}  (약 ${stats.longest.durationSec}초)`}
+                />
+                <SummaryRow
+                  icon="📈"
+                  label="감정 변화가 컸던 구간"
+                  value={`${formatSec(stats.biggestChange.sec)} 즈음`}
+                />
+              </div>
+            </section>
+          )}
+
+          {/* AI 회고 질문 */}
+          {questions.length > 0 && (
+            <section className="mx-4 mt-4 rounded-2xl bg-white p-5 shadow-sm">
+              <h2 className="font-bold text-foreground text-[15px] tracking-tight mb-3">
+                🤖 AI가 발견한 순간
+              </h2>
+              <div className="flex flex-col gap-3">
+                {questions.map((q, i) => (
+                  <div key={i} className="rounded-xl bg-[#f7f8fc] border border-[#eaecf4] px-4 py-3.5">
+                    <p className="text-[13px] leading-relaxed text-foreground/85 tracking-tight whitespace-pre-line">
+                      {q}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* 음성 기록 */}
+          {record.transcript && (
+            <section className="mx-4 mt-4 rounded-2xl bg-white p-5 shadow-sm">
+              <h2 className="font-bold text-foreground text-[15px] tracking-tight mb-2">🎙 음성 기록</h2>
+              <p className="text-[13px] leading-relaxed text-foreground/80 tracking-tight">
+                {record.transcript}
+              </p>
+            </section>
+          )}
+
+          {/* 최종 감정 선택 */}
+          <section className="mx-4 mt-4 rounded-2xl bg-white p-5 shadow-sm">
+            <h2 className="font-bold text-foreground text-[15px] tracking-tight mb-1">최종 감정 선택</h2>
+            <p className="text-[12px] text-[#9a9aa3] mb-3 tracking-tight">
+              AI 분석은 참고용이에요. 지금 내 감정을 직접 선택해 주세요.
+            </p>
+            <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+              {MOODS.map(m => (
+                <button key={m.key} type="button" onClick={() => setSelectedMood(m.key)}
+                  className={`shrink-0 flex flex-col items-center gap-1 rounded-2xl px-3 pt-2.5 pb-2 transition-all ${
+                    selectedMood === m.key ? "bg-[var(--primary)] shadow-md" : "bg-[#f3f4f8]"
+                  }`}>
+                  <img src={m.thumb} alt="" className="h-9 w-9 object-contain" />
+                  <span className={`text-[11px] font-medium whitespace-nowrap ${
+                    selectedMood === m.key ? "text-white" : "text-[#666]"
+                  }`}>{m.label}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* 기록 완료 버튼 */}
+          <div className="mx-4 mt-4 mb-6">
+            <button type="button" onClick={handleSave} disabled={!selectedMood || saved}
+              className={`w-full flex items-center justify-center rounded-2xl py-4 font-bold text-[15px] tracking-tight transition-all shadow-md ${
+                selectedMood && !saved
+                  ? "bg-[var(--primary)] text-white active:scale-[0.99]"
+                  : "bg-[#e8e8ec] text-[#b8bac2] cursor-not-allowed"
+              }`}>
+              {saved ? "저장됐어요 ✓" : "기록 완료"}
+            </button>
+          </div>
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* 음성 인식 텍스트 */}
-      {record.transcript && (
-        <div className="mt-3 rounded-xl bg-[#f7f7f9] px-4 py-3">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <span className="text-[11px] font-semibold text-[#666]">🎙 음성 기록</span>
-          </div>
-          <p className="text-[13px] leading-relaxed text-foreground/85">
-            {record.transcript}
-          </p>
-        </div>
-      )}
-    </section>
+function SummaryRow({ icon, label, value }: { icon: string; label: string; value: string }) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="text-[18px] leading-none mt-0.5">{icon}</span>
+      <div className="flex-1 min-w-0">
+        <p className="text-[11px] text-[#9a9aa3] tracking-tight">{label}</p>
+        <p className="text-[13px] font-semibold text-foreground tracking-tight mt-0.5">{value}</p>
+      </div>
+    </div>
   );
 }

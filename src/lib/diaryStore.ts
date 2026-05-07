@@ -1,4 +1,4 @@
-import type { MoodKey } from "./videoStore";
+import type { MoodKey, EmotionSnapshot } from "./videoStore";
 
 export interface DiaryEntry {
   id: string;
@@ -11,6 +11,7 @@ export interface DiaryEntry {
   aiConfidence: number;
   transcript: string;
   hasVideo: boolean;
+  emotionTimeline?: EmotionSnapshot[];
 }
 
 const STORAGE_KEY = "andamiro_diary_v1";
