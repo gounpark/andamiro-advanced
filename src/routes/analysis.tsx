@@ -754,9 +754,9 @@ function EmotionReportPage({ record }: { record: VideoRecord }) {
             <p className="text-[12px] text-[#9a9aa3] mb-3 tracking-tight">
               AI 분석은 참고용이에요. 지금 내 감정을 직접 선택해 주세요.
             </p>
-            <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+            <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide" style={{ touchAction: "pan-y" }}>
               {MOODS.map(m => (
-                <button key={m.key} type="button" onClick={() => setSelectedMood(m.key)}
+                <button key={m.key} type="button" onClick={() => setSelectedMood(m.key)} style={{ touchAction: "manipulation" }}
                   className={`shrink-0 flex flex-col items-center gap-1 rounded-2xl px-3 pt-2.5 pb-2 transition-all ${
                     selectedMood === m.key ? "bg-[var(--primary)] shadow-md" : "bg-[#f3f4f8]"
                   }`}>
