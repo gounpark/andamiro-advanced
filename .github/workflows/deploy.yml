@@ -30,7 +30,7 @@ jobs:
       - name: Build (static SPA for GitHub Pages)
         run: npx vite build --config vite.static.config.ts
         env:
-          VITE_BASE: /andamiro-demo/
+          VITE_BASE: /andamiro-advanced/
 
       - name: Copy index.html to 404.html (SPA routing)
         run: cp dist/index.html dist/404.html
