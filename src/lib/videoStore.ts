@@ -8,6 +8,7 @@ export interface VideoRecord {
   rawExpressions: Partial<Record<string, number>>;
   userMood: MoodKey | null;
   userMoodLabel: string | null;
+  transcript: string; // 음성 인식 텍스트
 }
 
 let _record: VideoRecord | null = null;

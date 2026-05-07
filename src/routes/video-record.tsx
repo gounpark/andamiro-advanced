@@ -1,6 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeft, Circle, Square, RotateCcw, CheckCircle2, Camera, Loader2 } from "lucide-react";
+import {
+  ChevronLeft, Circle, Square, RotateCcw, CheckCircle2,
+  Camera, Loader2, Mic, MicOff,
+} from "lucide-react";
 import { useFaceApi, type FaceExpression } from "@/hooks/useFaceApi";
 import { setVideoRecord, type MoodKey } from "@/lib/videoStore";
 
@@ -46,7 +49,7 @@ const MOODS = (["best", "good", "okay", "bad", "worst"] as MoodKey[]).map((k) =>
   ...MOOD_META[k],
 }));
 
-const EXPRESSION_KO: Record<FaceExpression | "surprised", string> = {
+const EXPRESSION_KO: Record<FaceExpression, string> = {
   neutral: "평온",
   happy: "행복",
   sad: "슬픔",
@@ -57,6 +60,32 @@ const EXPRESSION_KO: Record<FaceExpression | "surprised", string> = {
 };
 
 type RecordState = "idle" | "recording" | "done";
+
+// SpeechRecognition 타입 선언
+type SpeechRecognitionType = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: ((e: SpeechRecognitionEvent) => void) | null;
+  onend: (() => void) | null;
+  onerror: ((e: { error: string }) => void) | null;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+};
+
+type SpeechRecognitionEvent = {
+  results: SpeechRecognitionResultList;
+  resultIndex: number;
+};
+
+function getSpeechRecognition(): (new () => SpeechRecognitionType) | null {
+  const w = window as unknown as {
+    SpeechRecognition?: new () => SpeechRecognitionType;
+    webkitSpeechRecognition?: new () => SpeechRecognitionType;
+  };
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
+}
 
 function VideoRecordPage() {
   const { mood: initMood } = Route.useSearch();
@@ -76,6 +105,14 @@ function VideoRecordPage() {
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // 음성 인식
+  const recognitionRef = useRef<SpeechRecognitionType | null>(null);
+  const [transcript, setTranscript] = useState("");
+  const [interimText, setInterimText] = useState("");
+  const [speechSupported] = useState(() => !!getSpeechRecognition());
+  const [speechActive, setSpeechActive] = useState(false);
+  const finalTranscriptRef = useRef("");
+
   // 감정 선택
   const [selectedMood, setSelectedMood] = useState<MoodKey | null>(initMood ?? null);
 
@@ -83,7 +120,6 @@ function VideoRecordPage() {
   const { modelsLoaded, modelError, dominantExpression, dominantConfidence } =
     useFaceApi(videoRef, streamReady);
 
-  // AI 추천 무드 (face-api 결과 기반)
   const aiMoodRaw =
     dominantExpression && dominantConfidence > 0.3
       ? mapExpressionToMood(dominantExpression, dominantConfidence)
@@ -91,7 +127,7 @@ function VideoRecordPage() {
   const aiMood: MoodKey | null =
     aiMoodRaw && aiMoodRaw !== "surprised" ? aiMoodRaw : null;
 
-  // AI가 감정을 처음 감지하면 무드 자동 선택 (사용자가 아직 선택 안 한 경우)
+  // AI 감지 시 무드 자동 선택 (사용자가 아직 선택 안 한 경우)
   useEffect(() => {
     if (aiMood && selectedMood === null) {
       setSelectedMood(aiMood);
@@ -126,8 +162,64 @@ function VideoRecordPage() {
     return () => {
       streamRef.current?.getTracks().forEach((t) => t.stop());
       if (timerRef.current) clearInterval(timerRef.current);
+      recognitionRef.current?.abort();
     };
   }, [startCamera]);
+
+  // 음성 인식 시작/중지
+  const startSpeech = useCallback(() => {
+    const SR = getSpeechRecognition();
+    if (!SR) return;
+
+    finalTranscriptRef.current = transcript;
+    const rec = new SR();
+    rec.lang = "ko-KR";
+    rec.continuous = true;
+    rec.interimResults = true;
+
+    rec.onresult = (e: SpeechRecognitionEvent) => {
+      let interim = "";
+      let final = finalTranscriptRef.current;
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (r.isFinal) {
+          final += r[0].transcript;
+        } else {
+          interim += r[0].transcript;
+        }
+      }
+      finalTranscriptRef.current = final;
+      setTranscript(final);
+      setInterimText(interim);
+    };
+
+    rec.onend = () => {
+      // 녹화 중이면 자동 재시작 (연속 인식)
+      if (recordState === "recording" || speechActive) {
+        try { rec.start(); } catch { /* ignore */ }
+      } else {
+        setSpeechActive(false);
+        setInterimText("");
+      }
+    };
+
+    rec.onerror = (e) => {
+      if (e.error !== "no-speech" && e.error !== "aborted") {
+        setSpeechActive(false);
+      }
+    };
+
+    rec.start();
+    recognitionRef.current = rec;
+    setSpeechActive(true);
+  }, [transcript, recordState, speechActive]);
+
+  const stopSpeech = useCallback(() => {
+    recognitionRef.current?.stop();
+    recognitionRef.current = null;
+    setSpeechActive(false);
+    setInterimText("");
+  }, []);
 
   // 녹화 시작
   const startRecording = () => {
@@ -154,6 +246,9 @@ function VideoRecordPage() {
     recorderRef.current = recorder;
     setRecordState("recording");
 
+    // 음성 인식 자동 시작
+    if (speechSupported && !speechActive) startSpeech();
+
     timerRef.current = setInterval(() => setRecordSec((s) => s + 1), 1000);
   };
 
@@ -161,6 +256,7 @@ function VideoRecordPage() {
   const stopRecording = () => {
     recorderRef.current?.stop();
     if (timerRef.current) clearInterval(timerRef.current);
+    stopSpeech();
   };
 
   // 다시 녹화
@@ -168,10 +264,14 @@ function VideoRecordPage() {
     setRecordedBlob(null);
     setRecordSec(0);
     setRecordState("idle");
+    setTranscript("");
+    setInterimText("");
+    finalTranscriptRef.current = "";
   };
 
   // 기록 완료
   const completeRecording = () => {
+    if (speechActive) stopSpeech();
     const videoUrl = recordedBlob ? URL.createObjectURL(recordedBlob) : "";
     const finalMood = selectedMood ?? aiMood ?? "okay";
 
@@ -188,12 +288,15 @@ function VideoRecordPage() {
       rawExpressions: {},
       userMood: finalMood,
       userMoodLabel: MOOD_META[finalMood].label,
+      transcript: finalTranscriptRef.current.trim(),
     });
     navigate({ to: "/analysis", search: {} });
   };
 
   const formatSec = (s: number) =>
     `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+
+  const displayTranscript = transcript + (interimText ? ` ${interimText}` : "");
 
   return (
     <div className="app-shell">
@@ -213,9 +316,8 @@ function VideoRecordPage() {
           <div className="h-9 w-9" />
         </header>
 
-        {/* 카메라 프리뷰 영역 */}
+        {/* 카메라 프리뷰 */}
         <div className="relative flex-1 min-h-0 overflow-hidden bg-black">
-          {/* 비디오 */}
           <video
             ref={videoRef}
             autoPlay
@@ -240,7 +342,7 @@ function VideoRecordPage() {
             </div>
           )}
 
-          {/* 모델 로딩 중 오버레이 */}
+          {/* 모델 로딩 */}
           {streamReady && !modelsLoaded && !modelError && (
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full bg-black/60 px-4 py-2 backdrop-blur-sm">
               <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
@@ -248,26 +350,20 @@ function VideoRecordPage() {
             </div>
           )}
 
-          {/* 모델 오류 안내 */}
+          {/* 모델 오류 */}
           {modelError && (
             <div className="absolute bottom-4 left-3 right-3 rounded-xl bg-black/60 px-4 py-3 backdrop-blur-sm">
               <p className="text-amber-300 text-[12px] leading-relaxed">
                 ⚠️ AI 감정 분석을 사용할 수 없습니다. 감정은 직접 선택해 주세요.
-                <br />
-                <span className="text-white/50 text-[11px]">
-                  (public/models 폴더에 모델 파일이 필요합니다)
-                </span>
               </p>
             </div>
           )}
 
-          {/* AI 감정 감지 배지 */}
+          {/* AI 감지 배지 */}
           {modelsLoaded && dominantExpression && dominantConfidence > 0.3 && (
             <div className="absolute top-4 left-4 flex items-center gap-2 rounded-full bg-black/50 px-3.5 py-2 backdrop-blur-sm">
               <span className="text-[18px] leading-none">
-                {aiMoodRaw && aiMoodRaw !== "surprised"
-                  ? MOOD_META[aiMoodRaw].emoji
-                  : "😮"}
+                {aiMoodRaw && aiMoodRaw !== "surprised" ? MOOD_META[aiMoodRaw].emoji : "😮"}
               </span>
               <div>
                 <p className="text-white text-[12px] font-semibold leading-none">
@@ -283,7 +379,7 @@ function VideoRecordPage() {
             </div>
           )}
 
-          {/* 녹화 중 표시 */}
+          {/* 녹화 중 */}
           {recordState === "recording" && (
             <div className="absolute top-4 right-4 flex items-center gap-1.5 rounded-full bg-red-500/90 px-3 py-1.5">
               <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
@@ -293,13 +389,36 @@ function VideoRecordPage() {
             </div>
           )}
 
-          {/* 녹화 완료 표시 */}
+          {/* 녹화 완료 */}
           {recordState === "done" && (
             <div className="absolute top-4 right-4 flex items-center gap-1.5 rounded-full bg-green-500/90 px-3 py-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-white" />
               <span className="text-white text-[12px] font-semibold">
-                {formatSec(recordSec)} 녹화 완료
+                {formatSec(recordSec)} 완료
               </span>
+            </div>
+          )}
+
+          {/* 음성 인식 텍스트 오버레이 */}
+          {(speechActive || displayTranscript) && (
+            <div className="absolute bottom-4 left-3 right-3">
+              <div className="rounded-xl bg-black/65 px-4 py-3 backdrop-blur-sm">
+                {speechActive && (
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse" />
+                    <span className="text-red-300 text-[11px] font-semibold">음성 인식 중</span>
+                  </div>
+                )}
+                <p className="text-white text-[13px] leading-relaxed">
+                  {transcript && <span>{transcript}</span>}
+                  {interimText && (
+                    <span className="text-white/50">{interimText}</span>
+                  )}
+                  {!displayTranscript && speechActive && (
+                    <span className="text-white/40 text-[12px]">말씀해 주세요...</span>
+                  )}
+                </p>
+              </div>
             </div>
           )}
         </div>
@@ -307,11 +426,9 @@ function VideoRecordPage() {
         {/* 하단 패널 */}
         <div
           className="shrink-0 rounded-t-[24px] bg-white px-5 pt-5 pb-[36px]"
-          style={{
-            boxShadow: "0 -8px 24px -6px rgba(20,30,60,0.14)",
-          }}
+          style={{ boxShadow: "0 -8px 24px -6px rgba(20,30,60,0.14)" }}
         >
-          {/* 감정 선택 레이블 */}
+          {/* 감정 선택 */}
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-[12px] text-[#9a9aa3] tracking-tight">오늘의 감정톡</p>
@@ -321,7 +438,6 @@ function VideoRecordPage() {
                   : "감정을 선택해 주세요"}
               </p>
             </div>
-            {/* AI 추천 배지 */}
             {aiMood && selectedMood !== aiMood && (
               <button
                 type="button"
@@ -334,7 +450,7 @@ function VideoRecordPage() {
             )}
           </div>
 
-          {/* 감정 칩 선택 */}
+          {/* 감정 칩 */}
           <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide -mx-5 px-5">
             {MOODS.map((m) => (
               <button
@@ -362,19 +478,41 @@ function VideoRecordPage() {
           {/* 녹화 컨트롤 */}
           <div className="mt-4 flex gap-2.5">
             {recordState === "idle" && (
-              <button
-                type="button"
-                onClick={startRecording}
-                disabled={!streamReady}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 font-semibold text-[14px] tracking-tight transition-all ${
-                  streamReady
-                    ? "bg-red-500 text-white shadow-md active:scale-[0.99]"
-                    : "bg-[#e8e8ec] text-[#b8bac2] cursor-not-allowed"
-                }`}
-              >
-                <Circle className="h-4 w-4 fill-current" />
-                녹화 시작
-              </button>
+              <>
+                {/* 음성 인식 토글 (녹화 전) */}
+                {speechSupported && (
+                  <button
+                    type="button"
+                    onClick={() => (speechActive ? stopSpeech() : startSpeech())}
+                    disabled={!streamReady}
+                    className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl transition-all ${
+                      speechActive
+                        ? "bg-red-100 text-red-500"
+                        : "bg-[#f3f4f8] text-[#888]"
+                    }`}
+                    aria-label={speechActive ? "음성 인식 중지" : "음성 인식 시작"}
+                  >
+                    {speechActive ? (
+                      <Mic className="h-5 w-5 animate-pulse" />
+                    ) : (
+                      <MicOff className="h-5 w-5" />
+                    )}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={startRecording}
+                  disabled={!streamReady}
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 font-semibold text-[14px] tracking-tight transition-all ${
+                    streamReady
+                      ? "bg-red-500 text-white shadow-md active:scale-[0.99]"
+                      : "bg-[#e8e8ec] text-[#b8bac2] cursor-not-allowed"
+                  }`}
+                >
+                  <Circle className="h-4 w-4 fill-current" />
+                  녹화 시작
+                </button>
+              </>
             )}
 
             {recordState === "recording" && (
@@ -415,7 +553,7 @@ function VideoRecordPage() {
             )}
           </div>
 
-          {/* 녹화 없이 완료 (idle 상태에서도 허용) */}
+          {/* 녹화 없이 완료 */}
           {recordState === "idle" && streamReady && (
             <button
               type="button"

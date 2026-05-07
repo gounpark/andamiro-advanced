@@ -498,6 +498,18 @@ function VideoSection({ record }: { record: VideoRecord }) {
           </p>
         </div>
       </div>
+
+      {/* 음성 인식 텍스트 */}
+      {record.transcript && (
+        <div className="mt-3 rounded-xl bg-[#f7f7f9] px-4 py-3">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <span className="text-[11px] font-semibold text-[#666]">🎙 음성 기록</span>
+          </div>
+          <p className="text-[13px] leading-relaxed text-foreground/85">
+            {record.transcript}
+          </p>
+        </div>
+      )}
     </section>
   );
 }

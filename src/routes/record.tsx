@@ -225,8 +225,8 @@ function RecordPage() {
 
         {/* 콘텐츠 */}
         <div className="relative z-10 flex h-full flex-col">
-          {/* 헤더 (뒤로가기) */}
-          <header className="flex items-center px-5 pt-[52px] pb-1">
+          {/* 헤더 (뒤로가기 + 영상 기록 버튼) */}
+          <header className="flex items-center justify-between px-5 pt-[52px] pb-1">
             <Link
               to="/"
               aria-label="뒤로 가기"
@@ -234,6 +234,19 @@ function RecordPage() {
             >
               <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
             </Link>
+            <button
+              type="button"
+              onClick={() =>
+                navigate({
+                  to: "/video-record",
+                  search: selected ? { mood: selected } : {},
+                })
+              }
+              className="flex items-center gap-1.5 rounded-full bg-white/90 px-3.5 py-2 shadow-sm border border-black/8 text-[13px] font-semibold text-foreground/80 backdrop-blur-sm active:scale-95 transition-transform"
+            >
+              <Video className="h-3.5 w-3.5" strokeWidth={2.2} />
+              영상으로 기록
+            </button>
           </header>
 
           {/* 타이틀 */}
@@ -357,23 +370,6 @@ function RecordPage() {
               시작하기
             </button>
 
-            {/* 영상으로 기록하기 */}
-            <button
-              type="button"
-              disabled={!hasSelection}
-              onClick={() => {
-                if (!selected) return;
-                navigate({ to: "/video-record", search: { mood: selected } });
-              }}
-              className={`mt-2.5 flex w-full items-center justify-center gap-2 rounded-2xl border py-3.5 font-semibold text-[15px] tracking-tight transition-all ${
-                hasSelection
-                  ? "border-[var(--primary)]/30 bg-white text-[var(--primary)] hover:bg-[var(--primary)]/5 active:scale-[0.99]"
-                  : "border-[#e8e8ec] bg-white text-[#a8a8b0] cursor-not-allowed"
-              }`}
-            >
-              <Video className="h-4.5 w-4.5" strokeWidth={2} />
-              영상으로 기록하기
-            </button>
           </section>
         </div>
       </div>
