@@ -306,7 +306,7 @@ function VideoRecordPage() {
           <Link
             to="/record"
             aria-label="뒤로"
-            className="grid h-9 w-9 place-items-center rounded-full bg-white/15 text-white backdrop-blur-sm"
+            className="grid h-9 w-9 place-items-center rounded-full bg-black/50 text-white backdrop-blur-sm border border-white/20"
           >
             <ChevronLeft className="h-5 w-5" strokeWidth={2.2} />
           </Link>

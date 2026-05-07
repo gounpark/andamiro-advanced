@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ChevronRight, Bell, Moon, Clock, Database, Megaphone, HelpCircle, FileText } from "lucide-react";
+import { ChevronRight, Bell, Moon, Clock, Database, Megaphone, HelpCircle, FileText, BookOpen } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import cloverActiveSvg from "@/assets/icons/clover-active.svg";
 import bgShapeLargeSvg from "@/assets/icons/bg-shape-large.svg";
@@ -83,6 +83,24 @@ function MyPage() {
               <Stat value="5" label="연속 기록" divided />
               <Stat value="3" label="이번 달" divided />
             </div>
+          </section>
+
+          {/* 영상 일기 바로가기 */}
+          <section className="px-4 mt-4">
+            <p className="px-1 mb-2 text-[12px] text-[#999] tracking-tight">영상 일기</p>
+            <Link
+              to="/diary"
+              className="flex items-center gap-3 rounded-2xl bg-white border border-[#f0f0f0] px-4 py-3.5 shadow-sm active:bg-[#f8f8f8] transition"
+            >
+              <div className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--primary)]/10">
+                <BookOpen className="h-4.5 w-4.5 text-[var(--primary)]" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-foreground text-[14px] tracking-tight">영상 일기 기록</p>
+                <p className="text-[11px] text-[#999] mt-0.5 tracking-tight">날짜별 감정 기록 모아보기</p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-[#bbb]" />
+            </Link>
           </section>
 
           {/* 설정 */}

@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import React, { useEffect, useRef, useState } from "react";
 import { ChevronLeft, Video } from "lucide-react";
 import { getVideoRecord, clearVideoRecord, type VideoRecord } from "@/lib/videoStore";
+import { saveDiaryEntry, todayString } from "@/lib/diaryStore";
 import iconChat from "@/assets/analysis/insight-icon-container.svg";
 import iconAiBook from "@/assets/analysis/preparation-header-icon.svg";
 
@@ -176,8 +177,20 @@ function AnalysisPage() {
   const [videoRecord, setVideoRecordState] = useState<VideoRecord | null>(null);
   useEffect(() => {
     const rec = getVideoRecord();
-    if (rec) setVideoRecordState(rec);
-    // 컴포넌트 언마운트 시 스토어 정리
+    if (rec) {
+      setVideoRecordState(rec);
+      // localStorage에 저장
+      saveDiaryEntry({
+        date: todayString(),
+        userMood: rec.userMood ?? "okay",
+        userMoodLabel: rec.userMoodLabel ?? "-",
+        aiMood: rec.aiMood,
+        aiMoodLabel: rec.aiMoodLabel,
+        aiConfidence: rec.aiConfidence,
+        transcript: rec.transcript,
+        hasVideo: !!rec.videoUrl,
+      });
+    }
     return () => { clearVideoRecord(); };
   }, []);
 
