@@ -482,9 +482,9 @@ const EMOTION_KO: Record<string, string> = {
 };
 const EMOTION_COLORS: Record<string, string> = {
   neutral: "#94a3b8", happy: "#fbbf24", angry: "#f87171",
-  sad: "#60a5fa", surprised: "#c084fc",
+  sad: "#60a5fa", surprised: "#c084fc", fearful: "#fb923c", disgusted: "#4ade80",
 };
-const GRAPH_EMOTIONS = ["neutral", "happy", "angry", "sad", "surprised"];
+const GRAPH_EMOTIONS = ["neutral", "happy", "angry", "sad", "surprised", "fearful", "disgusted"];
 
 function formatSec(s: number) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
