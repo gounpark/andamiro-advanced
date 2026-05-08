@@ -667,7 +667,9 @@ function EmotionReportPage({ record }: { record: VideoRecord }) {
       hasVideo: !!record.videoUrl,
     });
     setSaved(true);
-    setTimeout(() => navigate({ to: "/" }), 500);
+    // 영상 기록 제거 후 채팅 분석 결과 화면으로 이동
+    clearVideoRecord();
+    setTimeout(() => navigate({ to: "/analysis", search: {} }), 400);
   };
 
   const stepTitles = ["영상 확인", "감정 흐름", "AI 분석", "기록 완료"];
