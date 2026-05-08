@@ -835,8 +835,7 @@ function EmotionReportPage({ record, onDone }: { record: VideoRecord; onDone: (d
               <div className="bg-white px-5 pt-5 pb-5">
                 {record.videoUrl ? (
                   <div className="rounded-2xl overflow-hidden bg-black aspect-video">
-                    <video src={record.videoUrl} controls playsInline
-                      className="w-full h-full object-cover" />
+                    <VideoPlayer src={record.videoUrl} />
                   </div>
                 ) : (
                   <div className="rounded-2xl bg-[#f3f4f8] aspect-video flex flex-col items-center justify-center gap-2">
@@ -1251,6 +1250,75 @@ function MoodSelectionStep({
               {saved ? "저장됐어요 ✓" : "기록 완료"}
             </button>
           </section>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── 커스텀 영상 플레이어 (scaleX(-1) + controls 뒤집힘 방지) ───────────────
+function VideoPlayer({ src }: { src: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+
+  const toggle = () => {
+    const v = ref.current;
+    if (!v) return;
+    if (v.paused) { v.play(); setPlaying(true); }
+    else { v.pause(); setPlaying(false); }
+  };
+
+  return (
+    <div className="relative w-full h-full bg-black" onClick={toggle} style={{ cursor: "pointer" }}>
+      <video
+        ref={ref}
+        src={src}
+        playsInline
+        className="w-full h-full object-cover"
+        style={{ transform: "scaleX(-1)" }}
+        onTimeUpdate={() => {
+          const v = ref.current;
+          if (v && v.duration) setProgress(v.currentTime / v.duration);
+        }}
+        onLoadedMetadata={() => {
+          if (ref.current) setDuration(ref.current.duration);
+        }}
+        onEnded={() => setPlaying(false)}
+      />
+      {/* 재생/일시정지 버튼 오버레이 */}
+      {!playing && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-14 h-14 rounded-full bg-black/50 flex items-center justify-center">
+            <svg width="20" height="24" viewBox="0 0 20 24" fill="white">
+              <path d="M0 0 L20 12 L0 24 Z" />
+            </svg>
+          </div>
+        </div>
+      )}
+      {/* 하단 진행 바 */}
+      <div className="absolute bottom-0 left-0 right-0 px-3 pb-2.5 pt-6"
+        style={{ background: "linear-gradient(transparent, rgba(0,0,0,0.55))" }}>
+        <div className="flex items-center gap-2">
+          <span className="text-white text-[11px] tabular-nums">
+            {ref.current ? formatSec(Math.floor(ref.current.currentTime)) : "0:00"}
+          </span>
+          <div className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden"
+            onClick={(e) => {
+              e.stopPropagation();
+              const v = ref.current;
+              const bar = e.currentTarget;
+              if (!v || !v.duration) return;
+              const rect = bar.getBoundingClientRect();
+              v.currentTime = ((e.clientX - rect.left) / rect.width) * v.duration;
+            }}>
+            <div className="h-full bg-white rounded-full transition-all"
+              style={{ width: `${progress * 100}%` }} />
+          </div>
+          <span className="text-white text-[11px] tabular-nums">
+            {formatSec(Math.floor(duration))}
+          </span>
         </div>
       </div>
     </div>
