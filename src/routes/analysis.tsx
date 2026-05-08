@@ -302,32 +302,35 @@ const DEMO_RECORD: VideoRecord = {
 function AnalysisPage() {
   const { day, demo } = Route.useSearch();
 
-  // 영상 기록 후 계산된 분석 데이터가 있으면 사용
-  const [videoAnalysis] = useState<DailyData | null>(() => {
-    try {
-      const raw = sessionStorage.getItem("videoAnalysisResult");
-      if (raw) { sessionStorage.removeItem("videoAnalysisResult"); return JSON.parse(raw) as DailyData; }
-    } catch { /* ignore */ }
-    return null;
-  });
-
-  const data: DailyData = videoAnalysis || (day && DAILY_DATA[day]) || DEFAULT_DATA;
-  const { score, mood, metrics, summaryTitle, summaryBody, chatRecap, tomorrow } = data;
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const summaryRef = useRef<HTMLElement>(null);
-  const tomorrowRef = useRef<HTMLElement>(null);
-  const buttonsRef = useRef<HTMLDivElement>(null);
-
-  const [videoRecord] = useState<VideoRecord | null>(() =>
+  // videoRecord: 뮤터블하게 관리 — 기록 완료 시 null로 세팅해 분석 화면으로 전환
+  const [videoRecord, setVideoRecord] = useState<VideoRecord | null>(() =>
     demo ? DEMO_RECORD : getVideoRecord()
   );
   useEffect(() => {
     if (!demo) return () => { clearVideoRecord(); };
   }, [demo]);
 
+  // 영상 기록 완료 후 계산된 분석 데이터 (onDone 콜백으로 직접 주입)
+  const [computedData, setComputedData] = useState<DailyData | null>(null);
+
+  const data: DailyData = computedData || (day && DAILY_DATA[day]) || DEFAULT_DATA;
+  const { score, mood, metrics, summaryTitle, summaryBody, chatRecap, tomorrow } = data;
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const summaryRef = useRef<HTMLElement>(null);
+  const tomorrowRef = useRef<HTMLElement>(null);
+  const buttonsRef = useRef<HTMLDivElement>(null);
+
   // 영상 기록이 있으면 감정 리포트 화면으로 전환
   if (videoRecord) {
-    return <EmotionReportPage record={videoRecord} />;
+    return (
+      <EmotionReportPage
+        record={videoRecord}
+        onDone={(analysisData) => {
+          setComputedData(analysisData);
+          setVideoRecord(null);
+        }}
+      />
+    );
   }
 
   // 순차 reveal: AI가 결과를 차례로 생성하는 것처럼
@@ -746,7 +749,7 @@ function StepDots({ current }: { current: number }) {
   );
 }
 
-function EmotionReportPage({ record }: { record: VideoRecord }) {
+function EmotionReportPage({ record, onDone }: { record: VideoRecord; onDone: (data: DailyData) => void }) {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [selectedMood, setSelectedMood] = useState<MoodKey | null>(null);
@@ -783,11 +786,10 @@ function EmotionReportPage({ record }: { record: VideoRecord }) {
       hasVideo: !!record.videoUrl,
     });
     setSaved(true);
-    // 영상 데이터로 분석 결과 계산 후 저장, 영상 기록 제거
     const analysisData = computeAnalysisFromRecord(record);
-    sessionStorage.setItem("videoAnalysisResult", JSON.stringify(analysisData));
     clearVideoRecord();
-    setTimeout(() => navigate({ to: "/analysis", search: {} }), 400);
+    // navigate 대신 onDone으로 데이터를 직접 주입 → 같은 컴포넌트 인스턴스에서 화면 전환
+    setTimeout(() => onDone(analysisData), 400);
   };
 
   const stepTitles = ["영상 확인", "감정 흐름", "AI 분석", "기록 완료"];
