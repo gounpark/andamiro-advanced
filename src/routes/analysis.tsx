@@ -173,6 +173,96 @@ const DAILY_DATA: Record<number, DailyData> = {
 
 const DEFAULT_DATA = DAILY_DATA[21];
 
+// ─── 영상 데이터 → 분석 결과 계산 ───────────────────────────────────────────
+function computeAnalysisFromRecord(record: VideoRecord): DailyData {
+  const timeline = record.emotionTimeline ?? [];
+  const conf = record.aiConfidence ?? 0.5;
+  const aiMood = (record.aiMood ?? "okay") as string;
+
+  // 기본 점수 (aiMood + 신뢰도)
+  const BASE: Record<string, number> = { best: 92, good: 82, okay: 70, bad: 54, worst: 40 };
+  const baseScore = BASE[aiMood] ?? 70;
+  const score = Math.round(Math.min(100, Math.max(30, baseScore * 0.78 + conf * 22)));
+
+  // 타임라인 감정 평균
+  let sumH = 0, sumN = 0, sumAngry = 0, sumFear = 0;
+  for (const s of timeline) {
+    sumH     += s.expressions.happy   ?? 0;
+    sumN     += s.expressions.neutral ?? 0;
+    sumAngry += s.expressions.angry   ?? 0;
+    sumFear  += s.expressions.fearful ?? 0;
+  }
+  const n = timeline.length || 1;
+  const avgH = sumH / n, avgN = sumN / n, avgNeg = (sumAngry + sumFear) / n;
+  const clamp = (v: number) => Math.round(Math.min(100, Math.max(35, v)));
+
+  const metrics: Metric[] = [
+    { label: "에너지",  value: clamp((1 - avgN * 0.65) * 100 * 0.55 + conf * 45) },
+    { label: "안정감",  value: clamp(avgN * 60 + (1 - avgNeg * 4) * 40 + 20) },
+    { label: "집중력",  value: clamp(baseScore * 0.62 + conf * 38) },
+    { label: "긍정성",  value: clamp(avgH * 120 + baseScore * 0.38) },
+  ];
+
+  // 요약 템플릿
+  const T: Record<string, { title: string; body: string; tomorrow: { num: number; title: string; body: string }[] }> = {
+    best: {
+      title: "활기가 넘쳤던 하루예요!",
+      body: "영상에서 환한 에너지와 기쁨이 느껴졌어요. 이런 날의 감정을 잘 기억해두면 힘든 날에 큰 힘이 됩니다. 오늘의 긍정 에너지를 내일도 이어가 보세요.",
+      tomorrow: [
+        { num: 1, title: "오늘의 기분 메모하기", body: "기쁜 감정의 이유를 짧게 적어두면 좋아요." },
+        { num: 2, title: "주변에 긍정 에너지 나누기", body: "이 활기를 가까운 사람과 나눠보세요." },
+      ],
+    },
+    good: {
+      title: "좋은 하루였네요!",
+      body: "전반적으로 밝고 안정된 감정이 느껴지는 하루였어요. 작은 즐거움들이 모여 오늘을 만들었을 거예요. 이 흐름을 내일도 이어가 보세요.",
+      tomorrow: [
+        { num: 1, title: "오늘 좋았던 순간 떠올리기", body: "긍정 감정을 강화하는 좋은 습관이에요." },
+        { num: 2, title: "가벼운 운동이나 산책", body: "좋은 에너지를 몸으로도 이어가 보세요." },
+      ],
+    },
+    okay: {
+      title: "평온하게 보낸 하루예요",
+      body: "감정 기복 없이 안정된 흐름으로 보낸 하루였어요. 평온함 속에서도 작은 의미를 찾는 연습이 내일을 더 풍요롭게 만들어줄 거예요.",
+      tomorrow: [
+        { num: 1, title: "한 가지 즐거운 계획 세우기", body: "내일에 기대할 것 하나를 만들어봐요." },
+        { num: 2, title: "충분한 수면", body: "평온한 하루의 마무리는 충분한 휴식이에요." },
+      ],
+    },
+    bad: {
+      title: "오늘 좀 힘드셨겠어요",
+      body: "영상에서 피로하거나 무거운 감정이 느껴졌어요. 힘든 날도 있는 법이에요. 오늘은 푹 쉬고, 내일은 조금 더 가벼운 마음으로 시작해 보세요.",
+      tomorrow: [
+        { num: 1, title: "충분한 휴식 취하기", body: "몸과 마음이 회복할 시간이 필요해요." },
+        { num: 2, title: "좋아하는 것 하나 하기", body: "기분 전환이 되는 작은 활동을 해보세요." },
+      ],
+    },
+    worst: {
+      title: "많이 지치셨겠어요",
+      body: "오늘은 정말 힘든 하루였을 것 같아요. 이런 날일수록 자신에게 너그러워지는 것이 중요해요. 지금 느끼는 감정을 그대로 인정하고 천천히 쉬어가세요.",
+      tomorrow: [
+        { num: 1, title: "자신에게 친절하기", body: "오늘 수고한 자신을 토닥여 주세요." },
+        { num: 2, title: "가벼운 산책", body: "신선한 공기가 기분 전환에 도움이 돼요." },
+      ],
+    },
+  };
+  const t = T[aiMood] ?? T.okay;
+
+  const chatRecap = record.transcript
+    ? (record.transcript.length > 90 ? record.transcript.slice(0, 88) + "…" : record.transcript)
+    : "영상을 통해 오늘의 감정을 기록했어요.";
+
+  return {
+    score,
+    mood: record.aiMoodLabel ?? "평온함",
+    metrics,
+    summaryTitle: t.title,
+    summaryBody: t.body,
+    chatRecap,
+    tomorrow: t.tomorrow,
+  };
+}
+
 const DEMO_RECORD: VideoRecord = {
   videoUrl: "",
   aiMood: "good",
@@ -198,7 +288,17 @@ const DEMO_RECORD: VideoRecord = {
 
 function AnalysisPage() {
   const { day, demo } = Route.useSearch();
-  const data: DailyData = (day && DAILY_DATA[day]) || DEFAULT_DATA;
+
+  // 영상 기록 후 계산된 분석 데이터가 있으면 사용
+  const [videoAnalysis] = useState<DailyData | null>(() => {
+    try {
+      const raw = sessionStorage.getItem("videoAnalysisResult");
+      if (raw) { sessionStorage.removeItem("videoAnalysisResult"); return JSON.parse(raw) as DailyData; }
+    } catch { /* ignore */ }
+    return null;
+  });
+
+  const data: DailyData = videoAnalysis || (day && DAILY_DATA[day]) || DEFAULT_DATA;
   const { score, mood, metrics, summaryTitle, summaryBody, chatRecap, tomorrow } = data;
   const scrollRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLElement>(null);
@@ -667,7 +767,9 @@ function EmotionReportPage({ record }: { record: VideoRecord }) {
       hasVideo: !!record.videoUrl,
     });
     setSaved(true);
-    // 영상 기록 제거 후 채팅 분석 결과 화면으로 이동
+    // 영상 데이터로 분석 결과 계산 후 저장, 영상 기록 제거
+    const analysisData = computeAnalysisFromRecord(record);
+    sessionStorage.setItem("videoAnalysisResult", JSON.stringify(analysisData));
     clearVideoRecord();
     setTimeout(() => navigate({ to: "/analysis", search: {} }), 400);
   };
@@ -747,7 +849,7 @@ function EmotionReportPage({ record }: { record: VideoRecord }) {
                 {record.rawExpressions && (
                   <div className="mt-4 flex flex-wrap gap-2">
                     {Object.entries(record.rawExpressions)
-                      .sort(([, a], [, b]) => b - a)
+                      .sort(([, a], [, b]) => (b ?? 0) - (a ?? 0))
                       .slice(0, 4)
                       .map(([emotion, val]) => (
                         <span key={emotion} className="rounded-full px-3 py-1 text-[12px] font-medium"
