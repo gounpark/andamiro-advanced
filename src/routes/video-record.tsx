@@ -207,6 +207,10 @@ function VideoRecordPage() {
     recorderRef.current?.stop();
     if (timerRef.current) clearInterval(timerRef.current);
     stopSpeech();
+    // 녹화 완료 시 카메라·마이크 스트림 즉시 해제 (done 화면에서 불필요)
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    setStreamReady(false);
   };
 
   const resetRecording = () => {
@@ -216,6 +220,8 @@ function VideoRecordPage() {
     setTranscript(""); setInterimText("");
     finalTranscriptRef.current = "";
     timelineRef.current = []; lastSnapSecRef.current = -1;
+    // 다시 녹화 시 카메라 재시작
+    startCamera();
   };
 
   const completeRecording = () => {
