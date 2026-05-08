@@ -257,7 +257,6 @@ function VideoRecordPage() {
               autoPlay
               loop
               className="absolute inset-0 w-full h-full object-cover"
-              style={{ transform: "scaleX(-1)" }}
             />
           )}
 

@@ -834,8 +834,7 @@ function EmotionReportPage({ record }: { record: VideoRecord }) {
                 {record.videoUrl ? (
                   <div className="rounded-2xl overflow-hidden bg-black aspect-video">
                     <video src={record.videoUrl} controls playsInline
-                      className="w-full h-full object-cover"
-                      style={{ transform: "scaleX(-1)" }} />
+                      className="w-full h-full object-cover" />
                   </div>
                 ) : (
                   <div className="rounded-2xl bg-[#f3f4f8] aspect-video flex flex-col items-center justify-center gap-2">
