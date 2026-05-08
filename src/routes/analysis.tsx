@@ -1146,13 +1146,13 @@ function MoodSelectionStep({
               className="text-[15px] tracking-tight transition-colors duration-300"
               style={{ color: selectedMood === "worst" ? "#ffffff" : "#8a8d96" }}
             >
-              가장 가까운 감정을 골라주세요
+              AI 분석은 참고용이에요
             </p>
             <h1
               className="mt-2 font-bold text-[28px] leading-[1.25] tracking-tight transition-colors duration-300"
               style={{ color: selectedMood === "worst" ? "#ffffff" : undefined }}
             >
-              지금 기분이 어때요?
+              내가 느낀 감정을<br />직접 골라주세요
             </h1>
           </section>
 
