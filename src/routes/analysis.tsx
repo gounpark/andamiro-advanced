@@ -9,6 +9,19 @@ import moodGood from "@/assets/moods/mood-good.webp";
 import moodOkay from "@/assets/moods/mood-okay.webp";
 import moodBad from "@/assets/moods/mood-bad.webp";
 import moodWorst from "@/assets/moods/mood-worst.webp";
+
+import moodBestBig from "@/assets/moods/mood-best-big.webp";
+import moodGoodBig from "@/assets/moods/mood-good-big.webp";
+import moodOkayBig from "@/assets/moods/mood-okay-big.webp";
+import moodBadBig from "@/assets/moods/mood-bad-big.webp";
+import moodWorstBig from "@/assets/moods/mood-worst-big.webp";
+import moodEmpty from "@/assets/moods/mood-empty.webp";
+
+import bgBest from "@/assets/moods/bg-best.webp?url";
+import bgGood from "@/assets/moods/bg-good.webp?url";
+import bgOkay from "@/assets/moods/bg-okay.webp?url";
+import bgBad from "@/assets/moods/bg-bad.webp?url";
+import bgWorst from "@/assets/moods/bg-worst.webp?url";
 import iconChat from "@/assets/analysis/insight-icon-container.svg";
 import iconAiBook from "@/assets/analysis/preparation-header-icon.svg";
 
@@ -567,14 +580,17 @@ function MetricBar({ label, value }: { label: string; value: number }) {
 // 감정 리포트 전체 페이지
 // ─────────────────────────────────────────────
 
-const MOOD_META: Record<MoodKey, { label: string; thumb: string; emoji: string }> = {
-  best:  { label: "최고예요!", thumb: moodBest,  emoji: "🤩" },
-  good:  { label: "좋아요!",   thumb: moodGood,  emoji: "😊" },
-  okay:  { label: "보통이에요", thumb: moodOkay,  emoji: "😐" },
-  bad:   { label: "별로예요",  thumb: moodBad,   emoji: "😔" },
-  worst: { label: "최악이에요", thumb: moodWorst, emoji: "😭" },
+const MOOD_META: Record<MoodKey, { label: string; thumb: string; big: string; bg: string; emoji: string }> = {
+  best:  { label: "최고예요!", thumb: moodBest,  big: moodBestBig,  bg: bgBest,  emoji: "🤩" },
+  good:  { label: "좋아요!",   thumb: moodGood,  big: moodGoodBig,  bg: bgGood,  emoji: "😊" },
+  okay:  { label: "보통이에요", thumb: moodOkay,  big: moodOkayBig,  bg: bgOkay,  emoji: "😐" },
+  bad:   { label: "별로예요",  thumb: moodBad,   big: moodBadBig,   bg: bgBad,   emoji: "😔" },
+  worst: { label: "최악이에요", thumb: moodWorst, big: moodWorstBig, bg: bgWorst, emoji: "😭" },
 };
 const MOODS = (["best","good","okay","bad","worst"] as MoodKey[]).map(k => ({ key: k, ...MOOD_META[k] }));
+
+const BIG_CHARACTER_OFFSET_X: Partial<Record<MoodKey, number>> = { good: 20, bad: 20 };
+const EMPTY_CHARACTER_OFFSET_X = 20;
 
 const EMOTION_KO: Record<string, string> = {
   neutral: "평온", happy: "기쁨", sad: "슬픔",
@@ -775,6 +791,19 @@ function EmotionReportPage({ record }: { record: VideoRecord }) {
   };
 
   const stepTitles = ["영상 확인", "감정 흐름", "AI 분석", "기록 완료"];
+
+  // Step 3: 풀스크린 무드 선택 (RecordPage 스타일)
+  if (step === 3) {
+    return (
+      <MoodSelectionStep
+        selectedMood={selectedMood}
+        setSelectedMood={setSelectedMood}
+        onSave={handleSave}
+        onBack={goPrev}
+        saved={saved}
+      />
+    );
+  }
 
   return (
     <div className="app-shell">
@@ -1000,6 +1029,227 @@ function EmotionReportPage({ record }: { record: VideoRecord }) {
               {saved ? "저장됐어요 ✓" : "기록 완료"}
             </button>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Step 4: 풀스크린 무드 선택 (RecordPage 스타일)
+// ─────────────────────────────────────────────
+
+function MoodPickerFull({
+  selected,
+  onSelect,
+}: {
+  selected: MoodKey | null;
+  onSelect: (k: MoodKey) => void;
+}) {
+  const ITEM = 72;
+  const GAP = 16;
+  const PADDING_LEFT = 24;
+  const selectedIndex = selected ? MOODS.findIndex((m) => m.key === selected) : -1;
+  const ordered =
+    selectedIndex >= 0
+      ? [...MOODS.slice(selectedIndex), ...MOODS.slice(0, selectedIndex)]
+      : MOODS;
+
+  return (
+    <div className="relative pb-8 pt-12 select-none overflow-hidden">
+      {selected && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute z-20 rounded-full ring-[3px] ring-[#7aa7ff]"
+          style={{ left: PADDING_LEFT, top: 48, width: ITEM, height: ITEM }}
+        />
+      )}
+      <div
+        className="flex"
+        style={{ gap: `${GAP}px`, paddingLeft: PADDING_LEFT, paddingRight: PADDING_LEFT }}
+      >
+        {ordered.map((m) => (
+          <button
+            key={m.key}
+            type="button"
+            onClick={() => onSelect(m.key)}
+            aria-pressed={selected === m.key}
+            aria-label={m.label}
+            style={{ width: ITEM, height: ITEM, touchAction: "manipulation" }}
+            className="relative shrink-0 grid place-items-center rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-transform duration-200 active:scale-95"
+          >
+            <img src={m.thumb} alt="" className="h-12 w-12 object-contain" />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MoodSelectionStep({
+  selectedMood,
+  setSelectedMood,
+  onSave,
+  onBack,
+  saved,
+}: {
+  selectedMood: MoodKey | null;
+  setSelectedMood: (k: MoodKey) => void;
+  onSave: () => void;
+  onBack: () => void;
+  saved: boolean;
+}) {
+  const hasSelection = selectedMood !== null;
+  const current = selectedMood ? MOOD_META[selectedMood] : null;
+
+  return (
+    <div className="app-shell">
+      <div className="app-frame" style={{ position: "relative" }}>
+        {/* 배경 레이어 */}
+        <div
+          className="absolute inset-0 transition-opacity duration-500"
+          style={{
+            background: hasSelection
+              ? undefined
+              : "linear-gradient(180deg, oklch(0.95 0.025 240) 0%, oklch(0.97 0.012 240) 60%, #ffffff 100%)",
+          }}
+        />
+        {MOODS.map((m) => (
+          <img
+            key={`bg-s4-${m.key}`}
+            src={m.bg}
+            alt=""
+            aria-hidden
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover transition-opacity duration-300"
+            style={{ opacity: selectedMood === m.key ? 1 : 0 }}
+          />
+        ))}
+
+        {/* 콘텐츠 */}
+        <div className="relative z-10 flex h-full flex-col">
+          {/* 헤더: 뒤로가기 + 스텝 도트 */}
+          <header className="relative flex items-center justify-center px-5 pt-[52px] pb-1">
+            <button
+              type="button"
+              onClick={onBack}
+              className="absolute left-3 grid h-9 w-9 place-items-center rounded-full text-foreground/70"
+            >
+              <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
+            </button>
+            <StepDots current={3} />
+          </header>
+
+          {/* 타이틀 */}
+          <section className="px-6 pt-3">
+            <p
+              className="text-[15px] tracking-tight transition-colors duration-300"
+              style={{ color: selectedMood === "worst" ? "#ffffff" : "#8a8d96" }}
+            >
+              가장 가까운 감정을 골라주세요
+            </p>
+            <h1
+              className="mt-2 font-bold text-[28px] leading-[1.25] tracking-tight transition-colors duration-300"
+              style={{ color: selectedMood === "worst" ? "#ffffff" : undefined }}
+            >
+              지금 기분이 어때요?
+            </h1>
+          </section>
+
+          {/* 캐릭터 영역 */}
+          <div className="relative flex-1 flex flex-col items-center justify-center px-6 pt-10 pb-4 min-h-0">
+            {/* 말풍선 */}
+            <div className="rounded-full bg-white/95 px-5 py-2 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
+              {current ? (
+                <span className="font-semibold text-foreground text-[15px] tracking-tight">
+                  {current.label}
+                </span>
+              ) : (
+                <span className="text-foreground/50 text-[18px] leading-none tracking-widest font-bold">
+                  •••
+                </span>
+              )}
+            </div>
+
+            {/* 캐릭터 이미지들 */}
+            <div className="relative mt-3 h-[300px] w-[300px] flex items-center justify-center">
+              <img
+                src={moodEmpty}
+                alt="감정을 선택해주세요"
+                decoding="async"
+                className="absolute inset-0 m-auto h-[280px] w-[280px] object-contain transition-opacity duration-300"
+                style={{
+                  opacity: hasSelection ? 0 : 1,
+                  transform: `translateX(${EMPTY_CHARACTER_OFFSET_X}px)`,
+                }}
+              />
+              {MOODS.map((m) => (
+                <img
+                  key={`char-s4-${m.key}`}
+                  src={m.big}
+                  alt={m.label}
+                  decoding="async"
+                  className="absolute inset-0 m-auto h-[280px] w-[280px] object-contain transition-opacity duration-300"
+                  style={{
+                    opacity: selectedMood === m.key ? 1 : 0,
+                    transform: `translateX(${BIG_CHARACTER_OFFSET_X[m.key] ?? 0}px)`,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* 무드 선택 트랙 */}
+          <MoodPickerFull selected={selectedMood} onSelect={setSelectedMood} />
+
+          {/* 하단 CTA 패널 */}
+          <section
+            className="relative bg-white px-6 pt-5 pb-[46px] rounded-t-[24px]"
+            style={{
+              boxShadow:
+                "0 -8px 24px -6px rgba(20, 30, 60, 0.12), 0 -2px 6px -2px rgba(20, 30, 60, 0.06)",
+            }}
+          >
+            {hasSelection && (
+              <svg
+                aria-hidden
+                width="32"
+                height="18"
+                viewBox="0 0 32 18"
+                className="absolute"
+                style={{
+                  left: 24 + 36,
+                  top: -16,
+                  transform: "translateX(-50%)",
+                  filter: "drop-shadow(0 -3px 4px rgba(20, 30, 60, 0.10))",
+                }}
+              >
+                <path
+                  d="M14.5 1.5 Q16 0 17.5 1.5 L30 16 Q31 17.5 29 17.5 L3 17.5 Q1 17.5 2 16 Z"
+                  fill="#ffffff"
+                />
+              </svg>
+            )}
+            <p className="text-[12px] text-[#9a9aa3] tracking-tight">오늘의 감정 기록</p>
+            <h2 className="mt-1 font-bold text-foreground text-[17px] leading-snug tracking-tight">
+              {current
+                ? `${current.label} 기분이었군요! 기록해볼게요.`
+                : "감정을 선택하고 기록 완료하기"}
+            </h2>
+            <button
+              type="button"
+              disabled={!hasSelection || saved}
+              onClick={onSave}
+              style={{ touchAction: "manipulation" }}
+              className={`mt-3 flex w-full items-center justify-center rounded-2xl py-3.5 font-semibold text-[15px] tracking-tight transition-all ${
+                hasSelection && !saved
+                  ? "bg-[var(--primary)] text-white shadow-md active:scale-[0.99]"
+                  : "bg-[#e8e8ec] text-[#a8a8b0] cursor-not-allowed"
+              }`}
+            >
+              {saved ? "저장됐어요 ✓" : "기록 완료"}
+            </button>
+          </section>
         </div>
       </div>
     </div>
