@@ -71,13 +71,18 @@ export function useFaceApi(
       });
   }, []);
 
+  const detectingRef = useRef(false);
+
   const detect = useCallback(async () => {
     const video = videoRef.current;
     if (!video || video.readyState < 2 || !mountedRef.current) return;
+    // 이전 추론이 아직 끝나지 않았으면 스킵 (중복 실행 방지)
+    if (detectingRef.current) return;
+    detectingRef.current = true;
     try {
       const faceapi = await import("face-api.js");
       const result = await faceapi
-        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224 }))
         .withFaceExpressions();
       if (!result || !mountedRef.current) return;
 
@@ -105,12 +110,14 @@ export function useFaceApi(
       setDominantConfidence(conf);
     } catch {
       // 프레임 감지 실패는 조용히 무시
+    } finally {
+      detectingRef.current = false;
     }
   }, [videoRef]);
 
   useEffect(() => {
     if (!modelsLoaded || !active) return;
-    intervalRef.current = setInterval(detect, 400);
+    intervalRef.current = setInterval(detect, 800);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };

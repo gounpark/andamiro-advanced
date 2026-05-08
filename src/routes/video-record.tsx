@@ -98,8 +98,9 @@ function VideoRecordPage() {
   const [speechSupported] = useState(() => !!getSpeechRecognition());
   const finalTranscriptRef = useRef("");
 
+  // 녹화 중일 때만 face-api 활성화 — idle에서는 CPU 절약
   const { modelsLoaded, modelError, expressions, dominantExpression, dominantConfidence } =
-    useFaceApi(videoRef, streamReady);
+    useFaceApi(videoRef, recordState === "recording");
 
   // 1초마다 스냅샷 수집
   useEffect(() => {
@@ -372,23 +373,12 @@ function VideoRecordPage() {
         </div>
 
         {/* ── 카메라 위 오버레이 배지 ── */}
-        {/* 모델 로딩 */}
-        {streamReady && !modelsLoaded && !modelError && (
-          <div className="absolute top-[calc(52px+56px)] left-1/2 -translate-x-1/2 z-20
-            flex items-center gap-2 rounded-full bg-black/60 px-4 py-2 backdrop-blur-sm">
-            <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
-            <span className="text-white text-[12px]">AI 분석 모델 로딩 중...</span>
-          </div>
-        )}
-
-        {/* AI 감지 배지 (idle 상태에서 표정 감지됐을 때만) */}
-        {recordState === "idle" && modelsLoaded && dominantExpression && dominantConfidence > 0.3 && (
+        {/* idle: 카메라 준비 완료 표시 (face-api는 꺼둠) */}
+        {recordState === "idle" && streamReady && (
           <div className="absolute z-20 flex items-center gap-2 rounded-full bg-black/55 px-3.5 py-2 backdrop-blur-sm"
             style={{ top: "calc(52px + 56px)", left: "16px" }}>
-            <span className="text-[11px] font-medium text-green-300">✓ 얼굴 인식 완료</span>
-            <span className="text-white/60 text-[11px]">
-              {EXPRESSION_KO[dominantExpression] ?? dominantExpression}
-            </span>
+            <span className="h-2 w-2 rounded-full bg-green-400 flex-shrink-0" />
+            <span className="text-[11px] font-medium text-green-300">카메라 준비 완료</span>
           </div>
         )}
 
@@ -398,6 +388,15 @@ function VideoRecordPage() {
             style={{ top: "calc(52px + 56px)", right: "16px" }}>
             <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
             <span className="text-cyan-300 text-[11px] font-medium">AI 분석 중</span>
+          </div>
+        )}
+
+        {/* 모델 로딩 (녹화 시작 직후) */}
+        {recordState === "recording" && !modelsLoaded && !modelError && (
+          <div className="absolute top-[calc(52px+56px)] left-1/2 -translate-x-1/2 z-20
+            flex items-center gap-2 rounded-full bg-black/60 px-4 py-2 backdrop-blur-sm">
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
+            <span className="text-white text-[12px]">AI 분석 준비 중...</span>
           </div>
         )}
 
