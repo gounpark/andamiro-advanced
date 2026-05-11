@@ -41,7 +41,10 @@ const EXPRESSION_KO: Record<string, string> = {
 };
 void EXPRESSION_KO; // suppress unused warning
 
-type RecordState = "idle" | "recording" | "analyzing" | "done";
+// "perm": 처음 방문 시 카메라/마이크 사용 안내 화면
+type RecordState = "perm" | "idle" | "recording" | "analyzing" | "done";
+
+const PERM_CACHE_KEY = "andamiro_cam_perm"; // 한번 허용 후 재안내 스킵용
 
 function mapExpressionToMood(expr: FaceExpression, conf: number): MoodKey | "surprised" {
   if (expr === "surprised") return "surprised";
@@ -137,7 +140,10 @@ function VideoRecordPage() {
   const [cameraError, setCameraError] = useState<string | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  const [recordState, setRecordState] = useState<RecordState>("idle");
+  // localStorage 플래그 있으면 perm 화면 스킵, 없으면 사용 안내 먼저
+  const [recordState, setRecordState] = useState<RecordState>(
+    () => (localStorage.getItem(PERM_CACHE_KEY) === "1" ? "idle" : "perm")
+  );
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
   const [recordSec, setRecordSec] = useState(0);
@@ -176,24 +182,62 @@ function VideoRecordPage() {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
       }
+      // 카메라 성공 시 권한 허용 상태 캐시 (다음 방문부터 perm 화면 스킵)
+      localStorage.setItem(PERM_CACHE_KEY, "1");
       setStreamReady(true);
     } catch (err) {
+      const isNotAllowed = err instanceof Error && err.name === "NotAllowedError";
       setCameraError(
-        err instanceof Error && err.name === "NotAllowedError"
-          ? "카메라 접근이 거부되었습니다. 브라우저 설정에서 권한을 허용해 주세요."
+        isNotAllowed
+          ? "카메라 접근이 거부되었습니다.\n브라우저 설정 → 사이트 권한에서 카메라/마이크를 허용해 주세요."
           : "카메라를 시작할 수 없습니다."
       );
+      // 거부됐으면 다음엔 perm 화면 다시 보여주기 (재허용 유도)
+      if (isNotAllowed) localStorage.removeItem(PERM_CACHE_KEY);
     }
   }, []);
 
+  // 마운트 시: perm 화면이 필요 없으면 바로 startCamera
+  // perm 화면이 있으면 사용자 액션 후 startCamera
   useEffect(() => {
-    startCamera();
+    // Permissions API로 이미 허용 여부 확인 → perm 화면 스킵 가능하면 스킵
+    const checkAndStart = async () => {
+      try {
+        const [cam, mic] = await Promise.all([
+          navigator.permissions.query({ name: "camera" as PermissionName }),
+          navigator.permissions.query({ name: "microphone" as PermissionName }),
+        ]);
+        if (cam.state === "granted" && mic.state === "granted") {
+          // 이미 허용됨 — perm 화면 없이 바로 시작
+          localStorage.setItem(PERM_CACHE_KEY, "1");
+          setRecordState("idle");
+          startCamera();
+          return;
+        }
+      } catch {
+        // Permissions API 미지원 (일부 iOS 버전 등) — localStorage 플래그로만 판단
+      }
+      // 이미 "idle" 상태(localStorage 플래그 있었음) → startCamera
+      setRecordState((prev) => {
+        if (prev === "idle") startCamera();
+        return prev;
+      });
+    };
+    checkAndStart();
+
     return () => {
       streamRef.current?.getTracks().forEach((t) => t.stop());
       if (timerRef.current) clearInterval(timerRef.current);
       recognitionRef.current?.abort();
       if (interimThrottleRef.current) clearTimeout(interimThrottleRef.current);
     };
+  }, [startCamera]);
+
+  // 사용자가 perm 화면에서 "시작하기" 탭 → 카메라 시작
+  const handlePermAccept = useCallback(() => {
+    localStorage.setItem(PERM_CACHE_KEY, "1");
+    setRecordState("idle");
+    startCamera();
   }, [startCamera]);
 
   // 음성 인식 (interim 업데이트 throttle — 200ms)
@@ -324,6 +368,82 @@ function VideoRecordPage() {
     `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
   const displayTranscript = transcript + (interimText ? ` ${interimText}` : "");
+
+  // ─── 카메라/마이크 사용 안내 화면 (첫 방문 시 1회만) ───
+  if (recordState === "perm") {
+    return (
+      <div className="app-shell">
+        <div className="app-frame relative bg-black overflow-hidden flex flex-col">
+          {/* 상단 X 버튼 */}
+          <button
+            type="button"
+            onClick={() => navigate({ to: "/record" })}
+            aria-label="뒤로"
+            style={{ top: "52px", left: "16px", touchAction: "manipulation" }}
+            className="absolute z-20 grid h-10 w-10 place-items-center rounded-full bg-white/10 border border-white/20 text-white"
+          >
+            <X className="h-5 w-5" />
+          </button>
+
+          {/* 배경 그라디언트 */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0d1b2a] to-[#1a2840]" />
+
+          {/* 콘텐츠 */}
+          <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-7 text-center">
+            {/* 아이콘 */}
+            <div className="mb-8 flex items-center gap-5">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 border border-white/20">
+                <Camera className="h-8 w-8 text-white" />
+              </div>
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 border border-white/20">
+                <Mic className="h-8 w-8 text-white" />
+              </div>
+            </div>
+
+            <h2 className="text-white font-bold text-[22px] tracking-tight leading-tight mb-3">
+              카메라와 마이크를<br />사용해요
+            </h2>
+            <p className="text-white/60 text-[14px] leading-relaxed tracking-tight mb-8">
+              영상 일기를 기록하고<br />음성으로 오늘의 이야기를 남겨요.<br />
+              <span className="text-white/40 text-[12px]">허용 후엔 다시 묻지 않아요 ✓</span>
+            </p>
+
+            {/* 허용 항목 */}
+            <div className="w-full flex flex-col gap-3 mb-10">
+              {[
+                { icon: <Camera className="h-4 w-4" />, label: "카메라", desc: "영상 기록에 사용" },
+                { icon: <Mic className="h-4 w-4" />, label: "마이크", desc: "음성 인식에 사용" },
+              ].map((item) => (
+                <div key={item.label}
+                  className="flex items-center gap-3 rounded-2xl bg-white/8 border border-white/10 px-4 py-3 text-left">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white/10 text-white">
+                    {item.icon}
+                  </span>
+                  <div>
+                    <p className="text-white font-semibold text-[14px] tracking-tight">{item.label}</p>
+                    <p className="text-white/50 text-[12px] tracking-tight">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* 시작 버튼 */}
+            <button
+              type="button"
+              onClick={handlePermAccept}
+              style={{ background: "var(--primary)", touchAction: "manipulation" }}
+              className="w-full rounded-2xl py-4 font-bold text-white text-[16px] tracking-tight shadow-lg"
+            >
+              허용하고 시작하기
+            </button>
+            <p className="mt-3 text-white/30 text-[11px] tracking-tight">
+              권한은 브라우저 설정에서 언제든 변경할 수 있어요
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ─── AI 분석 중 화면 ───
   if (recordState === "analyzing") {
