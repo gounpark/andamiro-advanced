@@ -398,8 +398,11 @@ function BubbleCluster({ bubbles }: { bubbles: BubbleData[] }) {
 
   if (!bubbles.length) return null;
 
+  // 실제 버블 위치+크기 기반으로 컨테이너 높이 계산 (고정값 대신 동적으로)
+  const dynamicH = Math.max(DESIGN_H, ...bubbles.map((b) => b.top + b.size + 8));
+
   return (
-    <div ref={ref} className="relative mt-4 w-full overflow-visible" style={{ height: DESIGN_H * scale }}>
+    <div ref={ref} className="relative mt-4 w-full overflow-hidden" style={{ height: dynamicH * scale }}>
       {bubbles.map((b, idx) => (
         <div key={b.label}
           className={`bubble-anim absolute flex flex-col items-center justify-center rounded-full select-none ${animated ? "is-animated" : ""}`}
