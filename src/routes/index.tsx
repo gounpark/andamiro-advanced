@@ -9,7 +9,7 @@ import logoSvg from "@/assets/icons/logo.svg";
 import bgShapeLargeSvg from "@/assets/icons/bg-shape-large.svg";
 import bgShapeSmallSvg from "@/assets/icons/bg-shape-small.svg";
 import { BottomNav } from "@/components/BottomNav";
-import { getDiaryEntries, type DiaryEntry } from "@/lib/diaryStore";
+import { getDiaryEntries, todayString, type DiaryEntry } from "@/lib/diaryStore";
 import type { MoodKey } from "@/lib/videoStore";
 
 // record 페이지에서 쓰일 무드 이미지 URL — 메인 진입 직후 백그라운드 프리로드
@@ -360,18 +360,46 @@ function Index() {
               <p className="mt-1 font-semibold text-white text-[22px] leading-tight tracking-tight">
                 지금 마음을 가볍게 남겨보세요!
               </p>
-              <Link
-                ref={ctaBtnRef}
-                to="/record"
-                onPointerEnter={preloadRecordAssets}
-                onTouchStart={preloadRecordAssets}
-                className="mt-4 flex w-full items-center justify-between rounded-lg bg-white px-4 py-2.5 shadow-sm transition-transform active:scale-[0.99]"
-              >
-                <span className="font-semibold text-[var(--primary)] text-[14px] tracking-tight">
-                  오늘 기록 남기러 가기
-                </span>
-                <ArrowRight className="h-5 w-5 text-[var(--primary)]" strokeWidth={2.2} />
-              </Link>
+              {/* 오늘 기록 여부에 따라 CTA 다르게 표시 */}
+              {(() => {
+                const todayEntry = !demo ? allEntries.find((e) => e.date === todayString()) : null;
+                if (todayEntry) {
+                  const emoji = MOOD_EMOJI[todayEntry.userMood as MoodKey] ?? "😐";
+                  return (
+                    <Link
+                      ref={ctaBtnRef}
+                      to="/record"
+                      onPointerEnter={preloadRecordAssets}
+                      onTouchStart={preloadRecordAssets}
+                      className="mt-4 flex w-full items-center justify-between rounded-lg bg-white/20 border border-white/40 px-4 py-2.5 shadow-sm transition-transform active:scale-[0.99]"
+                    >
+                      <div>
+                        <p className="font-bold text-white text-[14px] tracking-tight">
+                          {emoji} 오늘 기록 완료!
+                        </p>
+                        <p className="text-white/70 text-[11px] tracking-tight mt-0.5">
+                          {todayEntry.userMoodLabel} · 추가로 기록하기
+                        </p>
+                      </div>
+                      <ArrowRight className="h-5 w-5 text-white/80" strokeWidth={2.2} />
+                    </Link>
+                  );
+                }
+                return (
+                  <Link
+                    ref={ctaBtnRef}
+                    to="/record"
+                    onPointerEnter={preloadRecordAssets}
+                    onTouchStart={preloadRecordAssets}
+                    className="mt-4 flex w-full items-center justify-between rounded-lg bg-white px-4 py-2.5 shadow-sm transition-transform active:scale-[0.99]"
+                  >
+                    <span className="font-semibold text-[var(--primary)] text-[14px] tracking-tight">
+                      오늘 기록 남기러 가기
+                    </span>
+                    <ArrowRight className="h-5 w-5 text-[var(--primary)]" strokeWidth={2.2} />
+                  </Link>
+                );
+              })()}
             </section>
           </div>
 
