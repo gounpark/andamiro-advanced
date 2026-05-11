@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { X, Camera, Loader2, Mic } from "lucide-react";
-import { useFaceApi, type FaceExpression } from "@/hooks/useFaceApi";
+import { type FaceExpression } from "@/hooks/useFaceApi";
+import { ensureModelsLoaded } from "@/hooks/useFaceApi";
 import { setVideoRecord, type MoodKey, type EmotionSnapshot } from "@/lib/videoStore";
 
 export const Route = createFileRoute("/video-record")({
@@ -38,8 +39,9 @@ const EXPRESSION_KO: Record<string, string> = {
   neutral: "평온", happy: "기쁨", sad: "슬픔",
   angry: "긴장", fearful: "두려움", disgusted: "불쾌", surprised: "놀람",
 };
+void EXPRESSION_KO; // suppress unused warning
 
-type RecordState = "idle" | "recording" | "done";
+type RecordState = "idle" | "recording" | "analyzing" | "done";
 
 function mapExpressionToMood(expr: FaceExpression, conf: number): MoodKey | "surprised" {
   if (expr === "surprised") return "surprised";
@@ -62,11 +64,68 @@ function computeOverallMood(timeline: EmotionSnapshot[]) {
   const [topEmotion, topCount] = Object.entries(counts).reduce<[string, number]>(
     (mx, cur) => cur[1] > mx[1] ? cur : mx, ["neutral", 0]
   );
-  const confidence = topCount / timeline.length;
+  const confidence = timeline.length > 0 ? topCount / timeline.length : 0;
   return {
     aiMood: mapExpressionToMood(topEmotion as FaceExpression, confidence),
     aiConfidence: confidence,
   };
+}
+
+// 녹화된 영상을 프레임 단위로 샘플링해서 감정 분석
+async function analyzeRecordedVideo(blobUrl: string): Promise<EmotionSnapshot[]> {
+  await ensureModelsLoaded();
+  const faceapi = await import("face-api.js");
+
+  const video = document.createElement("video");
+  video.src = blobUrl;
+  video.muted = true;
+  video.playsInline = true;
+  video.crossOrigin = "anonymous";
+
+  // 메타데이터 로드 대기
+  await new Promise<void>((resolve, reject) => {
+    const onMeta = () => { video.removeEventListener("loadedmetadata", onMeta); resolve(); };
+    const onErr = () => { video.removeEventListener("error", onErr); reject(new Error("video load failed")); };
+    video.addEventListener("loadedmetadata", onMeta);
+    video.addEventListener("error", onErr);
+    video.load();
+    // 타임아웃 fallback
+    setTimeout(resolve, 5000);
+  });
+
+  const duration = isFinite(video.duration) && video.duration > 0 ? video.duration : 10;
+  // 최대 8 프레임, 최소 1초 간격
+  const sampleCount = Math.min(8, Math.max(1, Math.floor(duration)));
+  const interval = duration / sampleCount;
+  const snapshots: EmotionSnapshot[] = [];
+
+  for (let i = 0; i < sampleCount; i++) {
+    const t = i * interval + interval * 0.5; // 각 구간 중간
+    video.currentTime = Math.min(t, duration - 0.1);
+
+    await new Promise<void>((res) => {
+      const onSeeked = () => { video.removeEventListener("seeked", onSeeked); res(); };
+      video.addEventListener("seeked", onSeeked);
+      setTimeout(res, 1500); // seeked 타임아웃 fallback
+    });
+
+    try {
+      const result = await faceapi
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224 }))
+        .withFaceExpressions();
+
+      if (result) {
+        const exprs = result.expressions as unknown as Record<string, number>;
+        const filtered: Record<string, number> = {};
+        for (const k of ["neutral", "happy", "sad", "angry", "fearful", "disgusted", "surprised"]) {
+          filtered[k] = exprs[k] ?? 0;
+        }
+        snapshots.push({ sec: Math.round(t), expressions: filtered });
+      }
+    } catch { /* 프레임 분석 실패 무시 */ }
+  }
+
+  return snapshots;
 }
 
 function VideoRecordPage() {
@@ -86,9 +145,8 @@ function VideoRecordPage() {
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // 감정 타임라인 수집
+  // 감정 타임라인 (post-recording analysis 결과를 저장)
   const timelineRef = useRef<EmotionSnapshot[]>([]);
-  const lastSnapSecRef = useRef(-1);
 
   // 음성 인식
   const recognitionRef = useRef<SpeechRecognitionType | null>(null);
@@ -97,19 +155,14 @@ function VideoRecordPage() {
   const [speechActive, setSpeechActive] = useState(false);
   const [speechSupported] = useState(() => !!getSpeechRecognition());
   const finalTranscriptRef = useRef("");
+  // interim 업데이트 throttle용
+  const interimRef = useRef("");
+  const interimThrottleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // 녹화 중일 때만 face-api 활성화 — idle에서는 CPU 절약
-  const { modelsLoaded, modelError, expressions, dominantExpression, dominantConfidence } =
-    useFaceApi(videoRef, recordState === "recording");
-
-  // 1초마다 스냅샷 수집
+  // 모델 백그라운드 프리로드 (녹화 시작 전에 미리 로드해서 분석 대기 시간 단축)
   useEffect(() => {
-    if (recordState !== "recording" || !expressions) return;
-    if (recordSec !== lastSnapSecRef.current) {
-      lastSnapSecRef.current = recordSec;
-      timelineRef.current.push({ sec: recordSec, expressions: { ...expressions } });
-    }
-  }, [expressions, recordSec, recordState]);
+    ensureModelsLoaded().catch(() => { /* 실패해도 무시 - 분석 시 재시도 */ });
+  }, []);
 
   const startCamera = useCallback(async () => {
     setCameraError(null);
@@ -139,10 +192,11 @@ function VideoRecordPage() {
       streamRef.current?.getTracks().forEach((t) => t.stop());
       if (timerRef.current) clearInterval(timerRef.current);
       recognitionRef.current?.abort();
+      if (interimThrottleRef.current) clearTimeout(interimThrottleRef.current);
     };
   }, [startCamera]);
 
-  // 음성 인식
+  // 음성 인식 (interim 업데이트 throttle — 200ms)
   const startSpeech = useCallback(() => {
     const SR = getSpeechRecognition();
     if (!SR) return;
@@ -157,7 +211,16 @@ function VideoRecordPage() {
         else interim += r[0].transcript;
       }
       finalTranscriptRef.current = final;
-      setTranscript(final); setInterimText(interim);
+      // final은 즉시 업데이트
+      setTranscript(final);
+      // interim은 200ms throttle로 re-render 줄이기
+      interimRef.current = interim;
+      if (!interimThrottleRef.current) {
+        interimThrottleRef.current = setTimeout(() => {
+          setInterimText(interimRef.current);
+          interimThrottleRef.current = null;
+        }, 200);
+      }
     };
     rec.onend = () => {
       if (speechActive) { try { rec.start(); } catch { /* ignore */ } }
@@ -173,13 +236,16 @@ function VideoRecordPage() {
     recognitionRef.current?.stop();
     recognitionRef.current = null;
     setSpeechActive(false); setInterimText("");
+    if (interimThrottleRef.current) {
+      clearTimeout(interimThrottleRef.current);
+      interimThrottleRef.current = null;
+    }
   }, []);
 
   const startRecording = () => {
     if (!streamRef.current) return;
     chunksRef.current = [];
     timelineRef.current = [];
-    lastSnapSecRef.current = -1;
     setRecordSec(0);
 
     const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
@@ -188,11 +254,19 @@ function VideoRecordPage() {
 
     const recorder = new MediaRecorder(streamRef.current, { mimeType });
     recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
-    recorder.onstop = () => {
+    recorder.onstop = async () => {
       const blob = new Blob(chunksRef.current, { type: mimeType });
       const url = URL.createObjectURL(blob);
       setRecordedBlob(blob);
       setRecordedUrl(url);
+      // 녹화 후 분석 시작
+      setRecordState("analyzing");
+      try {
+        const timeline = await analyzeRecordedVideo(url);
+        timelineRef.current = timeline;
+      } catch {
+        // 분석 실패해도 done으로 이동 (타임라인 없이)
+      }
       setRecordState("done");
     };
     recorder.start(200);
@@ -207,10 +281,11 @@ function VideoRecordPage() {
     recorderRef.current?.stop();
     if (timerRef.current) clearInterval(timerRef.current);
     stopSpeech();
-    // 녹화 완료 시 카메라·마이크 스트림 즉시 해제 (done 화면에서 불필요)
+    // 녹화 완료 시 카메라·마이크 스트림 즉시 해제
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     setStreamReady(false);
+    // recordState는 recorder.onstop이 "analyzing" → "done"으로 전환
   };
 
   const resetRecording = () => {
@@ -219,7 +294,7 @@ function VideoRecordPage() {
     setRecordSec(0); setRecordState("idle");
     setTranscript(""); setInterimText("");
     finalTranscriptRef.current = "";
-    timelineRef.current = []; lastSnapSecRef.current = -1;
+    timelineRef.current = [];
     // 다시 녹화 시 카메라 재시작
     startCamera();
   };
@@ -236,7 +311,7 @@ function VideoRecordPage() {
       aiMood,
       aiMoodLabel,
       aiConfidence,
-      rawExpressions: expressions ?? {},
+      rawExpressions: {},
       userMood: null,
       userMoodLabel: null,
       transcript: finalTranscriptRef.current.trim(),
@@ -249,6 +324,25 @@ function VideoRecordPage() {
     `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
   const displayTranscript = transcript + (interimText ? ` ${interimText}` : "");
+
+  // ─── AI 분석 중 화면 ───
+  if (recordState === "analyzing") {
+    return (
+      <div className="app-shell">
+        <div className="app-frame relative bg-black overflow-hidden flex flex-col items-center justify-center gap-4">
+          <div className="flex flex-col items-center gap-5">
+            <div className="relative">
+              <div className="h-16 w-16 rounded-full border-4 border-white/10 border-t-white/70 animate-spin" />
+            </div>
+            <div className="flex flex-col items-center gap-1.5">
+              <p className="text-white font-bold text-[18px] tracking-tight">AI가 영상을 분석하고 있어요</p>
+              <p className="text-white/50 text-[13px] tracking-tight">잠시만 기다려주세요...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ─── 녹화 중지 후 확인 화면 ───
   if (recordState === "done") {
@@ -273,8 +367,8 @@ function VideoRecordPage() {
             type="button"
             onClick={resetRecording}
             aria-label="다시 녹화"
+            style={{ top: "calc(52px)", left: "16px", touchAction: "manipulation" }}
             className="absolute z-20 grid h-10 w-10 place-items-center rounded-full bg-black/60 border border-white/20 text-white"
-            style={{ top: "calc(52px)", left: "16px" }}
           >
             <X className="h-5 w-5" />
           </button>
@@ -300,6 +394,7 @@ function VideoRecordPage() {
               <button
                 type="button"
                 onClick={resetRecording}
+                style={{ touchAction: "manipulation" }}
                 className="flex items-center justify-center gap-2 rounded-2xl bg-white/15 border border-white/20 py-3.5 font-semibold text-white text-[15px] tracking-tight backdrop-blur-sm"
               >
                 다시 녹화
@@ -307,8 +402,8 @@ function VideoRecordPage() {
               <button
                 type="button"
                 onClick={completeRecording}
+                style={{ background: "var(--primary)", touchAction: "manipulation" }}
                 className="flex items-center justify-center gap-2 rounded-2xl py-3.5 font-bold text-white text-[15px] tracking-tight shadow-lg"
-                style={{ background: "var(--primary)" }}
               >
                 기록 완료
               </button>
@@ -337,6 +432,7 @@ function VideoRecordPage() {
             <Camera className="h-10 w-10 text-white/50 mb-3" />
             <p className="text-white text-[14px] leading-relaxed mb-5">{cameraError}</p>
             <button type="button" onClick={startCamera}
+              style={{ touchAction: "manipulation" }}
               className="rounded-full bg-white/20 px-5 py-2.5 text-white text-[13px] font-medium">
               다시 시도
             </button>
@@ -351,6 +447,7 @@ function VideoRecordPage() {
             type="button"
             onClick={() => navigate({ to: "/record" })}
             aria-label="뒤로"
+            style={{ touchAction: "manipulation" }}
             className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-black/60 border border-white/20 text-white"
           >
             <X className="h-5 w-5" />
@@ -378,8 +475,7 @@ function VideoRecordPage() {
           )}
         </div>
 
-        {/* ── 카메라 위 오버레이 배지 ── */}
-        {/* idle: 카메라 준비 완료 표시 (face-api는 꺼둠) */}
+        {/* idle: 카메라 준비 완료 표시 */}
         {recordState === "idle" && streamReady && (
           <div className="absolute z-20 flex items-center gap-2 rounded-full bg-black/55 px-3.5 py-2 backdrop-blur-sm"
             style={{ top: "calc(52px + 56px)", left: "16px" }}>
@@ -388,21 +484,12 @@ function VideoRecordPage() {
           </div>
         )}
 
-        {/* AI 분석 중 배지 (recording) */}
-        {recordState === "recording" && modelsLoaded && (
+        {/* 녹화 중 음성 인식 안내 배지 */}
+        {recordState === "recording" && speechActive && (
           <div className="absolute z-20 flex items-center gap-1.5 rounded-full bg-black/55 px-3 py-1.5 backdrop-blur-sm"
             style={{ top: "calc(52px + 56px)", right: "16px" }}>
-            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="text-cyan-300 text-[11px] font-medium">AI 분석 중</span>
-          </div>
-        )}
-
-        {/* 모델 로딩 (녹화 시작 직후) */}
-        {recordState === "recording" && !modelsLoaded && !modelError && (
-          <div className="absolute top-[calc(52px+56px)] left-1/2 -translate-x-1/2 z-20
-            flex items-center gap-2 rounded-full bg-black/60 px-4 py-2 backdrop-blur-sm">
-            <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
-            <span className="text-white text-[12px]">AI 분석 준비 중...</span>
+            <Mic className="h-3 w-3 text-red-400 animate-pulse" />
+            <span className="text-red-300 text-[11px] font-medium">음성 인식 중</span>
           </div>
         )}
 
@@ -410,15 +497,9 @@ function VideoRecordPage() {
         {recordState === "recording" && (speechActive || displayTranscript) && (
           <div className="absolute z-20 bottom-[180px] left-3 right-3">
             <div className="rounded-2xl bg-black/65 px-4 py-3 backdrop-blur-sm">
-              {speechActive && (
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <Mic className="h-3 w-3 text-red-400 animate-pulse" />
-                  <span className="text-red-300 text-[11px] font-semibold">음성 인식 중</span>
-                </div>
-              )}
               <p className="text-white text-[13px] leading-relaxed">
                 {transcript && <span>{transcript}</span>}
-                {interimText && <span className="text-white/50">{interimText}</span>}
+                {interimText && <span className="text-white/50"> {interimText}</span>}
                 {!displayTranscript && speechActive && (
                   <span className="text-white/40 text-[12px]">말씀해 주세요...</span>
                 )}
@@ -433,15 +514,15 @@ function VideoRecordPage() {
 
           {recordState === "idle" && (
             <>
-              {/* 안내 텍스트 */}
               <p className="text-white/60 text-[12px] mb-5 tracking-tight">
                 {streamReady ? "버튼을 눌러 녹화를 시작하세요" : "카메라 준비 중..."}
               </p>
-              {/* 셔터 버튼 */}
+              {/* 셔터 버튼 — touchAction: manipulation 으로 300ms 지연 제거 */}
               <button
                 type="button"
                 onClick={startRecording}
                 disabled={!streamReady}
+                style={{ touchAction: "manipulation" }}
                 className="flex h-[76px] w-[76px] items-center justify-center rounded-full border-4 border-white transition-transform active:scale-95 disabled:opacity-40"
               >
                 <div className="h-[60px] w-[60px] rounded-full bg-white" />
@@ -452,12 +533,13 @@ function VideoRecordPage() {
           {recordState === "recording" && (
             <>
               <p className="text-white/60 text-[12px] mb-5 tracking-tight">
-                말하는 동안 AI가 감정을 분석하고 있어요
+                말하는 동안 AI가 녹화 후 분석해드려요
               </p>
               {/* 정지 버튼 */}
               <button
                 type="button"
                 onClick={stopRecording}
+                style={{ touchAction: "manipulation" }}
                 className="flex h-[76px] w-[76px] items-center justify-center rounded-full border-4 border-white transition-transform active:scale-95"
               >
                 <div className="h-[28px] w-[28px] rounded-[6px] bg-white" />

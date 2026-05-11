@@ -22,7 +22,7 @@ export interface UseFaceApiResult {
 // 모델은 한 번만 로드 (모듈 레벨 캐시)
 let modelsLoadPromise: Promise<void> | null = null;
 
-async function ensureModelsLoaded(): Promise<void> {
+export async function ensureModelsLoaded(): Promise<void> {
   if (modelsLoadPromise) return modelsLoadPromise;
   modelsLoadPromise = (async () => {
     // face-api.js dynamic import (무거운 번들 lazy-load)
