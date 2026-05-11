@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ChevronRight, Bell, Moon, Clock, Database, Megaphone, HelpCircle, FileText, BookOpen, Check } from "lucide-react";
+import { ChevronRight, Bell, Clock, Database, Megaphone, HelpCircle, FileText, BookOpen, Check } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import cloverActiveSvg from "@/assets/icons/clover-active.svg";
 import bgShapeLargeSvg from "@/assets/icons/bg-shape-large.svg";
@@ -21,7 +21,6 @@ export const Route = createFileRoute("/my")({
 
 const NOTIF_TIME_KEY = "andamiro_notif_time";
 const NOTIF_ON_KEY = "andamiro_notif_on";
-const DARK_KEY = "andamiro_dark";
 
 /** 브라우저 알림 권한 요청 */
 async function requestNotifPermission(): Promise<boolean> {
@@ -50,7 +49,6 @@ function MyPage() {
 
   // 설정 상태 — localStorage에서 초기값 읽기
   const [notif, setNotif] = useState(() => localStorage.getItem(NOTIF_ON_KEY) !== "0");
-  const [dark, setDark] = useState(() => localStorage.getItem(DARK_KEY) === "1");
   const [notifTime, setNotifTime] = useState(() => localStorage.getItem(NOTIF_TIME_KEY) ?? "21:00");
   const [notifPerm, setNotifPerm] = useState<NotificationPermission | "unsupported">(() => {
     if (typeof window === "undefined" || !("Notification" in window)) return "unsupported";
@@ -59,13 +57,6 @@ function MyPage() {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [timeSaved, setTimeSaved] = useState(false);
   const timeInputRef = useRef<HTMLInputElement>(null);
-
-  // 다크모드 토글 — 실제로 document.documentElement에 .dark 클래스 적용
-  const handleDarkToggle = (v: boolean) => {
-    setDark(v);
-    document.documentElement.classList.toggle("dark", v);
-    localStorage.setItem(DARK_KEY, v ? "1" : "0");
-  };
 
   // 알림 토글
   const handleNotifToggle = async (v: boolean) => {
@@ -202,15 +193,6 @@ function MyPage() {
                   onCheckedChange={handleNotifToggle}
                   disabled={notifDenied}
                 />
-              </div>
-
-              {/* 다크모드 토글 */}
-              <div className="w-full flex items-center gap-3 px-4 py-3.5 border-b border-[#f5f5f5]">
-                <span className="grid h-7 w-7 place-items-center rounded-full bg-[#f4f6fa] text-[var(--primary)] shrink-0">
-                  <Moon className="h-4 w-4" />
-                </span>
-                <span className="flex-1 text-[14px] text-foreground tracking-tight">다크 모드</span>
-                <Switch checked={dark} onCheckedChange={handleDarkToggle} />
               </div>
 
               {/* 알림 시간 */}

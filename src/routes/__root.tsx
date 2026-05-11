@@ -1,5 +1,4 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
-import { useEffect } from "react";
 
 import appCss from "../styles.css?url";
 import { Splash } from "@/components/Splash";
@@ -73,12 +72,6 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  // 다크모드 localStorage 상태 복원
-  useEffect(() => {
-    const dark = localStorage.getItem("andamiro_dark") === "1";
-    document.documentElement.classList.toggle("dark", dark);
-  }, []);
-
   return (
     <>
       <Splash />
