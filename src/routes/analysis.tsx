@@ -320,35 +320,26 @@ function AnalysisPage() {
   const tomorrowRef = useRef<HTMLElement>(null);
   const buttonsRef = useRef<HTMLDivElement>(null);
 
-  // 영상 기록이 있으면 감정 리포트 화면으로 전환
-  if (videoRecord) {
-    return (
-      <EmotionReportPage
-        record={videoRecord}
-        onDone={(analysisData) => {
-          setComputedData(analysisData);
-          setVideoRecord(null);
-        }}
-      />
-    );
-  }
-
-  // 순차 reveal: AI가 결과를 차례로 생성하는 것처럼
+  // ── 모든 hook은 조건부 return 전에 선언 (Rules of Hooks) ──
+  // 순차 reveal: videoRecord가 null이 된 직후부터 타이머 시작
   const [revealed, setRevealed] = useState(0);
   useEffect(() => {
+    if (videoRecord) return; // 리포트 화면 중엔 실행 안 함
+    setRevealed(0);
     const timers = [
-      setTimeout(() => setRevealed(1), 200),   // 점수 카드 상단
-      setTimeout(() => setRevealed(2), 800),   // 게이지
-      setTimeout(() => setRevealed(3), 1500),  // 메트릭
-      setTimeout(() => setRevealed(4), 2400),  // 요약 카드
-      setTimeout(() => setRevealed(5), 3400),  // 내일 카드
-      setTimeout(() => setRevealed(6), 4400),  // 버튼
+      setTimeout(() => setRevealed(1), 200),
+      setTimeout(() => setRevealed(2), 800),
+      setTimeout(() => setRevealed(3), 1500),
+      setTimeout(() => setRevealed(4), 2400),
+      setTimeout(() => setRevealed(5), 3400),
+      setTimeout(() => setRevealed(6), 4400),
     ];
     return () => timers.forEach(clearTimeout);
-  }, []);
+  }, [videoRecord]); // videoRecord가 null로 바뀌는 순간 실행
 
   // reveal 될 때마다 해당 섹션이 뷰에 들어오도록 부드럽게 스크롤
   useEffect(() => {
+    if (videoRecord) return;
     const targets: Record<number, React.RefObject<HTMLElement | HTMLDivElement | null>> = {
       4: summaryRef,
       5: tomorrowRef,
@@ -363,7 +354,20 @@ function AnalysisPage() {
     if (overflow > 0) {
       container.scrollTo({ top: container.scrollTop + overflow, behavior: "smooth" });
     }
-  }, [revealed]);
+  }, [revealed, videoRecord]);
+
+  // ── 조건부 return: 영상 기록이 있으면 리포트 화면 ──
+  if (videoRecord) {
+    return (
+      <EmotionReportPage
+        record={videoRecord}
+        onDone={(analysisData) => {
+          setComputedData(analysisData);
+          setVideoRecord(null);
+        }}
+      />
+    );
+  }
 
   const fadeIn = (n: number): React.CSSProperties => ({
     opacity: revealed >= n ? 1 : 0,
