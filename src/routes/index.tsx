@@ -64,7 +64,6 @@ function Clover({ className }: { className?: string }) {
     </svg>
   );
 }
-void Clover;
 
 type DayState = "active" | "today" | "empty" | "out";
 const WEEK_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -175,11 +174,13 @@ function Index() {
   // 화면 포커스 시 최신 일기 데이터 다시 로드 (녹화 후 돌아올 때)
   useEffect(() => {
     const reload = () => setAllEntries(getDiaryEntries());
+    const onVisibility = () => { if (document.visibilityState === "visible") reload(); };
     window.addEventListener("focus", reload);
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") reload();
-    });
-    return () => window.removeEventListener("focus", reload);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("focus", reload);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, []);
 
   // 월 변경 시 선택 날짜 초기화
@@ -384,12 +385,14 @@ function Index() {
               <div className="flex items-center gap-1">
                 <button type="button" aria-label="이전 달"
                   onClick={demo ? undefined : prevMonth}
+                  disabled={demo}
                   className="grid h-6 w-6 place-items-center rounded text-muted-foreground hover:text-foreground disabled:opacity-30"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <button type="button" aria-label="다음 달"
                   onClick={demo ? undefined : nextMonth}
+                  disabled={demo}
                   className="grid h-6 w-6 place-items-center rounded text-muted-foreground hover:text-foreground disabled:opacity-30"
                 >
                   <ChevronRight className="h-4 w-4" />

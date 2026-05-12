@@ -92,12 +92,15 @@ function MyPage() {
   useEffect(() => {
     if (notifPerm !== "granted" || !notif) return;
     const now = new Date();
-    const [hh, mm] = notifTime.split(":").map(Number);
+    const parts = notifTime.split(":");
+    const hh = parseInt(parts[0], 10);
+    const mm = parseInt(parts[1], 10);
+    if (!Number.isFinite(hh) || !Number.isFinite(mm)) return;
     const nowMin = now.getHours() * 60 + now.getMinutes();
     const targetMin = hh * 60 + mm;
     if (Math.abs(nowMin - targetMin) <= 5) {
       const lastNotif = localStorage.getItem("andamiro_last_notif");
-      const today = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
       if (lastNotif !== today) {
         sendTestNotif();
         localStorage.setItem("andamiro_last_notif", today);
