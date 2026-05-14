@@ -1,5 +1,4 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
-import { useEffect } from "react";
 
 import appCss from "../styles.css?url";
 import { Splash } from "@/components/Splash";
@@ -95,50 +94,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   return (
     <>
-      <NativeInputGuard />
+      <div className="pointer-events-none fixed left-1/2 top-3 z-[9999] -translate-x-1/2 rounded-full border border-emerald-200 bg-white/95 px-4 py-2 text-center text-xs font-semibold text-emerald-700 shadow-lg shadow-emerald-900/10 backdrop-blur">
+        입력 오류 수정 업데이트 적용됨 · 2026.05.15
+      </div>
       <Splash />
       <Outlet />
     </>
   );
-}
-
-function NativeInputGuard() {
-  useEffect(() => {
-    const guardedEvents = [
-      "pointerdown",
-      "pointerup",
-      "mousedown",
-      "mouseup",
-      "click",
-      "touchstart",
-      "touchend",
-      "focusin",
-      "focusout",
-      "compositionstart",
-      "compositionupdate",
-      "compositionend",
-      "keydown",
-      "keyup",
-      "keypress",
-    ];
-
-    const stopForNativeInput = (event: Event) => {
-      const target = event.target;
-      if (!(target instanceof Element)) return;
-      if (!target.closest("input, textarea, [contenteditable='true']")) return;
-      event.stopPropagation();
-    };
-
-    guardedEvents.forEach((eventName) => {
-      document.addEventListener(eventName, stopForNativeInput, true);
-    });
-
-    return () => {
-      guardedEvents.forEach((eventName) => {
-        document.removeEventListener(eventName, stopForNativeInput, true);
-      });
-    };
-  }, []);
-
-  return null;
 }
