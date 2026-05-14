@@ -317,6 +317,7 @@ function CommentSheet({
   const [input, setInput] = useState("");
   const [replyTo, setReplyTo] = useState<ExchangeComment | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isComposingRef = useRef(false);
 
   const refresh = () => setComments(getComments(postId));
 
@@ -407,7 +408,9 @@ function CommentSheet({
             type="text"
             placeholder="댓글을 입력하세요..."
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => { if (!isComposingRef.current) setInput(e.target.value); }}
+            onCompositionStart={() => { isComposingRef.current = true; }}
+            onCompositionEnd={(e) => { isComposingRef.current = false; setInput((e.target as HTMLInputElement).value); }}
             onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && handleSend()}
             className="flex-1 rounded-full bg-[#f4f6fa] px-4 py-2.5 text-[14px] text-foreground placeholder:text-[#bbb] outline-none"
           />

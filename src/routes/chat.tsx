@@ -182,6 +182,7 @@ function ChatPage() {
   const [showChips, setShowChips] = useState(!demo2);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const isComposingRef = useRef(false); // IME 조합 중 여부 (iOS Korean 대응)
   const scrollRef = useRef<HTMLDivElement>(null);
   const [cursor, setCursor] = useState({ x: 50, y: 700, tapping: false, visible: false });
   const frameRef = useRef<HTMLDivElement>(null);
@@ -417,7 +418,15 @@ function ChatPage() {
             </button>
             <input
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                // IME 조합 중에는 state 업데이트 스킵 → iOS Safari에서 한글 composition 중단 방지
+                if (!isComposingRef.current) setInput(e.target.value);
+              }}
+              onCompositionStart={() => { isComposingRef.current = true; }}
+              onCompositionEnd={(e) => {
+                isComposingRef.current = false;
+                setInput((e.target as HTMLInputElement).value);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.nativeEvent.isComposing) send(input);
               }}

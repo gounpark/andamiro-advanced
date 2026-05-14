@@ -40,6 +40,9 @@ function preloadRecordAssets() {
 }
 
 export const Route = createFileRoute("/")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    demo: typeof search.demo === "string" ? search.demo : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "안다미로 — 오늘의 감정 일기" },
@@ -157,7 +160,7 @@ function DayCell({ day, state, selected, onClick }: {
 }
 
 function Index() {
-  const demoParam = new URLSearchParams(window.location.search).get("demo");
+  const { demo: demoParam } = Route.useSearch();
   const demo = demoParam === "1" || demoParam === "2" || demoParam === "4" || demoParam === "5";
   const demoToRecord = demoParam === "2";
   const demoToReport = demoParam === "4";
