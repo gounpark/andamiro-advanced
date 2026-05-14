@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useNavigate, useMatches } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { Plus, ChevronLeft, ChevronRight, BookOpen, Lock, Check, MessageCircle, Eye } from "lucide-react";
 import {
@@ -30,7 +30,16 @@ export const Route = createFileRoute("/exchange")({
 
 type TabId = "my" | "shared";
 
+// 라우터: 자식 라우트면 Outlet, 아니면 목록 페이지
 function ExchangePage() {
+  const matches = useMatches();
+  const isChildRoute = matches.some(
+    (m) => m.routeId === "/exchange/$roomId" || m.routeId === "/exchange/create"
+  );
+  return isChildRoute ? <Outlet /> : <ExchangeListPage />;
+}
+
+function ExchangeListPage() {
   const { invite } = Route.useSearch();
   const navigate = useNavigate();
 
