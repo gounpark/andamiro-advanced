@@ -1,23 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, Lock, X, ImagePlus, Share2, Check } from "lucide-react";
-
-// 한글 IME 조합 중에도 controlled input 값이 계속 따라가야 입력이 멈추지 않는다.
-function ime(setter: (v: string) => void, extra?: () => void) {
-  const update = (value: string) => {
-    setter(value);
-    extra?.();
-  };
-
-  return {
-    onChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-      update(e.target.value);
-    },
-    onCompositionEnd(e: React.CompositionEvent<HTMLInputElement | HTMLTextAreaElement>) {
-      update(e.currentTarget.value);
-    },
-  };
-}
 import { createDiary, getMyName, setMyName, type ExchangeDiary } from "@/lib/exchangeStore";
 
 export const Route = createFileRoute("/exchange/create")({
@@ -36,13 +19,14 @@ interface DraftData {
 function ExchangeCreatePage() {
   const navigate = useNavigate();
 
-  // AI 초안 읽기 (SSR 안전: useEffect 내에서만)
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
+  const titleRef = useRef<HTMLInputElement>(null);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const kwInputRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const authorNameRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [keywords, setKeywords] = useState<string[]>([]);
-  const [kwInput, setKwInput] = useState("");
-  const [password, setPassword] = useState("");
-  const [authorName, setAuthorName] = useState("");
   const [imageDataUrl, setImageDataUrl] = useState<string | undefined>();
   const [error, setError] = useState("");
 
@@ -55,15 +39,15 @@ function ExchangeCreatePage() {
   useEffect(() => {
     // 이름 불러오기
     const name = getMyName();
-    if (name) setAuthorName(name);
+    if (name && authorNameRef.current) authorNameRef.current.value = name;
 
     // sessionStorage에서 AI 초안 읽기
     try {
       const raw = sessionStorage.getItem("exchange_draft");
       if (raw) {
         const draft: DraftData = JSON.parse(raw);
-        if (draft.title) setTitle(draft.title);
-        if (draft.body) setBody(draft.body);
+        if (draft.title && titleRef.current) titleRef.current.value = draft.title;
+        if (draft.body && bodyRef.current) bodyRef.current.value = draft.body;
         if (draft.keywords?.length) setKeywords(draft.keywords);
         sessionStorage.removeItem("exchange_draft");
       }
@@ -73,8 +57,6 @@ function ExchangeCreatePage() {
   }, []);
 
   // ── 이미지 선택 ──────────────────────────────────────────────────────────
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -85,15 +67,21 @@ function ExchangeCreatePage() {
 
   // ── 키워드 ───────────────────────────────────────────────────────────────
   const addKeyword = () => {
-    const kw = kwInput.trim();
+    const input = kwInputRef.current;
+    if (!input) return;
+    const kw = input.value.trim();
     if (kw && !keywords.includes(kw)) {
       setKeywords([...keywords, kw]);
     }
-    setKwInput("");
+    input.value = "";
   };
 
   // ── 유효성 검사 → 확인 팝업 표시 ─────────────────────────────────────────
   const handleSubmitAttempt = () => {
+    const title = titleRef.current?.value ?? "";
+    const body = bodyRef.current?.value ?? "";
+    const password = passwordRef.current?.value ?? "";
+
     if (!title.trim()) {
       setError("제목을 입력해 주세요.");
       return;
@@ -112,6 +100,11 @@ function ExchangeCreatePage() {
 
   // ── 실제 생성 ─────────────────────────────────────────────────────────────
   const handleCreate = () => {
+    const authorName = authorNameRef.current?.value ?? "";
+    const title = titleRef.current?.value ?? "";
+    const body = bodyRef.current?.value ?? "";
+    const password = passwordRef.current?.value ?? "";
+
     if (authorName.trim()) setMyName(authorName.trim());
     const diary = createDiary({
       title: title.trim(),
@@ -216,10 +209,9 @@ function ExchangeCreatePage() {
                 작성자 이름
               </span>
               <input
+                ref={authorNameRef}
                 type="text"
                 placeholder="이름을 입력해 주세요"
-                value={authorName}
-                {...ime(setAuthorName)}
                 className="w-full rounded-xl bg-[#f4f6fa] px-4 py-3 text-base text-foreground placeholder:text-[#bbb] outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
               />
             </label>
@@ -230,10 +222,9 @@ function ExchangeCreatePage() {
                 제목
               </span>
               <input
+                ref={titleRef}
                 type="text"
                 placeholder="일기 제목을 입력해 주세요"
-                value={title}
-                {...ime(setTitle, () => setError(""))}
                 className="w-full rounded-xl bg-[#f4f6fa] px-4 py-3 text-base text-foreground placeholder:text-[#bbb] outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
               />
             </label>
@@ -244,10 +235,9 @@ function ExchangeCreatePage() {
                 내용
               </span>
               <textarea
+                ref={bodyRef}
                 placeholder="일기 내용을 입력해 주세요"
-                value={body}
                 rows={8}
-                {...ime(setBody, () => setError(""))}
                 className="w-full rounded-xl bg-[#f4f6fa] px-4 py-3 text-base text-foreground placeholder:text-[#bbb] outline-none focus:ring-2 focus:ring-[var(--primary)]/30 resize-none"
               />
             </label>
@@ -278,10 +268,9 @@ function ExchangeCreatePage() {
               )}
               <div className="flex gap-2">
                 <input
+                  ref={kwInputRef}
                   type="text"
                   placeholder="키워드 입력 후 추가"
-                  value={kwInput}
-                  {...ime(setKwInput)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.nativeEvent.isComposing) {
                       e.preventDefault();
@@ -308,13 +297,9 @@ function ExchangeCreatePage() {
               <div className="flex items-center gap-2 rounded-xl bg-[#f4f6fa] px-4 py-3">
                 <Lock className="h-4 w-4 text-[#aaa] shrink-0" />
                 <input
+                  ref={passwordRef}
                   type="text"
                   placeholder="초대받은 사람이 입력할 비밀번호"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setError("");
-                  }}
                   className="flex-1 bg-transparent text-base text-foreground placeholder:text-[#bbb] outline-none"
                 />
               </div>
