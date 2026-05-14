@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import React, { useEffect, useRef, useState } from "react";
-import { ChevronLeft, Trash2 } from "lucide-react";
+import { ChevronLeft, Trash2, Share2, X, ImageIcon, Plus } from "lucide-react";
 import { getVideoRecord, clearVideoRecord, type VideoRecord, type EmotionSnapshot, type MoodKey } from "@/lib/videoStore";
 import { saveDiaryEntry, todayString } from "@/lib/diaryStore";
+import { getRooms, createPost, type ExchangeRoom } from "@/lib/exchangeStore";
 
 import moodBest from "@/assets/moods/mood-best.webp";
 import moodGood from "@/assets/moods/mood-good.webp";
@@ -356,6 +357,9 @@ function AnalysisPage() {
     }
   }, [revealed, videoRecord]);
 
+  // 공유 시트
+  const [showShare, setShowShare] = useState(false);
+
   // ── 조건부 return: 영상 기록이 있으면 리포트 화면 ──
   if (videoRecord) {
     return (
@@ -475,6 +479,14 @@ function AnalysisPage() {
             >
               조언 바로가기
             </Link>
+            <button
+              type="button"
+              onClick={() => setShowShare(true)}
+              className="flex w-full items-center justify-center gap-2 bg-white py-3.5 font-semibold text-[var(--primary)] text-[15px] tracking-tight border border-[var(--primary)]/20 active:scale-[0.99] transition rounded-2xl shadow-none"
+            >
+              <Share2 className="h-4 w-4" />
+              공유일기로 공유하기
+            </button>
             <Link
               to="/"
               className="flex w-full items-center justify-center rounded-2xl bg-[var(--primary)] py-3.5 font-semibold text-white text-[15px] tracking-tight shadow-md active:scale-[0.99] transition"
@@ -482,6 +494,224 @@ function AnalysisPage() {
               완료
             </Link>
           </div>
+        </div>
+
+        {/* 공유 시트 */}
+        {showShare && (
+          <ShareSheet
+            summaryTitle={summaryTitle}
+            summaryBody={summaryBody}
+            onClose={() => setShowShare(false)}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * 공유 시트 컴포넌트
+ */
+function ShareSheet({
+  summaryTitle,
+  summaryBody,
+  onClose,
+}: {
+  summaryTitle: string;
+  summaryBody: string;
+  onClose: () => void;
+}) {
+  const [title, setTitle] = useState(summaryTitle);
+  const [body, setBody] = useState(summaryBody);
+  const [keywords, setKeywords] = useState<string[]>(["오늘의감정"]);
+  const [kwInput, setKwInput] = useState("");
+  const [imageDataUrl, setImageDataUrl] = useState<string | undefined>();
+  const [rooms, setRooms] = useState<ExchangeRoom[]>([]);
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [posted, setPosted] = useState(false);
+  const fileRef = React.useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const r = getRooms();
+    setRooms(r);
+    if (r.length > 0) setSelectedRoomId(r[0].id);
+  }, []);
+
+  const addKeyword = () => {
+    const k = kwInput.trim().replace(/^#/, "");
+    if (k && !keywords.includes(k)) setKeywords([...keywords, k]);
+    setKwInput("");
+  };
+
+  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setImageDataUrl(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handlePost = () => {
+    if (!selectedRoomId) { alert("일기장을 선택해 주세요."); return; }
+    if (!title.trim()) { alert("제목을 입력해 주세요."); return; }
+    createPost(selectedRoomId, title.trim(), body.trim(), keywords, imageDataUrl);
+    setPosted(true);
+    setTimeout(onClose, 1200);
+  };
+
+  return (
+    <div
+      className="absolute inset-0 z-50 flex flex-col justify-end"
+      style={{ background: "rgba(0,0,0,0.5)" }}
+    >
+      <div className="w-full rounded-t-[24px] bg-white flex flex-col" style={{ maxHeight: "90%" }}>
+        {/* 헤더 */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-[#f0f0f0] shrink-0">
+          <h3 className="font-bold text-foreground text-[17px] tracking-tight">내용수정</h3>
+          <button type="button" onClick={onClose}><X className="h-5 w-5 text-[#bbb]" /></button>
+        </div>
+
+        {/* 스크롤 가능 영역 */}
+        <div className="overflow-y-auto flex-1 px-5 py-4 flex flex-col gap-4 scrollbar-hide">
+          {/* 이미지 */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="font-semibold text-foreground text-[14px] tracking-tight">이미지</p>
+              <p className="text-[11px] text-[#aaa] tracking-tight">이미지는 최대 1장까지 불러올 수 있어요</p>
+            </div>
+            <div className="flex gap-2">
+              {imageDataUrl && (
+                <div className="relative h-[72px] w-[72px] rounded-xl overflow-hidden shrink-0">
+                  <img src={imageDataUrl} alt="" className="h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setImageDataUrl(undefined)}
+                    className="absolute top-0.5 right-0.5 bg-black/40 rounded-full p-0.5"
+                  >
+                    <X className="h-3 w-3 text-white" />
+                  </button>
+                </div>
+              )}
+              {!imageDataUrl && (
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="flex h-[72px] w-[72px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#e0e0e0] gap-1 active:bg-[#f8f8f8] transition"
+                >
+                  <ImageIcon className="h-5 w-5 text-[#ccc]" />
+                  <span className="text-[10px] text-[#ccc]">추가</span>
+                </button>
+              )}
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImage} />
+            </div>
+          </div>
+
+          {/* 제목 */}
+          <div>
+            <p className="font-semibold text-foreground text-[14px] tracking-tight mb-2">제목</p>
+            <div className="flex items-center rounded-xl bg-[#f4f6fa] px-4 py-3 gap-2">
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="flex-1 bg-transparent text-[14px] text-foreground outline-none"
+              />
+              {title && (
+                <button type="button" onClick={() => setTitle("")}>
+                  <X className="h-4 w-4 text-[#bbb]" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* 요약 내용 */}
+          <div>
+            <p className="font-semibold text-foreground text-[14px] tracking-tight mb-2">요약 내용</p>
+            <textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              rows={5}
+              className="w-full rounded-xl bg-[#f4f6fa] px-4 py-3 text-[13px] text-foreground outline-none resize-none leading-relaxed"
+            />
+          </div>
+
+          {/* 키워드 */}
+          <div>
+            <p className="font-semibold text-foreground text-[14px] tracking-tight mb-2">키워드</p>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {keywords.map((k) => (
+                <span
+                  key={k}
+                  className="flex items-center gap-1 text-[12px] px-2.5 py-1 rounded-full font-medium"
+                  style={{ background: "var(--primary)18", color: "var(--primary)" }}
+                >
+                  #{k}
+                  <button type="button" onClick={() => setKeywords(keywords.filter((x) => x !== k))}>
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="키워드 추가"
+                value={kwInput}
+                onChange={(e) => setKwInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addKeyword()}
+                className="flex-1 rounded-xl bg-[#f4f6fa] px-3 py-2 text-[13px] text-foreground outline-none"
+              />
+              <button
+                type="button"
+                onClick={addKeyword}
+                className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--primary)]/10 shrink-0"
+              >
+                <Plus className="h-4 w-4 text-[var(--primary)]" />
+              </button>
+            </div>
+          </div>
+
+          {/* 폴더 (교환일기 방 선택) */}
+          <div>
+            <p className="font-semibold text-foreground text-[14px] tracking-tight mb-2">폴더</p>
+            {rooms.length === 0 ? (
+              <p className="text-[12px] text-[#aaa] tracking-tight">
+                교환일기 방이 없어요.{" "}
+                <span className="text-[var(--primary)]">마이 → 교환 일기장에서 만들어보세요.</span>
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {rooms.map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => setSelectedRoomId(r.id)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition"
+                    style={
+                      selectedRoomId === r.id
+                        ? { background: r.coverColor, color: "#fff" }
+                        : { background: "#f0f0f0", color: "#555" }
+                    }
+                  >
+                    {r.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 하단 버튼 */}
+        <div className="px-5 pb-10 pt-3 shrink-0 border-t border-[#f5f5f5]">
+          <button
+            type="button"
+            onClick={handlePost}
+            disabled={posted}
+            className="w-full rounded-2xl py-3.5 font-bold text-white text-[15px] tracking-tight active:scale-[0.99] transition disabled:opacity-60"
+            style={{ background: "var(--primary)" }}
+          >
+            {posted ? "✓ 게시됨!" : "수정 완료"}
+          </button>
         </div>
       </div>
     </div>
