@@ -1,22 +1,26 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
+import { ChevronLeft, MoreHorizontal, Trash2, Send, CornerDownRight, X, Lock } from "lucide-react";
 import {
-  ChevronLeft, MoreHorizontal, Trash2, Send, CornerDownRight, X, Lock,
-} from "lucide-react";
-import {
-  getDiaryById, getComments, createComment, deleteComment,
-  deleteDiary, isDiaryAuthorized, authorizeDiary, addViewer,
-  getMyId, relativeTime, coverColorForId,
-  type ExchangeDiary, type ExchangeComment,
+  getDiaryById,
+  getComments,
+  createComment,
+  deleteComment,
+  deleteDiary,
+  isDiaryAuthorized,
+  authorizeDiary,
+  addViewer,
+  getMyId,
+  relativeTime,
+  coverColorForId,
+  type ExchangeDiary,
+  type ExchangeComment,
 } from "@/lib/exchangeStore";
 import { InviteLinkButton } from "./exchange";
 
 export const Route = createFileRoute("/exchange/$roomId")({
   head: () => ({
-    meta: [
-      { title: "교환일기 — 안다미로" },
-      { name: "theme-color", content: "#ffffff" },
-    ],
+    meta: [{ title: "교환일기 — 안다미로" }, { name: "theme-color", content: "#ffffff" }],
   }),
   component: ExchangeDiaryPage,
 });
@@ -40,7 +44,10 @@ function ExchangeDiaryPage() {
 
   useEffect(() => {
     const d = getDiaryById(diaryId);
-    if (!d) { navigate({ to: "/exchange", search: {} }); return; }
+    if (!d) {
+      navigate({ to: "/exchange", search: {} });
+      return;
+    }
     setDiary(d);
     const auth = isDiaryAuthorized(diaryId);
     setAuthorized(auth);
@@ -48,7 +55,7 @@ function ExchangeDiaryPage() {
       addViewer(diaryId);
       setComments(getComments(diaryId));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [diaryId]);
 
   const refreshComments = () => setComments(getComments(diaryId));
@@ -97,7 +104,10 @@ function ExchangeDiaryPage() {
                 type="password"
                 placeholder="비밀번호"
                 value={pwInput}
-                onChange={(e) => { setPwInput(e.target.value); setPwError(""); }}
+                onChange={(e) => {
+                  setPwInput(e.target.value);
+                  setPwError("");
+                }}
                 onKeyDown={(e) => {
                   if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
                   handleAuthorize();
@@ -326,9 +336,13 @@ function ExchangeDiaryPage() {
               type="text"
               placeholder="댓글을 입력하세요..."
               value={commentInput}
-              onChange={(e) => { if (!e.nativeEvent.isComposing) setCommentInput(e.target.value); }}
-              onCompositionEnd={(e) => { setCommentInput((e.target as HTMLInputElement).value); }}
-              onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && handleSendComment()}
+              onChange={(e) => setCommentInput(e.target.value)}
+              onCompositionEnd={(e) => setCommentInput(e.currentTarget.value)}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
+                e.preventDefault();
+                handleSendComment();
+              }}
               className="flex-1 rounded-full bg-[#f4f6fa] px-4 py-2.5 text-[14px] text-foreground placeholder:text-[#bbb] outline-none"
             />
             <button
