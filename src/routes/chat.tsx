@@ -190,7 +190,7 @@ function ChatPage() {
     ];
   });
   const [showChips, setShowChips] = useState(!demo2);
-  const [input, setInput] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [cursor, setCursor] = useState({ x: 50, y: 700, tapping: false, visible: false });
@@ -336,7 +336,7 @@ function ChatPage() {
     const userMsg: Msg = { id: crypto.randomUUID(), role: "user", text: trimmed };
     setMessages((m) => [...m, userMsg]);
     setShowChips(false);
-    setInput("");
+    if (inputRef.current) inputRef.current.value = "";
 
     // 타이핑 인디케이터: 길이에 따라 800~1800ms 정도 사고하는 척
     setIsTyping(true);
@@ -458,9 +458,7 @@ function ChatPage() {
               <Plus className="h-5 w-5" />
             </button>
             <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onCompositionEnd={(e) => setInput(e.currentTarget.value)}
+              ref={inputRef}
               onKeyDown={(e) => {
                 if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
                 e.preventDefault();
@@ -479,13 +477,8 @@ function ChatPage() {
             <button
               type="button"
               aria-label="보내기"
-              onClick={() => send(input)}
-              disabled={!input.trim()}
-              className={`grid h-9 w-9 shrink-0 place-items-center rounded-full transition ${
-                input.trim()
-                  ? "bg-[var(--primary)] text-white"
-                  : "bg-[#e8e8ec] text-[#b8bac2] cursor-not-allowed"
-              }`}
+              onClick={() => send(inputRef.current?.value ?? "")}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--primary)] text-white transition active:scale-[0.98]"
             >
               <ArrowUp className="h-5 w-5" strokeWidth={2.4} />
             </button>
