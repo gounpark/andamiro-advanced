@@ -16,11 +16,13 @@ import { Route as PresentationRouteImport } from './routes/presentation'
 import { Route as MyRouteImport } from './routes/my'
 import { Route as IntroRouteImport } from './routes/intro'
 import { Route as FortuneRouteImport } from './routes/fortune'
+import { Route as ExchangeRouteImport } from './routes/exchange'
 import { Route as DiaryRouteImport } from './routes/diary'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as AdviceRouteImport } from './routes/advice'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ExchangeRoomIdRouteImport } from './routes/exchange.$roomId'
 
 const VideoRecordRoute = VideoRecordRouteImport.update({
   id: '/video-record',
@@ -57,6 +59,11 @@ const FortuneRoute = FortuneRouteImport.update({
   path: '/fortune',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExchangeRoute = ExchangeRouteImport.update({
+  id: '/exchange',
+  path: '/exchange',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DiaryRoute = DiaryRouteImport.update({
   id: '/diary',
   path: '/diary',
@@ -82,6 +89,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExchangeRoomIdRoute = ExchangeRoomIdRouteImport.update({
+  id: '/$roomId',
+  path: '/$roomId',
+  getParentRoute: () => ExchangeRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -89,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/analysis': typeof AnalysisRoute
   '/chat': typeof ChatRoute
   '/diary': typeof DiaryRoute
+  '/exchange': typeof ExchangeRouteWithChildren
   '/fortune': typeof FortuneRoute
   '/intro': typeof IntroRoute
   '/my': typeof MyRoute
@@ -96,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/record': typeof RecordRoute
   '/report': typeof ReportRoute
   '/video-record': typeof VideoRecordRoute
+  '/exchange/$roomId': typeof ExchangeRoomIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -103,6 +117,7 @@ export interface FileRoutesByTo {
   '/analysis': typeof AnalysisRoute
   '/chat': typeof ChatRoute
   '/diary': typeof DiaryRoute
+  '/exchange': typeof ExchangeRouteWithChildren
   '/fortune': typeof FortuneRoute
   '/intro': typeof IntroRoute
   '/my': typeof MyRoute
@@ -110,6 +125,7 @@ export interface FileRoutesByTo {
   '/record': typeof RecordRoute
   '/report': typeof ReportRoute
   '/video-record': typeof VideoRecordRoute
+  '/exchange/$roomId': typeof ExchangeRoomIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -118,6 +134,7 @@ export interface FileRoutesById {
   '/analysis': typeof AnalysisRoute
   '/chat': typeof ChatRoute
   '/diary': typeof DiaryRoute
+  '/exchange': typeof ExchangeRouteWithChildren
   '/fortune': typeof FortuneRoute
   '/intro': typeof IntroRoute
   '/my': typeof MyRoute
@@ -125,6 +142,7 @@ export interface FileRoutesById {
   '/record': typeof RecordRoute
   '/report': typeof ReportRoute
   '/video-record': typeof VideoRecordRoute
+  '/exchange/$roomId': typeof ExchangeRoomIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -134,6 +152,7 @@ export interface FileRouteTypes {
     | '/analysis'
     | '/chat'
     | '/diary'
+    | '/exchange'
     | '/fortune'
     | '/intro'
     | '/my'
@@ -141,6 +160,7 @@ export interface FileRouteTypes {
     | '/record'
     | '/report'
     | '/video-record'
+    | '/exchange/$roomId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -148,6 +168,7 @@ export interface FileRouteTypes {
     | '/analysis'
     | '/chat'
     | '/diary'
+    | '/exchange'
     | '/fortune'
     | '/intro'
     | '/my'
@@ -155,6 +176,7 @@ export interface FileRouteTypes {
     | '/record'
     | '/report'
     | '/video-record'
+    | '/exchange/$roomId'
   id:
     | '__root__'
     | '/'
@@ -162,6 +184,7 @@ export interface FileRouteTypes {
     | '/analysis'
     | '/chat'
     | '/diary'
+    | '/exchange'
     | '/fortune'
     | '/intro'
     | '/my'
@@ -169,6 +192,7 @@ export interface FileRouteTypes {
     | '/record'
     | '/report'
     | '/video-record'
+    | '/exchange/$roomId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -177,6 +201,7 @@ export interface RootRouteChildren {
   AnalysisRoute: typeof AnalysisRoute
   ChatRoute: typeof ChatRoute
   DiaryRoute: typeof DiaryRoute
+  ExchangeRoute: typeof ExchangeRouteWithChildren
   FortuneRoute: typeof FortuneRoute
   IntroRoute: typeof IntroRoute
   MyRoute: typeof MyRoute
@@ -237,6 +262,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FortuneRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/exchange': {
+      id: '/exchange'
+      path: '/exchange'
+      fullPath: '/exchange'
+      preLoaderRoute: typeof ExchangeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/diary': {
       id: '/diary'
       path: '/diary'
@@ -272,8 +304,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/exchange/$roomId': {
+      id: '/exchange/$roomId'
+      path: '/$roomId'
+      fullPath: '/exchange/$roomId'
+      preLoaderRoute: typeof ExchangeRoomIdRouteImport
+      parentRoute: typeof ExchangeRoute
+    }
   }
 }
+
+interface ExchangeRouteChildren {
+  ExchangeRoomIdRoute: typeof ExchangeRoomIdRoute
+}
+
+const ExchangeRouteChildren: ExchangeRouteChildren = {
+  ExchangeRoomIdRoute: ExchangeRoomIdRoute,
+}
+
+const ExchangeRouteWithChildren = ExchangeRoute._addFileChildren(
+  ExchangeRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -281,6 +332,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnalysisRoute: AnalysisRoute,
   ChatRoute: ChatRoute,
   DiaryRoute: DiaryRoute,
+  ExchangeRoute: ExchangeRouteWithChildren,
   FortuneRoute: FortuneRoute,
   IntroRoute: IntroRoute,
   MyRoute: MyRoute,
