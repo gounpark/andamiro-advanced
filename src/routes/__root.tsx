@@ -114,8 +114,6 @@ function NativeInputGuard() {
       "touchend",
       "focusin",
       "focusout",
-      "beforeinput",
-      "input",
       "compositionstart",
       "compositionupdate",
       "compositionend",
@@ -127,7 +125,7 @@ function NativeInputGuard() {
     const stopForNativeInput = (event: Event) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
-      if (!target.closest("[data-native-input='true']")) return;
+      if (!target.closest("input, textarea, [contenteditable='true']")) return;
       event.stopPropagation();
     };
 
