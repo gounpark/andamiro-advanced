@@ -33,7 +33,6 @@ function ExchangeDiaryPage() {
   const [replyTo, setReplyTo] = useState<ExchangeComment | null>(null);
   const [commentInput, setCommentInput] = useState("");
   const commentInputRef = useRef<HTMLInputElement>(null);
-  const isComposingRef = useRef(false);
 
   // 비번 인증 (직접 URL 진입 시)
   const [pwInput, setPwInput] = useState("");
@@ -327,12 +326,8 @@ function ExchangeDiaryPage() {
               type="text"
               placeholder="댓글을 입력하세요..."
               value={commentInput}
-              onChange={(e) => { if (!isComposingRef.current) setCommentInput(e.target.value); }}
-              onCompositionStart={() => { isComposingRef.current = true; }}
-              onCompositionEnd={(e) => {
-                isComposingRef.current = false;
-                setCommentInput((e.target as HTMLInputElement).value);
-              }}
+              onChange={(e) => { if (!e.nativeEvent.isComposing) setCommentInput(e.target.value); }}
+              onCompositionEnd={(e) => { setCommentInput((e.target as HTMLInputElement).value); }}
               onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && handleSendComment()}
               className="flex-1 rounded-full bg-[#f4f6fa] px-4 py-2.5 text-[14px] text-foreground placeholder:text-[#bbb] outline-none"
             />

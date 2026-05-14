@@ -1,6 +1,18 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, Lock, X, ImagePlus, Share2, Check } from "lucide-react";
+
+// nativeEvent.isComposing 기반 헬퍼 – 공유 ref 불필요, 입력 필드별로 독립 동작
+function ime(setter: (v: string) => void, extra?: () => void) {
+  return {
+    onChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+      if (!e.nativeEvent.isComposing) { setter(e.target.value); extra?.(); }
+    },
+    onCompositionEnd(e: React.CompositionEvent<HTMLInputElement | HTMLTextAreaElement>) {
+      setter(e.currentTarget.value); extra?.();
+    },
+  };
+}
 import {
   createDiary,
   getMyName,
@@ -26,7 +38,6 @@ interface DraftData {
 
 function ExchangeCreatePage() {
   const navigate = useNavigate();
-  const isComposingRef = useRef(false);
 
   // AI 초안 읽기 (SSR 안전: useEffect 내에서만)
   const [title, setTitle] = useState("");
@@ -195,9 +206,7 @@ function ExchangeCreatePage() {
                 type="text"
                 placeholder="이름을 입력해 주세요"
                 value={authorName}
-                onChange={(e) => { if (!isComposingRef.current) setAuthorName(e.target.value); }}
-                onCompositionStart={() => { isComposingRef.current = true; }}
-                onCompositionEnd={(e) => { isComposingRef.current = false; setAuthorName(e.currentTarget.value); }}
+                {...ime(setAuthorName)}
                 className="w-full rounded-xl bg-[#f4f6fa] px-4 py-3 text-base text-foreground placeholder:text-[#bbb] outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
               />
             </label>
@@ -211,9 +220,7 @@ function ExchangeCreatePage() {
                 type="text"
                 placeholder="일기 제목을 입력해 주세요"
                 value={title}
-                onChange={(e) => { if (!isComposingRef.current) { setTitle(e.target.value); setError(""); } }}
-                onCompositionStart={() => { isComposingRef.current = true; }}
-                onCompositionEnd={(e) => { isComposingRef.current = false; setTitle(e.currentTarget.value); setError(""); }}
+                {...ime(setTitle, () => setError(""))}
                 className="w-full rounded-xl bg-[#f4f6fa] px-4 py-3 text-base text-foreground placeholder:text-[#bbb] outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
               />
             </label>
@@ -227,9 +234,7 @@ function ExchangeCreatePage() {
                 placeholder="일기 내용을 입력해 주세요"
                 value={body}
                 rows={8}
-                onChange={(e) => { if (!isComposingRef.current) { setBody(e.target.value); setError(""); } }}
-                onCompositionStart={() => { isComposingRef.current = true; }}
-                onCompositionEnd={(e) => { isComposingRef.current = false; setBody(e.currentTarget.value); setError(""); }}
+                {...ime(setBody, () => setError(""))}
                 className="w-full rounded-xl bg-[#f4f6fa] px-4 py-3 text-base text-foreground placeholder:text-[#bbb] outline-none focus:ring-2 focus:ring-[var(--primary)]/30 resize-none"
               />
             </label>
@@ -263,9 +268,7 @@ function ExchangeCreatePage() {
                   type="text"
                   placeholder="키워드 입력 후 추가"
                   value={kwInput}
-                  onChange={(e) => { if (!isComposingRef.current) setKwInput(e.target.value); }}
-                  onCompositionStart={() => { isComposingRef.current = true; }}
-                  onCompositionEnd={(e) => { isComposingRef.current = false; setKwInput(e.currentTarget.value); }}
+                  {...ime(setKwInput)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.nativeEvent.isComposing) {
                       e.preventDefault();
