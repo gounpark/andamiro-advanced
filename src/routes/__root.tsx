@@ -1,4 +1,5 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 import appCss from "../styles.css?url";
 import { Splash } from "@/components/Splash";
@@ -31,17 +32,37 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Lovable App" },
-      { name: "description", content: "Converts Figma designs into interactive React components using shadcn/ui and Tailwind CSS." },
+      {
+        name: "description",
+        content:
+          "Converts Figma designs into interactive React components using shadcn/ui and Tailwind CSS.",
+      },
       { name: "author", content: "Lovable" },
       { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Converts Figma designs into interactive React components using shadcn/ui and Tailwind CSS." },
+      {
+        property: "og:description",
+        content:
+          "Converts Figma designs into interactive React components using shadcn/ui and Tailwind CSS.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Lovable App" },
-      { name: "twitter:description", content: "Converts Figma designs into interactive React components using shadcn/ui and Tailwind CSS." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3b02b7de-8fdf-45b7-a056-0152c234945d/id-preview-96264cdf--49701ba7-6c48-47fa-b9bb-322912b98686.lovable.app-1776934864155.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3b02b7de-8fdf-45b7-a056-0152c234945d/id-preview-96264cdf--49701ba7-6c48-47fa-b9bb-322912b98686.lovable.app-1776934864155.png" },
+      {
+        name: "twitter:description",
+        content:
+          "Converts Figma designs into interactive React components using shadcn/ui and Tailwind CSS.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3b02b7de-8fdf-45b7-a056-0152c234945d/id-preview-96264cdf--49701ba7-6c48-47fa-b9bb-322912b98686.lovable.app-1776934864155.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3b02b7de-8fdf-45b7-a056-0152c234945d/id-preview-96264cdf--49701ba7-6c48-47fa-b9bb-322912b98686.lovable.app-1776934864155.png",
+      },
     ],
     links: [
       {
@@ -74,8 +95,52 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   return (
     <>
+      <NativeInputGuard />
       <Splash />
       <Outlet />
     </>
   );
+}
+
+function NativeInputGuard() {
+  useEffect(() => {
+    const guardedEvents = [
+      "pointerdown",
+      "pointerup",
+      "mousedown",
+      "mouseup",
+      "click",
+      "touchstart",
+      "touchend",
+      "focusin",
+      "focusout",
+      "beforeinput",
+      "input",
+      "compositionstart",
+      "compositionupdate",
+      "compositionend",
+      "keydown",
+      "keyup",
+      "keypress",
+    ];
+
+    const stopForNativeInput = (event: Event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (!target.closest("[data-native-input='true']")) return;
+      event.stopPropagation();
+    };
+
+    guardedEvents.forEach((eventName) => {
+      document.addEventListener(eventName, stopForNativeInput, true);
+    });
+
+    return () => {
+      guardedEvents.forEach((eventName) => {
+        document.removeEventListener(eventName, stopForNativeInput, true);
+      });
+    };
+  }, []);
+
+  return null;
 }
