@@ -530,6 +530,7 @@ function ShareSheet({
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [posted, setPosted] = useState(false);
   const fileRef = React.useRef<HTMLInputElement>(null);
+  const isComposingRef = React.useRef(false);
 
   useEffect(() => {
     const r = getRooms();
@@ -613,7 +614,9 @@ function ShareSheet({
               <input
                 type="text"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => { if (!isComposingRef.current) setTitle(e.target.value); }}
+                onCompositionStart={() => { isComposingRef.current = true; }}
+                onCompositionEnd={(e) => { isComposingRef.current = false; setTitle(e.currentTarget.value); }}
                 className="flex-1 bg-transparent text-[14px] text-foreground outline-none"
               />
               {title && (
@@ -629,7 +632,9 @@ function ShareSheet({
             <p className="font-semibold text-foreground text-[14px] tracking-tight mb-2">요약 내용</p>
             <textarea
               value={body}
-              onChange={(e) => setBody(e.target.value)}
+              onChange={(e) => { if (!isComposingRef.current) setBody(e.target.value); }}
+              onCompositionStart={() => { isComposingRef.current = true; }}
+              onCompositionEnd={(e) => { isComposingRef.current = false; setBody(e.currentTarget.value); }}
               rows={5}
               className="w-full rounded-xl bg-[#f4f6fa] px-4 py-3 text-[13px] text-foreground outline-none resize-none leading-relaxed"
             />
@@ -657,8 +662,10 @@ function ShareSheet({
                 type="text"
                 placeholder="키워드 추가"
                 value={kwInput}
-                onChange={(e) => setKwInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addKeyword()}
+                onChange={(e) => { if (!isComposingRef.current) setKwInput(e.target.value); }}
+                onCompositionStart={() => { isComposingRef.current = true; }}
+                onCompositionEnd={(e) => { isComposingRef.current = false; setKwInput(e.currentTarget.value); }}
+                onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && addKeyword()}
                 className="flex-1 rounded-xl bg-[#f4f6fa] px-3 py-2 text-[13px] text-foreground outline-none"
               />
               <button

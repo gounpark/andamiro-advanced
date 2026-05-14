@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Plus, ChevronRight, BookOpen, Lock, Users, Copy, Check, ChevronLeft } from "lucide-react";
 import {
   getRooms, createRoom, getRoomByInviteCode, joinRoom,
@@ -243,6 +243,7 @@ function CreateRoomSheet({
   const [pw, setPw] = useState("");
   const [desc, setDesc] = useState("");
   const [error, setError] = useState("");
+  const isComposingRef = useRef(false);
 
   const handleCreate = () => {
     if (!name.trim()) { setError("일기장 이름을 입력해 주세요."); return; }
@@ -269,7 +270,9 @@ function CreateRoomSheet({
             type="text"
             placeholder="예: 우리 둘만의 일기"
             value={name}
-            onChange={(e) => { setName(e.target.value); setError(""); }}
+            onChange={(e) => { if (!isComposingRef.current) { setName(e.target.value); setError(""); } }}
+            onCompositionStart={() => { isComposingRef.current = true; }}
+            onCompositionEnd={(e) => { isComposingRef.current = false; setName(e.currentTarget.value); setError(""); }}
             className="w-full rounded-xl bg-[#f4f6fa] px-4 py-3 text-base text-foreground placeholder:text-[#bbb] outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
           />
         </label>
@@ -294,7 +297,9 @@ function CreateRoomSheet({
             type="text"
             placeholder="간단한 소개를 써주세요"
             value={desc}
-            onChange={(e) => setDesc(e.target.value)}
+            onChange={(e) => { if (!isComposingRef.current) setDesc(e.target.value); }}
+            onCompositionStart={() => { isComposingRef.current = true; }}
+            onCompositionEnd={(e) => { isComposingRef.current = false; setDesc(e.currentTarget.value); }}
             className="w-full rounded-xl bg-[#f4f6fa] px-4 py-3 text-base text-foreground placeholder:text-[#bbb] outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
           />
         </label>
