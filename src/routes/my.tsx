@@ -7,6 +7,7 @@ import bgShapeLargeSvg from "@/assets/icons/bg-shape-large.svg";
 import { BottomNav } from "@/components/BottomNav";
 import bgShapeSmallSvg from "@/assets/icons/bg-shape-small.svg";
 import { getDiaryEntries, calcStreak, countThisMonth } from "@/lib/diaryStore";
+import { getMyDiaries, getSharedDiaries } from "@/lib/exchangeStore";
 
 export const Route = createFileRoute("/my")({
   head: () => ({
@@ -174,20 +175,7 @@ function MyPage() {
           </section>
 
           {/* 교환 일기 바로가기 */}
-          <section className="px-4 mt-3">
-            <p className="px-1 mb-2 text-[12px] text-[#999] tracking-tight">교환 일기</p>
-            <Link to="/exchange"
-              className="flex items-center gap-3 rounded-2xl bg-white border border-[#f0f0f0] px-4 py-3.5 shadow-sm active:bg-[#f8f8f8] transition">
-              <div className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--primary)]/10">
-                <BookMarked className="h-4.5 w-4.5 text-[var(--primary)]" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-foreground text-[14px] tracking-tight">교환 일기장</p>
-                <p className="text-[11px] text-[#999] mt-0.5 tracking-tight">소중한 사람과 감정 나누기</p>
-              </div>
-              <ChevronRight className="h-4 w-4 text-[#bbb]" />
-            </Link>
-          </section>
+          <ExchangeLink />
 
           {/* 설정 */}
           <section className="px-4 mt-5">
@@ -305,6 +293,31 @@ function MyPage() {
         <BottomNav active="my" />
       </div>
     </div>
+  );
+}
+
+function ExchangeLink() {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    setCount(getMyDiaries().length + getSharedDiaries().length);
+  }, []);
+  return (
+    <section className="px-4 mt-3">
+      <p className="px-1 mb-2 text-[12px] text-[#999] tracking-tight">교환 일기</p>
+      <Link to="/exchange"
+        className="flex items-center gap-3 rounded-2xl bg-white border border-[#f0f0f0] px-4 py-3.5 shadow-sm active:bg-[#f8f8f8] transition">
+        <div className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--primary)]/10">
+          <BookMarked className="h-4.5 w-4.5 text-[var(--primary)]" />
+        </div>
+        <div className="flex-1">
+          <p className="font-semibold text-foreground text-[14px] tracking-tight">교환 일기</p>
+          <p className="text-[11px] text-[#999] mt-0.5 tracking-tight">
+            {count > 0 ? `공유 일기 ${count}개` : "소중한 사람과 감정 나누기"}
+          </p>
+        </div>
+        <ChevronRight className="h-4 w-4 text-[#bbb]" />
+      </Link>
+    </section>
   );
 }
 

@@ -22,6 +22,7 @@ import { Route as ChatRouteImport } from './routes/chat'
 import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as AdviceRouteImport } from './routes/advice'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ExchangeCreateRouteImport } from './routes/exchange.create'
 import { Route as ExchangeRoomIdRouteImport } from './routes/exchange.$roomId'
 
 const VideoRecordRoute = VideoRecordRouteImport.update({
@@ -89,6 +90,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExchangeCreateRoute = ExchangeCreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => ExchangeRoute,
+} as any)
 const ExchangeRoomIdRoute = ExchangeRoomIdRouteImport.update({
   id: '/$roomId',
   path: '/$roomId',
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/report': typeof ReportRoute
   '/video-record': typeof VideoRecordRoute
   '/exchange/$roomId': typeof ExchangeRoomIdRoute
+  '/exchange/create': typeof ExchangeCreateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/report': typeof ReportRoute
   '/video-record': typeof VideoRecordRoute
   '/exchange/$roomId': typeof ExchangeRoomIdRoute
+  '/exchange/create': typeof ExchangeCreateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/report': typeof ReportRoute
   '/video-record': typeof VideoRecordRoute
   '/exchange/$roomId': typeof ExchangeRoomIdRoute
+  '/exchange/create': typeof ExchangeCreateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/report'
     | '/video-record'
     | '/exchange/$roomId'
+    | '/exchange/create'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/report'
     | '/video-record'
     | '/exchange/$roomId'
+    | '/exchange/create'
   id:
     | '__root__'
     | '/'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/report'
     | '/video-record'
     | '/exchange/$roomId'
+    | '/exchange/create'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -304,6 +316,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/exchange/create': {
+      id: '/exchange/create'
+      path: '/create'
+      fullPath: '/exchange/create'
+      preLoaderRoute: typeof ExchangeCreateRouteImport
+      parentRoute: typeof ExchangeRoute
+    }
     '/exchange/$roomId': {
       id: '/exchange/$roomId'
       path: '/$roomId'
@@ -316,10 +335,12 @@ declare module '@tanstack/react-router' {
 
 interface ExchangeRouteChildren {
   ExchangeRoomIdRoute: typeof ExchangeRoomIdRoute
+  ExchangeCreateRoute: typeof ExchangeCreateRoute
 }
 
 const ExchangeRouteChildren: ExchangeRouteChildren = {
   ExchangeRoomIdRoute: ExchangeRoomIdRoute,
+  ExchangeCreateRoute: ExchangeCreateRoute,
 }
 
 const ExchangeRouteWithChildren = ExchangeRoute._addFileChildren(

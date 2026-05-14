@@ -1,33 +1,25 @@
-// ── 교환일기 데이터 스토어 ────────────────────────────────────────────────
-// 모든 localStorage 접근은 SSR 가드 처리됨
+// ── 교환일기 데이터 레이어 ──────────────────────────────────────────────────
+// 개별 일기 게시글 단위 공유 구조
+// - 각 ExchangeDiary 가 독립적인 공유 단위
+// - 초대 링크 + 비밀번호로 접근 제어
 
-export interface ExchangeRoom {
+export interface ExchangeDiary {
   id: string;
-  name: string;
-  password: string;
-  description?: string;
-  coverColor: string;
-  inviteCode: string;
-  ownerId: string;
-  memberIds: string[];
-  createdAt: string;
-}
-
-export interface ExchangePost {
-  id: string;
-  roomId: string;
   authorId: string;
   authorName: string;
   title: string;
   body: string;
-  keywords: string[];
+  password: string;
+  inviteCode: string;
   imageDataUrl?: string;
+  keywords: string[];
+  viewerIds: string[];   // 초대받아 열람한 사람 ID 목록
   createdAt: string;
 }
 
 export interface ExchangeComment {
   id: string;
-  postId: string;
+  diaryId: string;
   authorId: string;
   authorName: string;
   body: string;
@@ -35,15 +27,14 @@ export interface ExchangeComment {
   createdAt: string;
 }
 
-// ── 스토리지 키 ──────────────────────────────────────────────────────────
-const KEY_MY_ID = "andamiro_my_id";
-const KEY_MY_NAME = "andamiro_my_name";
-const KEY_ROOMS = "andamiro_exchange_rooms";
-const KEY_POSTS = "andamiro_exchange_posts";
+// ── localStorage 키 ──────────────────────────────────────────────────────────
+const KEY_DIARIES  = "andamiro_exchange_diaries";
 const KEY_COMMENTS = "andamiro_exchange_comments";
-const KEY_AUTH_PREFIX = "andamiro_exchange_auth_";
+const KEY_MY_ID    = "andamiro_my_id";
+const KEY_MY_NAME  = "andamiro_my_name";
+const KEY_AUTH     = "andamiro_authorized_diaries"; // 비번 인증한 일기 ID[]
 
-// ── 유틸 ─────────────────────────────────────────────────────────────────
+// ── 내부 헬퍼 ───────────────────────────────────────────────────────────────
 function uid(): string {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
@@ -71,12 +62,7 @@ function save<T>(key: string, value: T): void {
   }
 }
 
-const COVER_COLORS = [
-  "#4F7EF7", "#F76F4F", "#4FBF7E", "#A34FF7",
-  "#F7C24F", "#4FC8F7", "#F74FA0", "#7EF74F",
-];
-
-// ── 유저 ID / 이름 ───────────────────────────────────────────────────────
+// ── 사용자 ID / 이름 ─────────────────────────────────────────────────────────
 export function getMyId(): string {
   if (!isBrowser()) return "server";
   let id = localStorage.getItem(KEY_MY_ID);
@@ -88,8 +74,8 @@ export function getMyId(): string {
 }
 
 export function getMyName(): string {
-  if (!isBrowser()) return "나";
-  return localStorage.getItem(KEY_MY_NAME) ?? "나";
+  if (!isBrowser()) return "";
+  return localStorage.getItem(KEY_MY_NAME) ?? "";
 }
 
 export function setMyName(name: string): void {
@@ -97,160 +83,155 @@ export function setMyName(name: string): void {
   localStorage.setItem(KEY_MY_NAME, name);
 }
 
-// ── 방 ───────────────────────────────────────────────────────────────────
-export function getRooms(): ExchangeRoom[] {
-  if (!isBrowser()) return [];
-  const all = load<ExchangeRoom[]>(KEY_ROOMS, []);
+// ── 일기 CRUD ─────────────────────────────────────────────────────────────────
+export function getMyDiaries(): ExchangeDiary[] {
   const myId = getMyId();
-  return all.filter((r) => r.memberIds.includes(myId));
+  return load<ExchangeDiary[]>(KEY_DIARIES, [])
+    .filter((d) => d.authorId === myId)
+    .sort((a, b) => (b.createdAt > a.createdAt ? 1 : -1));
 }
 
-export function getAllRooms(): ExchangeRoom[] {
-  return load<ExchangeRoom[]>(KEY_ROOMS, []);
-}
-
-export function getRoomById(id: string): ExchangeRoom | undefined {
-  return load<ExchangeRoom[]>(KEY_ROOMS, []).find((r) => r.id === id);
-}
-
-export function getRoomByInviteCode(code: string): ExchangeRoom | undefined {
-  return load<ExchangeRoom[]>(KEY_ROOMS, []).find((r) => r.inviteCode === code);
-}
-
-export function createRoom(
-  name: string,
-  password: string,
-  description?: string
-): ExchangeRoom {
-  const all = load<ExchangeRoom[]>(KEY_ROOMS, []);
+export function getSharedDiaries(): ExchangeDiary[] {
   const myId = getMyId();
-  const room: ExchangeRoom = {
+  return load<ExchangeDiary[]>(KEY_DIARIES, [])
+    .filter((d) => d.authorId !== myId && d.viewerIds.includes(myId))
+    .sort((a, b) => (b.createdAt > a.createdAt ? 1 : -1));
+}
+
+export function getDiaryById(id: string): ExchangeDiary | undefined {
+  return load<ExchangeDiary[]>(KEY_DIARIES, []).find((d) => d.id === id);
+}
+
+export function getDiaryByInviteCode(code: string): ExchangeDiary | undefined {
+  return load<ExchangeDiary[]>(KEY_DIARIES, []).find((d) => d.inviteCode === code);
+}
+
+export interface CreateDiaryParams {
+  title: string;
+  body: string;
+  password: string;
+  keywords?: string[];
+  imageDataUrl?: string;
+}
+
+export function createDiary(params: CreateDiaryParams): ExchangeDiary {
+  const myId = getMyId();
+  const myName = getMyName() || "익명";
+  const diary: ExchangeDiary = {
     id: uid(),
-    name,
-    password,
-    description,
-    coverColor: COVER_COLORS[all.length % COVER_COLORS.length],
-    inviteCode: uid().slice(0, 8),
-    ownerId: myId,
-    memberIds: [myId],
+    authorId: myId,
+    authorName: myName,
+    title: params.title,
+    body: params.body,
+    password: params.password,
+    inviteCode: uid().slice(0, 10),
+    imageDataUrl: params.imageDataUrl,
+    keywords: params.keywords ?? [],
+    viewerIds: [],
     createdAt: new Date().toISOString(),
   };
-  save(KEY_ROOMS, [...all, room]);
-  // 방장은 자동으로 인증 완료
-  authorizeRoom(room.id);
-  return room;
+  const list = load<ExchangeDiary[]>(KEY_DIARIES, []);
+  save(KEY_DIARIES, [diary, ...list]);
+  return diary;
 }
 
-export function joinRoom(roomId: string): void {
-  const all = load<ExchangeRoom[]>(KEY_ROOMS, []);
+export function deleteDiary(id: string): void {
   const myId = getMyId();
-  const updated = all.map((r) =>
-    r.id === roomId && !r.memberIds.includes(myId)
-      ? { ...r, memberIds: [...r.memberIds, myId] }
-      : r
+  save(
+    KEY_DIARIES,
+    load<ExchangeDiary[]>(KEY_DIARIES, []).filter(
+      (d) => !(d.id === id && d.authorId === myId)
+    )
   );
-  save(KEY_ROOMS, updated);
+  // 관련 댓글도 삭제
+  save(
+    KEY_COMMENTS,
+    load<ExchangeComment[]>(KEY_COMMENTS, []).filter((c) => c.diaryId !== id)
+  );
 }
 
-export function deleteRoom(roomId: string): void {
-  const all = load<ExchangeRoom[]>(KEY_ROOMS, []);
-  save(KEY_ROOMS, all.filter((r) => r.id !== roomId));
-  // 연관 데이터 정리
-  const posts = load<ExchangePost[]>(KEY_POSTS, []);
-  const postIds = posts.filter((p) => p.roomId === roomId).map((p) => p.id);
-  save(KEY_POSTS, posts.filter((p) => p.roomId !== roomId));
-  const comments = load<ExchangeComment[]>(KEY_COMMENTS, []);
-  save(KEY_COMMENTS, comments.filter((c) => !postIds.includes(c.postId)));
-}
-
-// ── 비번 인증 ─────────────────────────────────────────────────────────────
-export function isRoomAuthorized(roomId: string): boolean {
+// ── 뷰어 / 인증 ──────────────────────────────────────────────────────────────
+export function isDiaryAuthorized(id: string): boolean {
   if (!isBrowser()) return false;
-  return localStorage.getItem(KEY_AUTH_PREFIX + roomId) === "1";
+  const diary = getDiaryById(id);
+  if (!diary) return false;
+  if (diary.authorId === getMyId()) return true; // 작성자는 항상 허용
+  return load<string[]>(KEY_AUTH, []).includes(id);
 }
 
-export function authorizeRoom(roomId: string): void {
-  if (!isBrowser()) return;
-  localStorage.setItem(KEY_AUTH_PREFIX + roomId, "1");
+export function authorizeDiary(id: string): void {
+  const list = load<string[]>(KEY_AUTH, []);
+  if (!list.includes(id)) {
+    save(KEY_AUTH, [...list, id]);
+  }
 }
 
-// ── 게시글 ────────────────────────────────────────────────────────────────
-export function getPosts(roomId: string): ExchangePost[] {
-  return load<ExchangePost[]>(KEY_POSTS, [])
-    .filter((p) => p.roomId === roomId)
-    .sort((a, b) => (a.createdAt > b.createdAt ? -1 : 1));
+export function addViewer(id: string): void {
+  const myId = getMyId();
+  const list = load<ExchangeDiary[]>(KEY_DIARIES, []);
+  const updated = list.map((d) =>
+    d.id === id && !d.viewerIds.includes(myId)
+      ? { ...d, viewerIds: [...d.viewerIds, myId] }
+      : d
+  );
+  save(KEY_DIARIES, updated);
 }
 
-export function createPost(
-  roomId: string,
-  title: string,
-  body: string,
-  keywords: string[],
-  imageDataUrl?: string
-): ExchangePost {
-  const all = load<ExchangePost[]>(KEY_POSTS, []);
-  const post: ExchangePost = {
-    id: uid(),
-    roomId,
-    authorId: getMyId(),
-    authorName: getMyName(),
-    title,
-    body,
-    keywords,
-    imageDataUrl,
-    createdAt: new Date().toISOString(),
-  };
-  save(KEY_POSTS, [post, ...all]);
-  return post;
-}
-
-export function deletePost(postId: string): void {
-  const posts = load<ExchangePost[]>(KEY_POSTS, []);
-  save(KEY_POSTS, posts.filter((p) => p.id !== postId));
-  const comments = load<ExchangeComment[]>(KEY_COMMENTS, []);
-  save(KEY_COMMENTS, comments.filter((c) => c.postId !== postId));
-}
-
-// ── 댓글 ──────────────────────────────────────────────────────────────────
-export function getComments(postId: string): ExchangeComment[] {
+// ── 댓글 CRUD ─────────────────────────────────────────────────────────────────
+export function getComments(diaryId: string): ExchangeComment[] {
   return load<ExchangeComment[]>(KEY_COMMENTS, [])
-    .filter((c) => c.postId === postId)
+    .filter((c) => c.diaryId === diaryId)
     .sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
 }
 
 export function createComment(
-  postId: string,
+  diaryId: string,
   body: string,
   parentId?: string
 ): ExchangeComment {
-  const all = load<ExchangeComment[]>(KEY_COMMENTS, []);
   const comment: ExchangeComment = {
     id: uid(),
-    postId,
+    diaryId,
     authorId: getMyId(),
-    authorName: getMyName(),
+    authorName: getMyName() || "익명",
     body,
     parentId,
     createdAt: new Date().toISOString(),
   };
-  save(KEY_COMMENTS, [...all, comment]);
+  save(KEY_COMMENTS, [...load<ExchangeComment[]>(KEY_COMMENTS, []), comment]);
   return comment;
 }
 
-export function deleteComment(commentId: string): void {
+export function deleteComment(id: string): void {
+  // 댓글 + 그 답글도 함께 삭제
   const all = load<ExchangeComment[]>(KEY_COMMENTS, []);
-  save(KEY_COMMENTS, all.filter((c) => c.id !== commentId && c.parentId !== commentId));
+  const toDelete = new Set<string>([id]);
+  all.forEach((c) => { if (c.parentId && toDelete.has(c.parentId)) toDelete.add(c.id); });
+  save(KEY_COMMENTS, all.filter((c) => !toDelete.has(c.id)));
 }
 
-// ── 시간 포맷 ─────────────────────────────────────────────────────────────
+// ── 시간 포맷 ─────────────────────────────────────────────────────────────────
 export function relativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
-  const min = Math.floor(diff / 60000);
-  if (min < 1) return "방금";
-  if (min < 60) return `${min}분 전`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}시간 전`;
-  const day = Math.floor(hr / 24);
+  const s = Math.floor(diff / 1000);
+  if (s < 60) return "방금 전";
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}분 전`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}시간 전`;
+  const day = Math.floor(h / 24);
   if (day < 7) return `${day}일 전`;
   return new Date(iso).toLocaleDateString("ko-KR", { month: "short", day: "numeric" });
+}
+
+// ── 커버 컬러 (ID 기반 결정론적 색상) ───────────────────────────────────────
+const COVER_COLORS = [
+  "#7c6ef5", "#f5866e", "#6ec7f5", "#f5c96e", "#6ef5b4",
+  "#f56ebd", "#6e9df5", "#b4f56e",
+];
+
+export function coverColorForId(id: string): string {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) | 0;
+  return COVER_COLORS[Math.abs(hash) % COVER_COLORS.length];
 }
