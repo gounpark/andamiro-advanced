@@ -35,11 +35,10 @@ function ExchangeDiaryPage() {
   const [authorized, setAuthorized] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [replyTo, setReplyTo] = useState<ExchangeComment | null>(null);
-  const [commentInput, setCommentInput] = useState("");
   const commentInputRef = useRef<HTMLInputElement>(null);
 
   // 비번 인증 (직접 URL 진입 시)
-  const [pwInput, setPwInput] = useState("");
+  const pwInputRef = useRef<HTMLInputElement>(null);
   const [pwError, setPwError] = useState("");
 
   useEffect(() => {
@@ -62,7 +61,8 @@ function ExchangeDiaryPage() {
 
   const handleAuthorize = () => {
     if (!diary) return;
-    if (pwInput.trim() !== diary.password) {
+    const password = pwInputRef.current?.value ?? "";
+    if (password.trim() !== diary.password) {
       setPwError("비밀번호가 맞지 않아요.");
       return;
     }
@@ -73,9 +73,11 @@ function ExchangeDiaryPage() {
   };
 
   const handleSendComment = () => {
-    if (!commentInput.trim()) return;
-    createComment(diaryId, commentInput.trim(), replyTo?.id);
-    setCommentInput("");
+    const input = commentInputRef.current;
+    const comment = input?.value ?? "";
+    if (!comment.trim()) return;
+    createComment(diaryId, comment.trim(), replyTo?.id);
+    if (input) input.value = "";
     setReplyTo(null);
     refreshComments();
   };
@@ -101,15 +103,12 @@ function ExchangeDiaryPage() {
             <div className="w-full flex items-center gap-2 rounded-xl bg-white border border-[#e8e8e8] px-4 py-3 mb-2">
               <Lock className="h-4 w-4 text-[#aaa] shrink-0" />
               <input
+                ref={pwInputRef}
                 type="password"
                 placeholder="비밀번호"
-                value={pwInput}
-                onChange={(e) => {
-                  setPwInput(e.target.value);
-                  setPwError("");
-                }}
                 onKeyDown={(e) => {
                   if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
+                  e.preventDefault();
                   handleAuthorize();
                 }}
                 className="flex-1 bg-transparent text-base text-foreground placeholder:text-[#bbb] outline-none"
@@ -335,9 +334,6 @@ function ExchangeDiaryPage() {
               ref={commentInputRef}
               type="text"
               placeholder="댓글을 입력하세요..."
-              value={commentInput}
-              onChange={(e) => setCommentInput(e.target.value)}
-              onCompositionEnd={(e) => setCommentInput(e.currentTarget.value)}
               onKeyDown={(e) => {
                 if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
                 e.preventDefault();
@@ -348,7 +344,6 @@ function ExchangeDiaryPage() {
             <button
               type="button"
               onClick={handleSendComment}
-              disabled={!commentInput.trim()}
               className="grid h-9 w-9 shrink-0 place-items-center rounded-full transition disabled:opacity-30"
               style={{ background: "var(--primary)" }}
             >
