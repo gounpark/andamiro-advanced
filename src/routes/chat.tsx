@@ -419,7 +419,7 @@ function ChatPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") send(input);
+                if (e.key === "Enter" && !e.nativeEvent.isComposing) send(input);
               }}
               placeholder="질문을 입력해 보세요"
               className="min-w-0 flex-1 bg-transparent px-2 text-[14px] text-foreground placeholder:text-[#b8bac2] outline-none tracking-tight"

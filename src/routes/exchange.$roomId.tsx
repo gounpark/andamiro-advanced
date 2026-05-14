@@ -71,7 +71,7 @@ function ExchangeRoomPage() {
               value={pwInput}
               onChange={(e) => { setPwInput(e.target.value); setPwError(""); }}
               onKeyDown={(e) => {
-                if (e.key !== "Enter") return;
+                if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
                 if (pwInput !== room.password) { setPwError("비밀번호가 맞지 않아요."); return; }
                 authorizeRoom(roomId);
                 setAuthorized(true);
@@ -408,7 +408,7 @@ function CommentSheet({
             placeholder="댓글을 입력하세요..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && handleSend()}
             className="flex-1 rounded-full bg-[#f4f6fa] px-4 py-2.5 text-[14px] text-foreground placeholder:text-[#bbb] outline-none"
           />
           <button
