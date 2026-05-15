@@ -37,6 +37,17 @@ function ExchangeCreatePage() {
   const [createdDiary, setCreatedDiary] = useState<ExchangeDiary | null>(null);
   const [copied, setCopied] = useState(false);
 
+  const focusField = (field: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>) => {
+    field.current?.focus();
+    field.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
+  const ensurePassword = () => {
+    const input = passwordRef.current;
+    if (!input || input.value.trim()) return;
+    input.value = Math.random().toString(36).slice(2, 8).toUpperCase();
+  };
+
   useEffect(() => {
     // 이름 불러오기
     const name = getMyName();
@@ -81,20 +92,18 @@ function ExchangeCreatePage() {
   const handleSubmitAttempt = () => {
     const title = titleRef.current?.value ?? "";
     const body = bodyRef.current?.value ?? "";
-    const password = passwordRef.current?.value ?? "";
 
     if (!title.trim()) {
       setError("제목을 입력해 주세요.");
+      focusField(titleRef);
       return;
     }
     if (!body.trim()) {
       setError("일기 내용을 입력해 주세요.");
+      focusField(bodyRef);
       return;
     }
-    if (!password.trim()) {
-      setError("비밀번호를 입력해 주세요.");
-      return;
-    }
+    ensurePassword();
     setError("");
     setShowConfirm(true);
   };
@@ -116,6 +125,7 @@ function ExchangeCreatePage() {
     });
     setShowConfirm(false);
     setCreatedDiary(diary);
+    navigate({ to: "/exchange/$roomId", params: { roomId: diary.id } });
   };
 
   // ── 공유 ─────────────────────────────────────────────────────────────────
