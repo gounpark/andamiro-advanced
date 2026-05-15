@@ -11,14 +11,13 @@ import {
   Eye,
 } from "lucide-react";
 import {
-  getMyDiaries,
-  getSharedDiaries,
+  getCachedDiaries,
+  refreshDiaryCache,
   getDiaryByInviteCode,
   isDiaryAuthorized,
   authorizeDiary,
   addViewer,
   getMyId,
-  getCommentCountMap,
   relativeTime,
   coverColorForId,
   type ExchangeDiary,
@@ -93,17 +92,17 @@ function ExchangeListPage() {
   const myId = typeof window !== "undefined" ? getMyId() : "";
 
   const [tab, setTab] = useState<TabId>("my");
-  const [myDiaries, setMyDiaries] = useState<ExchangeDiary[]>([]);
-  const [sharedDiaries, setSharedDiaries] = useState<ExchangeDiary[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
+  const cached = getCachedDiaries();
+  const [myDiaries, setMyDiaries] = useState<ExchangeDiary[]>(cached?.myDiaries ?? []);
+  const [sharedDiaries, setSharedDiaries] = useState<ExchangeDiary[]>(cached?.sharedDiaries ?? []);
+  const [loading, setLoading] = useState(!cached);
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>(cached?.commentCounts ?? {});
 
   const refresh = async () => {
-    const [mine, shared] = await Promise.all([getMyDiaries(), getSharedDiaries()]);
-    setMyDiaries(mine);
-    setSharedDiaries(shared);
-    const allIds = [...mine, ...shared].map((d) => d.id);
-    setCommentCounts(await getCommentCountMap(allIds));
+    const result = await refreshDiaryCache();
+    setMyDiaries(result.myDiaries);
+    setSharedDiaries(result.sharedDiaries);
+    setCommentCounts(result.commentCounts);
   };
 
   useEffect(() => {

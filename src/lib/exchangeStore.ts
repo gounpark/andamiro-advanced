@@ -128,6 +128,18 @@ export function setMyName(name: string): void {
   localStorage.setItem(KEY_MY_NAME, name);
 }
 
+// ── 메모리 캐시 (stale-while-revalidate) ────────────────────────────────────
+interface DiaryCache {
+  myDiaries: ExchangeDiary[];
+  sharedDiaries: ExchangeDiary[];
+  commentCounts: Record<string, number>;
+}
+let _cache: DiaryCache | null = null;
+
+export function getCachedDiaries(): DiaryCache | null {
+  return _cache;
+}
+
 // ── 일기 조회 ─────────────────────────────────────────────────────────────────
 export async function getMyDiaries(): Promise<ExchangeDiary[]> {
   const myId = getMyId();
@@ -150,6 +162,14 @@ export async function getSharedDiaries(): Promise<ExchangeDiary[]> {
     .order("created_at", { ascending: false });
   if (error) return [];
   return (data ?? []).map(rowToDiary);
+}
+
+export async function refreshDiaryCache(): Promise<DiaryCache> {
+  const [myDiaries, sharedDiaries] = await Promise.all([getMyDiaries(), getSharedDiaries()]);
+  const allIds = [...myDiaries, ...sharedDiaries].map((d) => d.id);
+  const commentCounts = await getCommentCountMap(allIds);
+  _cache = { myDiaries, sharedDiaries, commentCounts };
+  return _cache;
 }
 
 export async function getDiaryById(id: string): Promise<ExchangeDiary | undefined> {
