@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, X, ImagePlus } from "lucide-react";
-import { createDiary } from "@/lib/exchangeStore";
+import { createDiary, type ExchangeDiary } from "@/lib/exchangeStore";
+import { InviteLinkButton } from "./exchange";
 
 export const Route = createFileRoute("/exchange/create")({
   head: () => ({
@@ -25,6 +26,7 @@ function ExchangeCreatePage() {
 
   const [imageDataUrl, setImageDataUrl] = useState<string | undefined>();
   const [error, setError] = useState("");
+  const [createdDiary, setCreatedDiary] = useState<ExchangeDiary | null>(null);
 
   const focusField = (field: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>) => {
     field.current?.focus();
@@ -99,7 +101,7 @@ function ExchangeCreatePage() {
         keywords: [],
         imageDataUrl,
       });
-      navigate({ to: "/exchange/$roomId", params: { roomId: diary.id } });
+      setCreatedDiary(diary);
     } catch {
       setError("일기 저장에 실패했어요. 잠시 후 다시 시도해 주세요.");
     }
@@ -218,6 +220,47 @@ function ExchangeCreatePage() {
             완료
           </button>
         </div>
+
+        {/* 초대 링크 바텀시트 */}
+        {createdDiary && (
+          <div className="absolute inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.45)" }}>
+            <div className="w-full rounded-t-[24px] bg-white px-5 pt-6 pb-10">
+              <div className="flex items-center justify-center mb-4">
+                <div className="grid h-14 w-14 place-items-center rounded-2xl text-white font-bold text-[26px]" style={{ background: "var(--primary)" }}>
+                  🎉
+                </div>
+              </div>
+              <h3 className="font-bold text-foreground text-[18px] tracking-tight mb-1 text-center">
+                일기가 만들어졌어요!
+              </h3>
+              <p className="text-[13px] text-[#aaa] tracking-tight text-center mb-5">
+                초대 링크를 복사해서 친구에게 공유해 보세요.
+              </p>
+
+              <div className="rounded-2xl bg-[#f4f6fa] px-4 py-3 mb-4">
+                <p className="text-[12px] text-[#999] tracking-tight mb-2">초대 링크</p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[12px] text-[#555] font-mono truncate flex-1">
+                    /exchange?invite={createdDiary.inviteCode}
+                  </p>
+                  <InviteLinkButton diary={createdDiary} />
+                </div>
+                <p className="text-[11px] text-[#bbb] mt-2 tracking-tight">
+                  비밀번호: <span className="font-semibold text-[#888]">{createdDiary.password}</span>
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => navigate({ to: "/exchange/$roomId", params: { roomId: createdDiary.id } })}
+                className="w-full rounded-2xl py-3.5 font-bold text-white text-[15px] tracking-tight active:scale-[0.99] transition"
+                style={{ background: "var(--primary)" }}
+              >
+                일기 보러가기
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
