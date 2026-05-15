@@ -18,7 +18,7 @@ import {
   authorizeDiary,
   addViewer,
   getMyId,
-  getComments,
+  getCommentCountMap,
   relativeTime,
   coverColorForId,
   type ExchangeDiary,
@@ -95,15 +95,19 @@ function ExchangeListPage() {
   const [tab, setTab] = useState<TabId>("my");
   const [myDiaries, setMyDiaries] = useState<ExchangeDiary[]>([]);
   const [sharedDiaries, setSharedDiaries] = useState<ExchangeDiary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
 
   const refresh = async () => {
     const [mine, shared] = await Promise.all([getMyDiaries(), getSharedDiaries()]);
     setMyDiaries(mine);
     setSharedDiaries(shared);
+    const allIds = [...mine, ...shared].map((d) => d.id);
+    setCommentCounts(await getCommentCountMap(allIds));
   };
 
   useEffect(() => {
-    refresh();
+    refresh().finally(() => setLoading(false));
   }, []);
 
   // ── 초대 링크 처리 ──────────────────────────────────────────────────────
@@ -196,13 +200,15 @@ function ExchangeListPage() {
           </div>
 
           <div className="pb-8">
-            {tab === "my" ? (
+            {loading ? (
+              <DiaryListSkeleton />
+            ) : tab === "my" ? (
               myDiaries.length === 0 ? (
                 <EmptyMy />
               ) : (
                 <ul className="px-4 pt-4 flex flex-col gap-3">
                   {myDiaries.map((d) => (
-                    <DiaryCard key={d.id} diary={d} showAuthor={false} />
+                    <DiaryCard key={d.id} diary={d} showAuthor={false} commentCount={commentCounts[d.id] ?? 0} />
                   ))}
                 </ul>
               )
@@ -211,7 +217,7 @@ function ExchangeListPage() {
             ) : (
               <ul className="px-4 pt-4 flex flex-col gap-3">
                 {sharedDiaries.map((d) => (
-                  <DiaryCard key={d.id} diary={d} showAuthor={true} />
+                  <DiaryCard key={d.id} diary={d} showAuthor={true} commentCount={commentCounts[d.id] ?? 0} />
                 ))}
               </ul>
             )}
@@ -317,14 +323,26 @@ function EmptyShared() {
   );
 }
 
-// ── 일기 카드 ─────────────────────────────────────────────────────────────────
-function DiaryCard({ diary, showAuthor }: { diary: ExchangeDiary; showAuthor: boolean }) {
-  const [commentCount, setCommentCount] = useState(0);
-  const color = coverColorForId(diary.id);
+// ── 스켈레톤 ─────────────────────────────────────────────────────────────────
+function DiaryListSkeleton() {
+  return (
+    <ul className="px-4 pt-4 flex flex-col gap-3">
+      {[0, 1, 2].map((i) => (
+        <li key={i} className="flex items-center gap-3 rounded-2xl bg-white border border-[#f0f0f0] px-4 py-4 shadow-sm animate-pulse">
+          <div className="h-14 w-14 shrink-0 rounded-xl bg-[#f0f0f0]" />
+          <div className="flex-1 min-w-0 flex flex-col gap-2">
+            <div className="h-3.5 w-2/3 rounded-full bg-[#f0f0f0]" />
+            <div className="h-3 w-1/3 rounded-full bg-[#f4f4f4]" />
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
-  useEffect(() => {
-    getComments(diary.id).then((c) => setCommentCount(c.length));
-  }, [diary.id]);
+// ── 일기 카드 ─────────────────────────────────────────────────────────────────
+function DiaryCard({ diary, showAuthor, commentCount }: { diary: ExchangeDiary; showAuthor: boolean; commentCount: number }) {
+  const color = coverColorForId(diary.id);
 
   return (
     <Link

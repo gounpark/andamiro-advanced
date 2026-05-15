@@ -265,6 +265,19 @@ export async function addViewer(id: string): Promise<void> {
 }
 
 // ── 댓글 CRUD ─────────────────────────────────────────────────────────────────
+export async function getCommentCountMap(diaryIds: string[]): Promise<Record<string, number>> {
+  if (diaryIds.length === 0) return {};
+  const { data } = await supabase
+    .from("exchange_comments")
+    .select("diary_id")
+    .in("diary_id", diaryIds);
+  const counts: Record<string, number> = {};
+  for (const row of (data ?? []) as { diary_id: string }[]) {
+    counts[row.diary_id] = (counts[row.diary_id] ?? 0) + 1;
+  }
+  return counts;
+}
+
 export async function getComments(diaryId: string): Promise<ExchangeComment[]> {
   const { data, error } = await supabase
     .from("exchange_comments")
