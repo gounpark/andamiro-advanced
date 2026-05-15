@@ -22,7 +22,7 @@ export const Route = createFileRoute("/exchange")({
       { name: "theme-color", content: "#ffffff" },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { invite?: string } => ({
     invite: typeof search.invite === "string" ? search.invite : undefined,
   }),
   component: ExchangePage,

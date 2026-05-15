@@ -1,22 +1,26 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
+import { ChevronLeft, MoreHorizontal, Trash2, Send, CornerDownRight, X, Lock } from "lucide-react";
 import {
-  ChevronLeft, MoreHorizontal, Trash2, Send, CornerDownRight, X, Lock,
-} from "lucide-react";
-import {
-  getDiaryById, getComments, createComment, deleteComment,
-  deleteDiary, isDiaryAuthorized, authorizeDiary, addViewer,
-  getMyId, relativeTime, coverColorForId,
-  type ExchangeDiary, type ExchangeComment,
+  getDiaryById,
+  getComments,
+  createComment,
+  deleteComment,
+  deleteDiary,
+  isDiaryAuthorized,
+  authorizeDiary,
+  addViewer,
+  getMyId,
+  relativeTime,
+  coverColorForId,
+  type ExchangeDiary,
+  type ExchangeComment,
 } from "@/lib/exchangeStore";
 import { InviteLinkButton } from "./exchange";
 
 export const Route = createFileRoute("/exchange/$roomId")({
   head: () => ({
-    meta: [
-      { title: "교환일기 — 안다미로" },
-      { name: "theme-color", content: "#ffffff" },
-    ],
+    meta: [{ title: "교환일기 — 안다미로" }, { name: "theme-color", content: "#ffffff" }],
   }),
   component: ExchangeDiaryPage,
 });
@@ -31,7 +35,6 @@ function ExchangeDiaryPage() {
   const [authorized, setAuthorized] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [replyTo, setReplyTo] = useState<ExchangeComment | null>(null);
-  const [commentInput, setCommentInput] = useState("");
   const commentInputRef = useRef<HTMLInputElement>(null);
 
   // 비번 인증 (직접 URL 진입 시)
@@ -40,7 +43,10 @@ function ExchangeDiaryPage() {
 
   useEffect(() => {
     const d = getDiaryById(diaryId);
-    if (!d) { navigate({ to: "/exchange", search: {} }); return; }
+    if (!d) {
+      navigate({ to: "/exchange", search: {} });
+      return;
+    }
     setDiary(d);
     const auth = isDiaryAuthorized(diaryId);
     setAuthorized(auth);
@@ -48,7 +54,7 @@ function ExchangeDiaryPage() {
       addViewer(diaryId);
       setComments(getComments(diaryId));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [diaryId]);
 
   const refreshComments = () => setComments(getComments(diaryId));
@@ -66,9 +72,10 @@ function ExchangeDiaryPage() {
   };
 
   const handleSendComment = () => {
-    if (!commentInput.trim()) return;
-    createComment(diaryId, commentInput.trim(), replyTo?.id);
-    setCommentInput("");
+    const text = commentInputRef.current?.value ?? "";
+    if (!text.trim()) return;
+    createComment(diaryId, text.trim(), replyTo?.id);
+    if (commentInputRef.current) commentInputRef.current.value = "";
     setReplyTo(null);
     refreshComments();
   };
@@ -97,7 +104,10 @@ function ExchangeDiaryPage() {
                 type="password"
                 placeholder="비밀번호"
                 value={pwInput}
-                onChange={(e) => { setPwInput(e.target.value); setPwError(""); }}
+                onChange={(e) => {
+                  setPwInput(e.target.value);
+                  setPwError("");
+                }}
                 onKeyDown={(e) => {
                   if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
                   handleAuthorize();
@@ -325,17 +335,17 @@ function ExchangeDiaryPage() {
               ref={commentInputRef}
               type="text"
               placeholder="댓글을 입력하세요..."
-              value={commentInput}
-              onChange={(e) => { if (!e.nativeEvent.isComposing) setCommentInput(e.target.value); }}
-              onCompositionEnd={(e) => { setCommentInput((e.target as HTMLInputElement).value); }}
-              onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && handleSendComment()}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
+                e.preventDefault();
+                handleSendComment();
+              }}
               className="flex-1 rounded-full bg-[#f4f6fa] px-4 py-2.5 text-[14px] text-foreground placeholder:text-[#bbb] outline-none"
             />
             <button
               type="button"
               onClick={handleSendComment}
-              disabled={!commentInput.trim()}
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-full transition disabled:opacity-30"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full transition"
               style={{ background: "var(--primary)" }}
             >
               <Send className="h-4 w-4 text-white" />

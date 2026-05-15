@@ -40,7 +40,7 @@ function preloadRecordAssets() {
 }
 
 export const Route = createFileRoute("/")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { demo?: string } => ({
     demo: typeof search.demo === "string" ? search.demo : undefined,
   }),
   head: () => ({

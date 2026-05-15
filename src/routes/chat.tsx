@@ -33,12 +33,22 @@ const MOOD_GREETING: Record<MoodKey, { title: string; sub: string; chips: string
   best: {
     title: "안녕하세요!\n오늘 정말 최고의 하루였군요!",
     sub: "선택하신 감정의 세부 감정을 선택해주세요",
-    chips: ["⚡ 에너지가 넘쳐요", "😊 기분이 아주 좋아요", "✨ 오늘 잘될 것 같아요", "💪 활기차고 자신 있어요"],
+    chips: [
+      "⚡ 에너지가 넘쳐요",
+      "😊 기분이 아주 좋아요",
+      "✨ 오늘 잘될 것 같아요",
+      "💪 활기차고 자신 있어요",
+    ],
   },
   good: {
     title: "안녕하세요!\n오늘의 하루가 좋으셨군요!",
     sub: "선택하신 감정의 세부 감정을 선택해주세요",
-    chips: ["⚡ 에너지가 넘쳐요", "😊 기분이 아주 좋아요", "✨ 오늘 잘될 것 같아요", "💪 활기차고 자신 있어요"],
+    chips: [
+      "⚡ 에너지가 넘쳐요",
+      "😊 기분이 아주 좋아요",
+      "✨ 오늘 잘될 것 같아요",
+      "💪 활기차고 자신 있어요",
+    ],
   },
   okay: {
     title: "안녕하세요!\n평범한 하루를 보내셨군요.",
@@ -180,9 +190,8 @@ function ChatPage() {
     ];
   });
   const [showChips, setShowChips] = useState(!demo2);
-  const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const isComposingRef = useRef(false); // IME 조합 중 여부 (iOS Korean 대응)
+  const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [cursor, setCursor] = useState({ x: 50, y: 700, tapping: false, visible: false });
   const frameRef = useRef<HTMLDivElement>(null);
@@ -199,17 +208,22 @@ function ChatPage() {
     let cancelled = false;
     const timers: ReturnType<typeof setTimeout>[] = [];
     const track = (fn: () => void, delay: number) => {
-      const t = setTimeout(() => { if (!cancelled) fn(); }, delay);
+      const t = setTimeout(() => {
+        if (!cancelled) fn();
+      }, delay);
       timers.push(t);
     };
     const addUser = (text: string) => {
-      setMessages(m => [...m, { id: crypto.randomUUID(), role: "user", text }]);
+      setMessages((m) => [...m, { id: crypto.randomUUID(), role: "user", text }]);
       setShowChips(false);
       setIsTyping(true);
     };
     const addBot = (replyTo: string) => {
       setIsTyping(false);
-      setMessages(m => [...m, { id: crypto.randomUUID(), role: "bot", text: pickReply(replyTo), canEnd: true }]);
+      setMessages((m) => [
+        ...m,
+        { id: crypto.randomUUID(), role: "bot", text: pickReply(replyTo), canEnd: true },
+      ]);
     };
 
     const msg1 = greeting.chips[1]; // "😊 기분이 아주 좋아요"
@@ -229,8 +243,11 @@ function ChatPage() {
         setCursor({ x: cx, y: cy + 60, tapping: false, visible: false });
         track(() => setCursor({ x: cx, y: cy + 60, tapping: false, visible: true }), 400);
         track(() => setCursor({ x: cx, y: cy, tapping: false, visible: true }), 800);
-        track(() => setCursor(c => ({ ...c, tapping: true })), 1200);
-        track(() => { setCursor(c => ({ ...c, tapping: false })); addUser(msg1); }, 1500);
+        track(() => setCursor((c) => ({ ...c, tapping: true })), 1200);
+        track(() => {
+          setCursor((c) => ({ ...c, tapping: false }));
+          addUser(msg1);
+        }, 1500);
       } else {
         track(() => addUser(msg1), 900);
       }
@@ -251,15 +268,24 @@ function ChatPage() {
         if (btn && frame) {
           const br = btn.getBoundingClientRect();
           const fr = frame.getBoundingClientRect();
-          setCursor({ x: br.left-fr.left+br.width/2, y: br.top-fr.top+br.height/2, tapping: false, visible: true });
+          setCursor({
+            x: br.left - fr.left + br.width / 2,
+            y: br.top - fr.top + br.height / 2,
+            tapping: false,
+            visible: true,
+          });
         }
       });
     }, 10400);
-    track(() => setCursor(c => ({ ...c, tapping: true })), 11100);
-    track(() => setCursor(c => ({ ...c, tapping: false, visible: false })), 11400); // 멈춤
+    track(() => setCursor((c) => ({ ...c, tapping: true })), 11100);
+    track(() => setCursor((c) => ({ ...c, tapping: false, visible: false })), 11400); // 멈춤
 
-    return () => { cancelled = true; cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(raf);
+      timers.forEach(clearTimeout);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demo1]);
 
   // ── demo=2 (주요기능03): 정적 완료 화면 → 대화종료 클릭 → 분석 이동 ──
@@ -268,7 +294,9 @@ function ChatPage() {
     let cancelled = false;
     const timers: ReturnType<typeof setTimeout>[] = [];
     const track = (fn: () => void, delay: number) => {
-      const t = setTimeout(() => { if (!cancelled) fn(); }, delay);
+      const t = setTimeout(() => {
+        if (!cancelled) fn();
+      }, delay);
       timers.push(t);
     };
     // 1s: 커서 등장 (대화종료 버튼 위치 측정)
@@ -280,15 +308,26 @@ function ChatPage() {
         if (btn && frame) {
           const br = btn.getBoundingClientRect();
           const fr = frame.getBoundingClientRect();
-          setCursor({ x: br.left-fr.left+br.width/2, y: br.top-fr.top+br.height/2, tapping: false, visible: true });
+          setCursor({
+            x: br.left - fr.left + br.width / 2,
+            y: br.top - fr.top + br.height / 2,
+            tapping: false,
+            visible: true,
+          });
         }
       });
     }, 1000);
-    track(() => setCursor(c => ({ ...c, tapping: true })), 1700);
-    track(() => { setCursor(c => ({ ...c, tapping: false })); navigate({ to: "/analysis", search: { day: 21 } }); }, 2000);
+    track(() => setCursor((c) => ({ ...c, tapping: true })), 1700);
+    track(() => {
+      setCursor((c) => ({ ...c, tapping: false }));
+      navigate({ to: "/analysis", search: { day: 21 } });
+    }, 2000);
 
-    return () => { cancelled = true; timers.forEach(clearTimeout); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demo2]);
 
   const send = (text: string) => {
@@ -297,7 +336,7 @@ function ChatPage() {
     const userMsg: Msg = { id: crypto.randomUUID(), role: "user", text: trimmed };
     setMessages((m) => [...m, userMsg]);
     setShowChips(false);
-    setInput("");
+    if (inputRef.current) inputRef.current.value = "";
 
     // 타이핑 인디케이터: 길이에 따라 800~1800ms 정도 사고하는 척
     setIsTyping(true);
@@ -363,7 +402,9 @@ function ChatPage() {
           <div className="flex flex-col gap-3">
             {(() => {
               // 마지막 canEnd 봇 메시지 id만 찾아서 그 위에만 "대화 종료" 버튼 표시
-              const lastCanEndId = [...messages].reverse().find(m => m.role === "bot" && m.canEnd)?.id;
+              const lastCanEndId = [...messages]
+                .reverse()
+                .find((m) => m.role === "bot" && m.canEnd)?.id;
               return messages.map((m) => (
                 <div key={m.id}>
                   {m.role === "user" ? (
@@ -417,18 +458,11 @@ function ChatPage() {
               <Plus className="h-5 w-5" />
             </button>
             <input
-              value={input}
-              onChange={(e) => {
-                // IME 조합 중에는 state 업데이트 스킵 → iOS Safari에서 한글 composition 중단 방지
-                if (!isComposingRef.current) setInput(e.target.value);
-              }}
-              onCompositionStart={() => { isComposingRef.current = true; }}
-              onCompositionEnd={(e) => {
-                isComposingRef.current = false;
-                setInput((e.target as HTMLInputElement).value);
-              }}
+              ref={inputRef}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.nativeEvent.isComposing) send(input);
+                if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
+                e.preventDefault();
+                send(e.currentTarget.value);
               }}
               placeholder="질문을 입력해 보세요"
               className="min-w-0 flex-1 bg-transparent px-2 text-[14px] text-foreground placeholder:text-[#b8bac2] outline-none tracking-tight"
@@ -443,13 +477,8 @@ function ChatPage() {
             <button
               type="button"
               aria-label="보내기"
-              onClick={() => send(input)}
-              disabled={!input.trim()}
-              className={`grid h-9 w-9 shrink-0 place-items-center rounded-full transition ${
-                input.trim()
-                  ? "bg-[var(--primary)] text-white"
-                  : "bg-[#e8e8ec] text-[#b8bac2] cursor-not-allowed"
-              }`}
+              onClick={() => send(inputRef.current?.value ?? "")}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full transition bg-[var(--primary)] text-white"
             >
               <ArrowUp className="h-5 w-5" strokeWidth={2.4} />
             </button>

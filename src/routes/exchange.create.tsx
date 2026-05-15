@@ -2,30 +2,29 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, Lock, X, ImagePlus, Share2, Check } from "lucide-react";
 
-// nativeEvent.isComposing 기반 헬퍼 – 공유 ref 불필요, 입력 필드별로 독립 동작
+// 한글 IME 조합 중 onChange로 setState하면 React 19가 DOM 값을 덮어써 조합이 끊긴다.
+// onCompositionStart에서 조합 시작을 감지하고 onChange를 막아 re-render를 방지한다.
 function ime(setter: (v: string) => void, extra?: () => void) {
+  const composing = { current: false };
   return {
+    onCompositionStart() {
+      composing.current = true;
+    },
     onChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-      if (!e.nativeEvent.isComposing) { setter(e.target.value); extra?.(); }
+      if (!composing.current) { setter(e.target.value); extra?.(); }
     },
     onCompositionEnd(e: React.CompositionEvent<HTMLInputElement | HTMLTextAreaElement>) {
-      setter(e.currentTarget.value); extra?.();
+      composing.current = false;
+      setter(e.currentTarget.value);
+      extra?.();
     },
   };
 }
-import {
-  createDiary,
-  getMyName,
-  setMyName,
-  type ExchangeDiary,
-} from "@/lib/exchangeStore";
+import { createDiary, getMyName, setMyName, type ExchangeDiary } from "@/lib/exchangeStore";
 
 export const Route = createFileRoute("/exchange/create")({
   head: () => ({
-    meta: [
-      { title: "교환일기 만들기 — 안다미로" },
-      { name: "theme-color", content: "#ffffff" },
-    ],
+    meta: [{ title: "교환일기 만들기 — 안다미로" }, { name: "theme-color", content: "#ffffff" }],
   }),
   component: ExchangeCreatePage,
 });
@@ -97,9 +96,18 @@ function ExchangeCreatePage() {
 
   // ── 유효성 검사 → 확인 팝업 표시 ─────────────────────────────────────────
   const handleSubmitAttempt = () => {
-    if (!title.trim()) { setError("제목을 입력해 주세요."); return; }
-    if (!body.trim()) { setError("일기 내용을 입력해 주세요."); return; }
-    if (!password.trim()) { setError("비밀번호를 입력해 주세요."); return; }
+    if (!title.trim()) {
+      setError("제목을 입력해 주세요.");
+      return;
+    }
+    if (!body.trim()) {
+      setError("일기 내용을 입력해 주세요.");
+      return;
+    }
+    if (!password.trim()) {
+      setError("비밀번호를 입력해 주세요.");
+      return;
+    }
     setError("");
     setShowConfirm(true);
   };
@@ -168,8 +176,15 @@ function ExchangeCreatePage() {
                 사진 첨부 <span className="text-[#bbb] font-normal">(선택)</span>
               </p>
               {imageDataUrl ? (
-                <div className="relative w-full rounded-2xl overflow-hidden" style={{ aspectRatio: "16/9" }}>
-                  <img src={imageDataUrl} alt="첨부 이미지" className="w-full h-full object-cover" />
+                <div
+                  className="relative w-full rounded-2xl overflow-hidden"
+                  style={{ aspectRatio: "16/9" }}
+                >
+                  <img
+                    src={imageDataUrl}
+                    alt="첨부 이미지"
+                    className="w-full h-full object-cover"
+                  />
                   <button
                     type="button"
                     onClick={() => setImageDataUrl(undefined)}
@@ -298,15 +313,16 @@ function ExchangeCreatePage() {
                   type="text"
                   placeholder="초대받은 사람이 입력할 비밀번호"
                   value={password}
-                  onChange={(e) => { setPassword(e.target.value); setError(""); }}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError("");
+                  }}
                   className="flex-1 bg-transparent text-base text-foreground placeholder:text-[#bbb] outline-none"
                 />
               </div>
             </label>
 
-            {error && (
-              <p className="text-[12px] text-red-400 -mt-2 tracking-tight">{error}</p>
-            )}
+            {error && <p className="text-[12px] text-red-400 -mt-2 tracking-tight">{error}</p>}
           </div>
         </div>
 
@@ -333,7 +349,8 @@ function ExchangeCreatePage() {
                 이 일기를 공유하시겠어요?
               </h3>
               <p className="text-[13px] text-[#999] mb-6 tracking-tight leading-relaxed">
-                초대 링크와 비밀번호를 통해 소중한 사람에게<br />
+                초대 링크와 비밀번호를 통해 소중한 사람에게
+                <br />
                 공유할 수 있어요.
               </p>
               <button
@@ -376,7 +393,9 @@ function ExchangeCreatePage() {
 
               <div className="rounded-2xl bg-[#f4f6fa] px-4 py-3 mb-4">
                 <p className="text-[11px] text-[#aaa] tracking-tight mb-1">비밀번호</p>
-                <p className="text-[15px] font-semibold text-foreground tracking-tight">{createdDiary.password}</p>
+                <p className="text-[15px] font-semibold text-foreground tracking-tight">
+                  {createdDiary.password}
+                </p>
               </div>
 
               <button
