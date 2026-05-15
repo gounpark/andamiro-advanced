@@ -30,38 +30,8 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      {
-        name: "description",
-        content:
-          "Converts Figma designs into interactive React components using shadcn/ui and Tailwind CSS.",
-      },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      {
-        property: "og:description",
-        content:
-          "Converts Figma designs into interactive React components using shadcn/ui and Tailwind CSS.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Lovable App" },
-      {
-        name: "twitter:description",
-        content:
-          "Converts Figma designs into interactive React components using shadcn/ui and Tailwind CSS.",
-      },
-      {
-        property: "og:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3b02b7de-8fdf-45b7-a056-0152c234945d/id-preview-96264cdf--49701ba7-6c48-47fa-b9bb-322912b98686.lovable.app-1776934864155.png",
-      },
-      {
-        name: "twitter:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3b02b7de-8fdf-45b7-a056-0152c234945d/id-preview-96264cdf--49701ba7-6c48-47fa-b9bb-322912b98686.lovable.app-1776934864155.png",
-      },
+      { title: "안다미로 — AI 감정일기" },
+      { name: "description", content: "AI와 함께 감정을 기록하는 일기 앱." },
     ],
     links: [
       {
@@ -94,9 +64,6 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   return (
     <>
-      <div className="pointer-events-none fixed left-1/2 top-3 z-[9999] -translate-x-1/2 rounded-full border border-emerald-200 bg-white/95 px-4 py-2 text-center text-xs font-semibold text-emerald-700 shadow-lg shadow-emerald-900/10 backdrop-blur">
-        입력 오류 수정 업데이트 적용됨 · 2026.05.15
-      </div>
       <Splash />
       <Outlet />
     </>
