@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<title>안다미로 — 교환일기 디자인 시안</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:#e9eaf2;
+  font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue','Apple SD Gothic Neo',sans-serif;
+  padding:56px 48px 80px;
+  color:#111;
+}
+/* ── 페이지 레이아웃 ── */
+.page-title{font-size:20px;font-weight:700;color:#333;letter-spacing:-0.03em;margin-bottom:4px;}
+.page-sub{font-size:12px;color:#aaa;letter-spacing:-0.01em;margin-bottom:48px;}
+.section{margin-bottom:64px;}
+.section-label{
+  font-size:10px;font-weight:700;color:#aaa;
+  letter-spacing:0.08em;text-transform:uppercase;
+  margin-bottom:16px;padding-left:4px;
+}
+.row{display:flex;gap:40px;flex-wrap:wrap;align-items:flex-start;}
+
+/* ── 아트보드 ── */
+.artboard{flex-shrink:0;}
+.artboard-label{
+  font-size:11px;font-weight:600;color:#888;
+  letter-spacing:-0.01em;margin-bottom:10px;padding-left:2px;
+}
+
+/* ── 앱 프레임 (375×812, radius 28) ── */
+.frame{
+  width:375px;height:812px;
+  background:#f5f6f8;
+  border-radius:28px;
+  overflow:hidden;
+  position:relative;
+  box-shadow:0 25px 50px -12px rgba(0,0,0,0.28);
+}
+
+/* ── 공통 ── */
+:root{--p:#4283f3;--pg:#eef3ff;}
+.bg-page{background:#f5f6f8;}
+.bg-white{background:#fff;}
+.text-p{color:var(--p);}
+
+/* 상태바 */
+.sb{
+  height:52px;background:inherit;
+  display:flex;align-items:flex-end;
+  justify-content:space-between;
+  padding:0 20px 10px;
+}
+.sb-time{font-size:15px;font-weight:600;letter-spacing:-0.02em;color:#111;}
+.sb-icons{display:flex;align-items:center;gap:5px;font-size:12px;color:#111;}
+
+/* 헤더 */
+.hd{
+  background:#fff;
+  display:flex;align-items:center;
+  gap:8px;padding:0 16px 12px;
+  border-bottom:1px solid #f0f0f0;
+  position:sticky;top:0;z-index:10;
+}
+.hd-title{font-size:18px;font-weight:700;color:#111;letter-spacing:-0.025em;flex:1;}
+.hd-title-sm{font-size:16px;font-weight:700;color:#111;letter-spacing:-0.025em;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.back{width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:#333;}
+.back svg{width:20px;height:20px;}
+.more{color:#555;font-size:22px;line-height:1;padding:2px;}
+
+/* 스크롤 영역 */
+.scroll{position:absolute;inset:0;overflow:hidden;display:flex;flex-direction:column;}
+.scroll-y{position:absolute;inset:0;overflow-y:auto;-ms-overflow-style:none;scrollbar-width:none;}
+.scroll-y::-webkit-scrollbar{display:none;}
+
+/* 탭 */
+.tabs{background:#fff;display:flex;border-bottom:1px solid #f0f0f0;flex-shrink:0;}
+.tab{flex:1;padding:12px 0;font-size:14px;font-weight:600;text-align:center;color:#bbb;letter-spacing:-0.02em;}
+.tab.on{color:var(--p);border-bottom:2.5px solid var(--p);}
+
+/* 일기 카드 */
+.dcard{
+  display:flex;align-items:center;gap:12px;
+  background:#fff;border-radius:16px;
+  border:1px solid #f0f0f0;
+  padding:14px 16px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
+}
+.dthumb{
+  width:56px;height:56px;border-radius:12px;
+  flex-shrink:0;display:flex;align-items:center;
+  justify-content:center;font-size:22px;font-weight:700;color:#fff;
+}
+.dinfo{flex:1;min-width:0;}
+.dtitle{font-size:15px;font-weight:600;color:#111;letter-spacing:-0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dmeta{font-size:12px;color:#999;letter-spacing:-0.01em;margin-top:3px;display:flex;align-items:center;gap:6px;}
+.ddot{color:#ddd;}
+.dcomment{font-size:12px;color:#bbb;margin-top:3px;display:flex;align-items:center;gap:3px;}
+.chevron{color:#ccc;font-size:15px;margin-left:4px;}
+
+/* 태그 */
+.tag{font-size:12px;padding:3px 10px;border-radius:99px;background:var(--pg);color:var(--p);font-weight:600;display:inline-block;}
+
+/* 버튼 */
+.btn{
+  width:100%;border-radius:12px;padding:14px;
+  font-size:18px;font-weight:500;text-align:center;
+  color:#fff;background:var(--p);letter-spacing:-0.01em;
+  line-height:28px;
+}
+.btn-sm{
+  border-radius:12px;padding:13px;
+  font-size:15px;font-weight:700;text-align:center;
+  color:#fff;background:var(--p);letter-spacing:-0.01em;
+}
+.btn-ghost{width:100%;padding:10px;font-size:14px;color:#999;text-align:center;letter-spacing:-0.01em;}
+.chip{
+  display:flex;align-items:center;gap:6px;
+  background:var(--p);color:#fff;
+  border-radius:99px;padding:6px 14px;
+  font-size:13px;font-weight:600;letter-spacing:-0.01em;
+  flex-shrink:0;
+}
+
+/* 폼 */
+.flabel{font-size:15px;font-weight:700;color:#222;letter-spacing:-0.02em;margin-bottom:10px;display:block;}
+.finput{
+  height:53px;border:1px solid #e6e6e6;border-radius:10px;
+  background:#fff;padding:0 13px;font-size:16px;
+  color:#222;display:flex;align-items:center;
+  letter-spacing:-0.01em;
+}
+.finput.ph{color:#999;}
+.ftextarea{
+  border:1px solid #e6e6e6;border-radius:10px;
+  background:#fff;padding:14px;font-size:16px;
+  color:#454545;line-height:1.5;letter-spacing:-0.01em;
+}
+
+/* 하단바 */
+.bottom-bar{
+  position:absolute;bottom:0;left:0;right:0;
+  background:#fff;border-top:1px solid #f0f0f0;
+  padding:12px 16px calc(16px + env(safe-area-inset-bottom,0px));
+}
+.comment-bar{
+  position:absolute;bottom:0;left:0;right:0;
+  background:#fff;border-top:1px solid #f0f0f0;
+  display:flex;align-items:center;gap:8px;
+  padding:10px 16px calc(24px);
+}
+.ci{flex:1;background:#f4f6fa;border-radius:99px;padding:10px 16px;font-size:14px;color:#bbb;}
+.send{width:36px;height:36px;border-radius:50%;background:var(--p);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+/* 오버레이 / 바텀시트 */
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;justify-content:flex-end;z-index:20;}
+.sheet{background:#fff;border-radius:24px 24px 0 0;padding:24px 20px 40px;}
+.sh-title{font-size:18px;font-weight:700;color:#111;letter-spacing:-0.025em;margin-bottom:4px;}
+.sh-sub{font-size:13px;color:#999;letter-spacing:-0.01em;margin-bottom:20px;line-height:1.5;}
+
+/* 초대 박스 */
+.ibox{background:#f4f6fa;border-radius:16px;padding:12px 16px;margin-bottom:16px;}
+.ilabel{font-size:12px;color:#999;margin-bottom:6px;letter-spacing:-0.01em;}
+.irow{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.iurl{font-size:12px;color:#555;font-family:monospace;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cpbtn{
+  display:flex;align-items:center;gap:5px;
+  background:#fff;border:1px solid #e6e6e6;
+  border-radius:99px;padding:6px 12px;
+  font-size:12px;font-weight:600;color:var(--p);
+  flex-shrink:0;white-space:nowrap;
+}
+.pwlabel{font-size:11px;color:#bbb;margin-top:8px;}
+
+/* 댓글 */
+.cmt{display:flex;gap:10px;}
+.cav{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
+.cbody{flex:1;}
+.cname{font-size:13px;font-weight:600;color:#111;letter-spacing:-0.02em;}
+.ctime{font-size:11px;color:#bbb;margin-left:6px;}
+.ctext{font-size:13px;color:#444;line-height:1.5;margin-top:2px;}
+.cact{display:flex;gap:12px;margin-top:4px;}
+.ca-reply{font-size:11px;color:var(--p);}
+.ca-del{font-size:11px;color:#ccc;}
+
+/* 뷰어 */
+.vrow{display:flex;}
+.vav{width:28px;height:28px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;margin-left:-6px;}
+.vav:first-child{margin-left:0;}
+
+/* 비밀번호 입력 화면 */
+.pw-overlay{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;background:#f5f6f8;
+}
+</style>
+</head>
+<body>
+
+<div class="page-title">안다미로 — 교환일기 UI 시안</div>
+<div class="page-sub">375 × 812px · 코드 기준 색상/간격 · Figma HTML to Figma 가져오기용</div>
+
+<!-- ════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Flow 1 — 채팅 결과 → 일기 생성</div>
+  <div class="row">
+
+    <!-- 01. 채팅 결과 + 교환일기 버튼 -->
+    <div class="artboard">
+      <div class="artboard-label">01 · 채팅 결과 — 교환일기 버튼</div>
+      <div class="frame bg-page">
+        <div class="scroll">
+          <!-- 상태바 -->
+          <div class="sb" style="background:#fff;">
+            <span class="sb-time">9:41</span>
+            <div class="sb-icons">
+              <svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1" opacity=".3"/></svg>
+              <svg width="16" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20" stroke-width="3" stroke-linecap="round"/></svg>
+              <svg width="25" height="12" viewBox="0 0 25 12" fill="currentColor"><rect x="0" y="1" width="22" height="10" rx="2" opacity=".35"/><rect x="1" y="2" width="18" height="8" rx="1.5"/><rect x="23" y="3.5" width="2" height="5" rx="1"/></svg>
+            </div>
+          </div>
+          <!-- 헤더 -->
+          <div class="hd">
+            <div class="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+            <div class="hd-title">AI 감정 채팅</div>
+          </div>
+
+          <!-- 채팅 영역 -->
+          <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;padding-bottom:180px;">
+            <!-- AI 버블 -->
+            <div style="display:flex;gap:8px;align-items:flex-start;">
+              <div style="width:34px;height:34px;border-radius:50%;background:var(--p);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;">🍀</div>
+              <div style="max-width:240px;background:#fff;border-radius:16px 16px 16px 4px;padding:12px 14px;border:1px solid #f0f0f0;">
+                <p style="font-size:14px;color:#333;line-height:1.55;letter-spacing:-0.01em;">오늘 하루 어떠셨어요? 무슨 일이 있었는지 편하게 말씀해 주세요 🌿</p>
+              </div>
+            </div>
+            <!-- 사용자 버블 -->
+            <div style="display:flex;justify-content:flex-end;">
+              <div style="max-width:220px;background:var(--p);border-radius:16px 16px 4px 16px;padding:12px 14px;">
+                <p style="font-size:14px;color:#fff;line-height:1.55;letter-spacing:-0.01em;">오늘 친구랑 오래 얘기했는데 하고 싶은 말을 제대로 못 전한 것 같아서 아쉬워</p>
+              </div>
+            </div>
+            <!-- AI 버블 -->
+            <div style="display:flex;gap:8px;align-items:flex-start;">
+              <div style="width:34px;height:34px;border-radius:50%;background:var(--p);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;">🍀</div>
+              <div style="max-width:240px;background:#fff;border-radius:16px 16px 16px 4px;padding:12px 14px;border:1px solid #f0f0f0;">
+                <p style="font-size:14px;color:#333;line-height:1.55;letter-spacing:-0.01em;">전하고 싶었던 말이 있었군요. 그 감정을 글로 남겨두면 마음이 좀 정리될 수 있어요 ✍️</p>
+              </div>
+            </div>
+
+            <!-- 결과 카드 -->
+            <div style="background:#fff;border-radius:20px;border:1px solid #e8edf8;padding:16px;box-shadow:0 2px 10px rgba(66,131,243,0.08);margin-top:4px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <div style="width:30px;height:30px;border-radius:10px;background:var(--pg);display:flex;align-items:center;justify-content:center;font-size:15px;">📝</div>
+                <span style="font-size:13px;font-weight:700;color:var(--p);letter-spacing:-0.01em;">오늘의 감정 요약</span>
+              </div>
+              <p style="font-size:13px;color:#444;line-height:1.6;letter-spacing:-0.01em;">친구와의 대화에서 말하지 못한 것에 대한 아쉬움이 느껴지는 하루였어요.</p>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;">
+                <span class="tag">#아쉬움</span><span class="tag">#소통</span><span class="tag">#친구</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 하단 버튼 -->
+          <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #f0f0f0;padding:12px 16px 32px;display:flex;flex-direction:column;gap:8px;">
+            <div class="btn" style="font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;line-height:normal;padding:14px;">
+              📖 교환일기로 공유하기
+            </div>
+            <div style="display:flex;gap:8px;">
+              <div style="flex:1;background:#f4f6fa;border-radius:12px;padding:12px;text-align:center;font-size:14px;font-weight:600;color:#555;letter-spacing:-0.01em;">내 일기에 저장</div>
+              <div style="flex:1;background:#f4f6fa;border-radius:12px;padding:12px;text-align:center;font-size:14px;font-weight:600;color:#555;letter-spacing:-0.01em;">다시 채팅하기</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02. 교환일기 작성 (AI 초안 + 알림 시트) -->
+    <div class="artboard">
+      <div class="artboard-label">02 · 교환일기 작성 — AI 초안 로드</div>
+      <div class="frame bg-page">
+        <div class="scroll">
+          <div class="sb" style="background:#fff;"><span class="sb-time">9:41</span><div class="sb-icons">●●●</div></div>
+          <div class="hd">
+            <div class="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+            <div class="hd-title">교환일기 만들기</div>
+          </div>
+
+          <div style="padding:20px 24px 120px;display:flex;flex-direction:column;gap:24px;overflow-y:auto;">
+            <!-- 이미지 -->
+            <div>
+              <span class="flabel">이미지</span>
+              <div style="width:100%;height:112px;border-radius:16px;background:#f4f6fa;border:2px dashed #ddd;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#bbb;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span style="font-size:14px;">사진 추가</span>
+              </div>
+            </div>
+            <!-- 제목 -->
+            <div>
+              <span class="flabel">제목</span>
+              <div class="finput">말하지 못한 것들에 대하여</div>
+            </div>
+            <!-- 본문 -->
+            <div>
+              <span class="flabel">내용</span>
+              <div class="ftextarea" style="min-height:180px;">오늘 오랜만에 친구를 만났다. 밥도 먹고, 카페도 가고, 꽤 긴 시간을 함께했는데... 막상 헤어지고 나서야 하고 싶었던 말이 생각났다.<br><br>왜 그때 바로 말하지 못했을까.</div>
+            </div>
+            <!-- 비밀번호 -->
+            <div>
+              <span class="flabel">비밀번호</span>
+              <div class="finput ph" style="font-size:13px;">패스워드 입력시 작성이 가능합니다.(6~12자)</div>
+            </div>
+          </div>
+
+          <!-- AI 초안 알림 시트 -->
+          <div class="overlay" style="background:rgba(0,0,0,0.15);">
+            <div class="sheet" style="padding:18px 20px 32px;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                <div style="width:36px;height:36px;border-radius:12px;background:var(--pg);display:flex;align-items:center;justify-content:center;font-size:18px;">✨</div>
+                <div>
+                  <div style="font-size:15px;font-weight:700;color:#111;letter-spacing:-0.025em;">AI 초안을 불러왔어요</div>
+                  <div style="font-size:12px;color:#aaa;margin-top:1px;">내용을 자유롭게 수정해 보세요</div>
+                </div>
+              </div>
+              <div class="btn-sm btn">확인했어요</div>
+            </div>
+          </div>
+
+          <div class="bottom-bar">
+            <div class="btn">완료</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03. 완료 후 초대링크 시트 -->
+    <div class="artboard">
+      <div class="artboard-label">03 · 완료 후 — 초대 링크 공유</div>
+      <div class="frame bg-page">
+        <div class="scroll">
+          <div class="sb" style="background:#f5f6f8;"><span class="sb-time">9:41</span><div class="sb-icons">●●●</div></div>
+          <div class="hd" style="background:#f5f6f8;border-color:transparent;">
+            <div class="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+            <div class="hd-title">교환일기 만들기</div>
+          </div>
+          <!-- 배경 폼 (흐릿) -->
+          <div style="padding:20px 24px;opacity:0.25;display:flex;flex-direction:column;gap:24px;">
+            <div><span class="flabel">제목</span><div class="finput">말하지 못한 것들에 대하여</div></div>
+            <div><span class="flabel">내용</span><div class="ftextarea" style="height:80px;"></div></div>
+          </div>
+
+          <div class="overlay">
+            <div class="sheet">
+              <div style="display:flex;justify-content:center;margin-bottom:18px;">
+                <div style="width:56px;height:56px;border-radius:18px;background:var(--p);display:flex;align-items:center;justify-content:center;font-size:28px;">🎉</div>
+              </div>
+              <div class="sh-title" style="text-align:center;">일기가 만들어졌어요!</div>
+              <div class="sh-sub" style="text-align:center;">초대 링크를 복사해서 친구에게 공유해 보세요.</div>
+              <div class="ibox">
+                <div class="ilabel">초대 링크</div>
+                <div class="irow">
+                  <div class="iurl">/exchange?invite=a3f9x2k1rb</div>
+                  <div class="cpbtn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    초대 링크 복사
+                  </div>
+                </div>
+                <div class="pwlabel">비밀번호: <span style="font-weight:600;color:#888;">flower12</span></div>
+              </div>
+              <div class="btn-sm btn">일기 보러가기</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Flow 2 — 교환일기 목록</div>
+  <div class="row">
+
+    <!-- 04. 목록 - 내가 공유한 -->
+    <div class="artboard">
+      <div class="artboard-label">04 · 목록 — 내가 공유한</div>
+      <div class="frame bg-page">
+        <div class="scroll">
+          <div class="sb" style="background:#fff;"><span class="sb-time">9:41</span><div class="sb-icons">●●●</div></div>
+          <div class="hd">
+            <div class="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+            <div class="hd-title">교환 일기</div>
+            <div class="chip">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              새 일기
+            </div>
+          </div>
+          <div class="tabs">
+            <div class="tab on">내가 공유한</div>
+            <div class="tab">공유 받은</div>
+          </div>
+          <div style="padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;">
+            <div class="dcard">
+              <div class="dthumb" style="background:#7c6ef5;">말</div>
+              <div class="dinfo">
+                <div class="dtitle">말하지 못한 것들에 대하여</div>
+                <div class="dmeta">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <span>3명이 읽었어요</span>
+                  <span class="ddot">·</span>
+                  <span style="color:#bbb;">방금 전</span>
+                </div>
+                <div class="dcomment">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  댓글 2개
+                </div>
+              </div>
+              <span class="chevron">›</span>
+            </div>
+            <div class="dcard">
+              <div class="dthumb" style="background:#f5866e;">봄</div>
+              <div class="dinfo">
+                <div class="dtitle">봄날의 산책</div>
+                <div class="dmeta">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <span>1명이 읽었어요</span>
+                  <span class="ddot">·</span>
+                  <span style="color:#bbb;">3일 전</span>
+                </div>
+              </div>
+              <span class="chevron">›</span>
+            </div>
+            <div class="dcard">
+              <div class="dthumb" style="background:#6ec7f5;">오</div>
+              <div class="dinfo">
+                <div class="dtitle">오늘의 작은 성취</div>
+                <div class="dmeta">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <span>0명이 읽었어요</span>
+                  <span class="ddot">·</span>
+                  <span style="color:#bbb;">1주 전</span>
+                </div>
+              </div>
+              <span class="chevron">›</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 05. 목록 - 공유 받은 -->
+    <div class="artboard">
+      <div class="artboard-label">05 · 목록 — 공유 받은</div>
+      <div class="frame bg-page">
+        <div class="scroll">
+          <div class="sb" style="background:#fff;"><span class="sb-time">9:41</span><div class="sb-icons">●●●</div></div>
+          <div class="hd">
+            <div class="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+            <div class="hd-title">교환 일기</div>
+            <div class="chip">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              새 일기
+            </div>
+          </div>
+          <div class="tabs">
+            <div class="tab">내가 공유한</div>
+            <div class="tab on">공유 받은</div>
+          </div>
+          <div style="padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;">
+            <div class="dcard">
+              <div class="dthumb" style="background:#f5c96e;">그</div>
+              <div class="dinfo">
+                <div class="dtitle">그날의 기억</div>
+                <div class="dmeta">
+                  <span>햇살친구</span><span class="ddot">·</span><span style="color:#bbb;">2일 전</span>
+                </div>
+                <div class="dcomment">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  댓글 1개
+                </div>
+              </div>
+              <span class="chevron">›</span>
+            </div>
+            <div class="dcard">
+              <div class="dthumb" style="background:#6ef5b4;"><span style="color:#1a7a4a;">제</span></div>
+              <div class="dinfo">
+                <div class="dtitle">제주도에서의 하루</div>
+                <div class="dmeta">
+                  <span>달빛작가</span><span class="ddot">·</span><span style="color:#bbb;">5일 전</span>
+                </div>
+              </div>
+              <span class="chevron">›</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 06. 목록 - 빈 상태 -->
+    <div class="artboard">
+      <div class="artboard-label">06 · 목록 — 빈 상태</div>
+      <div class="frame bg-page">
+        <div class="scroll">
+          <div class="sb" style="background:#fff;"><span class="sb-time">9:41</span><div class="sb-icons">●●●</div></div>
+          <div class="hd">
+            <div class="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+            <div class="hd-title">교환 일기</div>
+            <div class="chip">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              새 일기
+            </div>
+          </div>
+          <div class="tabs">
+            <div class="tab on">내가 공유한</div>
+            <div class="tab">공유 받은</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px 32px;text-align:center;">
+            <div style="width:80px;height:80px;border-radius:50%;background:var(--pg);display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="1.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            </div>
+            <div style="font-size:17px;font-weight:700;color:#111;letter-spacing:-0.025em;margin-bottom:8px;">아직 공유한 일기가 없어요</div>
+            <div style="font-size:13px;color:#aaa;line-height:1.7;letter-spacing:-0.01em;margin-bottom:32px;">일기를 만들고 소중한 사람에게<br>초대 링크를 공유해 보세요.</div>
+            <div class="btn" style="width:auto;padding:14px 24px;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;line-height:normal;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              새 일기 공유하기
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Flow 3 — 교환일기 상세</div>
+  <div class="row">
+
+    <!-- 07. 상세 - 댓글 없음, 본 사람 없음 -->
+    <div class="artboard">
+      <div class="artboard-label">07 · 상세 — 댓글 없음 · 본 사람 없음</div>
+      <div class="frame bg-page">
+        <div class="scroll">
+          <div class="scroll-y" style="padding-bottom:64px;">
+            <div class="sb" style="background:#fff;"><span class="sb-time">9:41</span><div class="sb-icons">●●●</div></div>
+            <div class="hd">
+              <div class="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+              <div class="hd-title-sm">말하지 못한 것들에 대하여</div>
+              <div class="more">⋯</div>
+            </div>
+            <!-- 커버 -->
+            <div style="width:100%;height:120px;background:#7c6ef5;display:flex;align-items:center;justify-content:center;">
+              <span style="font-size:48px;font-weight:700;color:rgba(255,255,255,0.25);">말</span>
+            </div>
+            <div style="padding:16px 16px 24px;">
+              <!-- 작성자 -->
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+                <div style="width:32px;height:32px;border-radius:50%;background:#7c6ef5;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;">나</div>
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:#111;letter-spacing:-0.02em;line-height:1.3;">나의 이름</div>
+                  <div style="font-size:11px;color:#bbb;">방금 전</div>
+                </div>
+              </div>
+              <div style="font-size:20px;font-weight:700;color:#111;letter-spacing:-0.025em;margin-bottom:12px;line-height:1.3;">말하지 못한 것들에 대하여</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;"><span class="tag">#아쉬움</span><span class="tag">#소통</span><span class="tag">#친구</span></div>
+              <div style="font-size:15px;color:#333;line-height:1.7;letter-spacing:-0.01em;">오늘 오랜만에 친구를 만났다. 밥도 먹고, 카페도 가고, 꽤 긴 시간을 함께했는데... 막상 헤어지고 나서야 하고 싶었던 말이 생각났다.</div>
+
+              <!-- 초대 링크 버튼 (작성자) -->
+              <div style="display:flex;justify-content:flex-end;margin-top:14px;">
+                <div class="cpbtn">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  초대 링크 복사
+                </div>
+              </div>
+
+              <div style="border-top:1px solid #f0f0f0;margin:16px 0;"></div>
+              <div style="font-size:13px;font-weight:600;color:#888;margin-bottom:16px;">댓글 0</div>
+              <div style="text-align:center;padding:20px 0;color:#bbb;font-size:13px;letter-spacing:-0.01em;">첫 댓글을 남겨보세요</div>
+            </div>
+          </div>
+          <div class="comment-bar">
+            <div class="ci">댓글을 입력하세요...</div>
+            <div class="send">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 08. 상세 - 댓글 있음, 본 사람 2명 -->
+    <div class="artboard">
+      <div class="artboard-label">08 · 상세 — 댓글 있음 · 본 사람 2명</div>
+      <div class="frame bg-page">
+        <div class="scroll">
+          <div class="scroll-y" style="padding-bottom:72px;">
+            <div class="sb" style="background:#fff;"><span class="sb-time">9:41</span><div class="sb-icons">●●●</div></div>
+            <div class="hd">
+              <div class="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+              <div class="hd-title-sm">말하지 못한 것들에 대하여</div>
+              <div class="more">⋯</div>
+            </div>
+            <div style="width:100%;height:100px;background:#7c6ef5;display:flex;align-items:center;justify-content:center;">
+              <span style="font-size:40px;font-weight:700;color:rgba(255,255,255,0.25);">말</span>
+            </div>
+            <div style="padding:14px 16px 20px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                <div style="width:32px;height:32px;border-radius:50%;background:#7c6ef5;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;">나</div>
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:#111;letter-spacing:-0.02em;line-height:1.3;">나의 이름</div>
+                  <div style="font-size:11px;color:#bbb;">방금 전</div>
+                </div>
+              </div>
+              <div style="font-size:18px;font-weight:700;color:#111;letter-spacing:-0.025em;margin-bottom:8px;">말하지 못한 것들에 대하여</div>
+              <div style="font-size:14px;color:#333;line-height:1.6;letter-spacing:-0.01em;">오늘 오랜만에 친구를 만났다. 밥도 먹고 카페도 가고, 꽤 긴 시간을 함께했는데...</div>
+
+              <!-- 뷰어 카드 -->
+              <div style="background:#fff;border-radius:16px;border:1px solid #f0f0f0;padding:12px 14px;margin-top:14px;">
+                <div style="font-size:12px;color:#bbb;letter-spacing:-0.01em;margin-bottom:8px;">2명이 읽었어요</div>
+                <div class="vrow">
+                  <div class="vav" style="background:#7c6ef5;">H</div>
+                  <div class="vav" style="background:#f5866e;">D</div>
+                </div>
+              </div>
+
+              <!-- 초대링크 -->
+              <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+                <div class="cpbtn">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  초대 링크 복사
+                </div>
+              </div>
+
+              <div style="border-top:1px solid #f0f0f0;margin:14px 0 12px;"></div>
+              <div style="font-size:13px;font-weight:600;color:#888;margin-bottom:16px;">댓글 2</div>
+
+              <!-- 댓글 -->
+              <div style="display:flex;flex-direction:column;gap:16px;">
+                <div class="cmt">
+                  <div class="cav" style="background:var(--p);">H</div>
+                  <div class="cbody">
+                    <div><span class="cname">햇살친구</span><span class="ctime">5분 전</span></div>
+                    <div class="ctext">나도 그런 적 있어. 나중에 꼭 말해봐!</div>
+                    <div class="cact"><span class="ca-reply">답글 달기</span></div>
+                  </div>
+                </div>
+                <!-- 대댓글 -->
+                <div style="padding-left:36px;">
+                  <div class="cmt">
+                    <div class="cav" style="background:#b0b0b0;width:24px;height:24px;font-size:10px;">나</div>
+                    <div class="cbody">
+                      <div><span class="cname" style="font-size:12px;">나의 이름</span><span class="ctime">2분 전</span></div>
+                      <div class="ctext">응 다음에 꼭 얘기할게 고마워 😊</div>
+                      <div class="cact"><span class="ca-del">삭제</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="comment-bar">
+            <div class="ci">댓글을 입력하세요...</div>
+            <div class="send">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 09. ⋯ 메뉴 바텀시트 -->
+    <div class="artboard">
+      <div class="artboard-label">09 · 상세 — ⋯ 메뉴 시트 (작성자)</div>
+      <div class="frame bg-page">
+        <div class="scroll">
+          <div class="sb" style="background:#fff;"><span class="sb-time">9:41</span><div class="sb-icons">●●●</div></div>
+          <div class="hd">
+            <div class="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+            <div class="hd-title-sm">말하지 못한 것들에 대하여</div>
+            <div class="more">⋯</div>
+          </div>
+          <div style="opacity:0.2;padding:16px;">
+            <div style="background:#7c6ef5;height:80px;border-radius:12px;margin-bottom:12px;"></div>
+            <div style="height:60px;background:#fff;border-radius:12px;"></div>
+          </div>
+
+          <div class="overlay">
+            <div class="sheet">
+              <div style="font-size:16px;font-weight:700;color:#111;letter-spacing:-0.025em;margin-bottom:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">말하지 못한 것들에 대하여</div>
+              <div class="ibox">
+                <div class="ilabel">초대 링크</div>
+                <div class="irow">
+                  <div class="iurl">/exchange?invite=a3f9x2k1rb</div>
+                  <div class="cpbtn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    복사
+                  </div>
+                </div>
+                <div class="pwlabel">비밀번호: <span style="font-weight:600;color:#888;">flower12</span></div>
+              </div>
+              <div style="width:100%;background:#fff5f5;border:1px solid #fecaca;border-radius:16px;padding:14px;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:600;color:#f87171;letter-spacing:-0.01em;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                일기 삭제
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Flow 4 — 초대 링크 수신자 경험</div>
+  <div class="row">
+
+    <!-- 10. 비밀번호 입력 시트 -->
+    <div class="artboard">
+      <div class="artboard-label">10 · 초대 링크 수신 — 비밀번호 입력</div>
+      <div class="frame bg-page">
+        <div class="scroll">
+          <div class="sb"><span class="sb-time">9:41</span><div class="sb-icons">●●●</div></div>
+          <div style="opacity:0.25;padding:60px 16px 0;display:flex;flex-direction:column;gap:12px;">
+            <div class="dcard" style="height:80px;"></div>
+            <div class="dcard" style="height:80px;"></div>
+          </div>
+          <div class="overlay">
+            <div class="sheet">
+              <div class="sh-title">교환일기 열람하기</div>
+              <div class="sh-sub"><span style="font-weight:600;color:#111;">"말하지 못한 것들에 대하여"</span>을 읽으려면 비밀번호를 입력해 주세요.</div>
+              <div style="display:flex;align-items:center;gap:8px;background:#f4f6fa;border-radius:12px;padding:12px 14px;margin-bottom:8px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span style="font-size:16px;color:#bbb;flex:1;letter-spacing:-0.01em;">비밀번호</span>
+              </div>
+              <div class="btn-sm btn" style="margin-top:12px;">열람하기</div>
+              <div class="btn-ghost">취소</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11. 비밀번호 오류 -->
+    <div class="artboard">
+      <div class="artboard-label">11 · 초대 링크 수신 — 비밀번호 오류</div>
+      <div class="frame bg-page">
+        <div class="scroll">
+          <div class="sb"><span class="sb-time">9:41</span><div class="sb-icons">●●●</div></div>
+          <div style="opacity:0.25;padding:60px 16px 0;display:flex;flex-direction:column;gap:12px;">
+            <div class="dcard" style="height:80px;"></div>
+          </div>
+          <div class="overlay">
+            <div class="sheet">
+              <div class="sh-title">교환일기 열람하기</div>
+              <div class="sh-sub"><span style="font-weight:600;color:#111;">"말하지 못한 것들에 대하여"</span>을 읽으려면 비밀번호를 입력해 주세요.</div>
+              <div style="display:flex;align-items:center;gap:8px;background:#f4f6fa;border-radius:12px;padding:12px 14px;margin-bottom:4px;border:1.5px solid #fca5a5;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span style="font-size:16px;color:#222;flex:1;font-family:monospace;letter-spacing:0.1em;">••••••••</span>
+              </div>
+              <div style="font-size:12px;color:#f87171;margin-bottom:12px;padding-left:2px;letter-spacing:-0.01em;">비밀번호가 맞지 않아요.</div>
+              <div class="btn-sm btn">열람하기</div>
+              <div class="btn-ghost">취소</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12. 비번 입력 화면 (상세 페이지 내) -->
+    <div class="artboard">
+      <div class="artboard-label">12 · 상세 — 비밀번호 잠금 화면</div>
+      <div class="frame bg-page">
+        <div class="pw-overlay">
+          <div style="width:64px;height:64px;border-radius:20px;background:rgba(66,131,243,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div style="font-size:18px;font-weight:700;color:#111;letter-spacing:-0.025em;margin-bottom:6px;text-align:center;">비밀번호를 입력해 주세요</div>
+          <div style="font-size:13px;color:#aaa;margin-bottom:24px;text-align:center;line-height:1.6;letter-spacing:-0.01em;">
+            <span style="font-weight:600;color:#111;">"말하지 못한 것들에 대하여"</span>을<br>읽으려면 비밀번호가 필요해요.
+          </div>
+          <div style="width:100%;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;margin-bottom:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span style="font-size:16px;color:#bbb;flex:1;">비밀번호</span>
+          </div>
+          <div style="width:100%;margin-top:8px;" class="btn-sm btn">열람하기</div>
+          <div class="btn-ghost" style="margin-top:4px;">돌아가기</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Flow 5 — 로그인 · 작성 폼</div>
+  <div class="row">
+
+    <!-- 13. 로그인 페이지 -->
+    <div class="artboard">
+      <div class="artboard-label">13 · 로그인 페이지</div>
+      <div class="frame" style="background:#f5f6f8;">
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:0 24px;">
+          <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:40px;">
+            <div style="width:80px;height:80px;border-radius:28px;background:var(--p);display:flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:20px;box-shadow:0 4px 18px rgba(66,131,243,0.25);">🍀</div>
+            <div style="font-size:24px;font-weight:700;color:#111;letter-spacing:-0.03em;">안다미로</div>
+            <div style="font-size:14px;color:#999;margin-top:4px;letter-spacing:-0.01em;">AI 감정일기</div>
+          </div>
+          <div style="width:100%;background:#fff;border-radius:16px;padding:16px 20px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin-bottom:24px;">
+            <div style="font-size:14px;font-weight:600;color:#111;letter-spacing:-0.02em;margin-bottom:5px;">교환일기를 사용하려면 로그인이 필요해요</div>
+            <div style="font-size:12px;color:#aaa;line-height:1.7;letter-spacing:-0.01em;">로그인하면 누가 일기를 읽었는지,<br>누가 댓글을 달았는지 확인할 수 있어요.</div>
+          </div>
+          <div style="width:100%;background:#fff;border:1px solid #e0e0e0;border-radius:16px;padding:14px;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,0.04);">
+            <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            <span style="font-size:15px;font-weight:600;color:#111;letter-spacing:-0.02em;">Google로 계속하기</span>
+          </div>
+          <div style="margin-top:24px;font-size:11px;color:#bbb;text-align:center;line-height:1.7;letter-spacing:-0.01em;">로그인하면 서비스 이용약관 및<br>개인정보 처리방침에 동의하는 것으로 간주됩니다.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 14. 교환일기 - 로그인 필요 프롬프트 -->
+    <div class="artboard">
+      <div class="artboard-label">14 · 교환일기 — 로그인 안내 (미로그인)</div>
+      <div class="frame" style="background:#f5f6f8;">
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:0 24px;">
+          <div style="width:80px;height:80px;border-radius:28px;background:var(--p);display:flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:24px;box-shadow:0 4px 18px rgba(66,131,243,0.25);">📖</div>
+          <div style="font-size:18px;font-weight:700;color:#111;letter-spacing:-0.025em;text-align:center;margin-bottom:8px;">교환일기는 로그인이 필요해요</div>
+          <div style="font-size:13px;color:#aaa;text-align:center;line-height:1.7;letter-spacing:-0.01em;margin-bottom:32px;">로그인하면 누가 일기를 읽었는지,<br>누가 댓글을 달았는지 확인할 수 있어요.</div>
+          <div style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:16px;padding:14px;font-size:15px;font-weight:700;color:#fff;background:var(--p);letter-spacing:-0.01em;">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Google로 로그인하기
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 15. 교환일기 작성 빈 폼 -->
+    <div class="artboard">
+      <div class="artboard-label">15 · 교환일기 작성 — 빈 폼</div>
+      <div class="frame bg-page">
+        <div class="scroll">
+          <div class="sb" style="background:#fff;"><span class="sb-time">9:41</span><div class="sb-icons">●●●</div></div>
+          <div class="hd">
+            <div class="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+            <div class="hd-title">교환일기 만들기</div>
+          </div>
+          <div style="padding:20px 24px 120px;display:flex;flex-direction:column;gap:24px;overflow-y:auto;">
+            <div>
+              <span class="flabel">이미지</span>
+              <div style="width:100%;height:112px;border-radius:16px;background:#f4f6fa;border:2px dashed #ddd;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#bbb;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span style="font-size:14px;">사진 추가</span>
+              </div>
+            </div>
+            <div><span class="flabel">제목</span><div class="finput ph">입력해주세요.</div></div>
+            <div><span class="flabel">내용</span><div class="ftextarea ph" style="min-height:160px;color:#999;">일기 내용을 입력해 주세요</div></div>
+            <div><span class="flabel">비밀번호</span><div class="finput ph" style="font-size:13px;">패스워드 입력시 작성이 가능합니다.(6~12자)</div></div>
+          </div>
+          <div class="bottom-bar"><div class="btn">완료</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
