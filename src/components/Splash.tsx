@@ -58,13 +58,14 @@ export function Splash() {
     <div
       aria-hidden
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 md:bg-black/40 transition-opacity"
-      style={{ opacity: fading ? 0 : 1, transitionDuration: `${FADE_MS}ms`, pointerEvents: fading ? "none" : "auto" }}
+      style={{ opacity: fading ? 0 : 1, transitionDuration: `${FADE_MS}ms`, pointerEvents: "none" }}
     >
       {/* 모바일 앱 프레임과 동일한 사이즈로 스플래시 표시 */}
       <div className="relative bg-white overflow-hidden w-full h-[100dvh] md:w-[375px] md:h-[812px] md:rounded-[28px] md:shadow-2xl flex items-center justify-center">
         <button
           type="button"
           onClick={dismiss}
+          style={{ pointerEvents: "auto" }}
           className="absolute right-4 top-4 z-10 rounded-full bg-black/5 px-3 py-1.5 text-[12px] font-medium text-foreground/70"
         >
           건너뛰기
