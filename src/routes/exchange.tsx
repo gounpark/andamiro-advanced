@@ -1,6 +1,15 @@
 import { createFileRoute, Link, Outlet, useNavigate, useMatches } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Plus, ChevronLeft, ChevronRight, BookOpen, Lock, Check, MessageCircle, Eye } from "lucide-react";
+import {
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  BookOpen,
+  Lock,
+  Check,
+  MessageCircle,
+  Eye,
+} from "lucide-react";
 import {
   getMyDiaries,
   getSharedDiaries,
@@ -13,6 +22,7 @@ import {
   coverColorForId,
   type ExchangeDiary,
 } from "@/lib/exchangeStore";
+import { getAppOrigin } from "@/lib/navigate";
 
 export const Route = createFileRoute("/exchange")({
   head: () => ({
@@ -34,7 +44,11 @@ type TabId = "my" | "shared";
 function ExchangePage() {
   const matches = useMatches();
   const isChildRoute = matches.some(
-    (m) => m.routeId === "/exchange/$roomId" || m.routeId === "/exchange/create"
+    (m) =>
+      m.routeId === "/exchange/$roomId" ||
+      m.routeId === "/exchange/create" ||
+      m.routeId === "/$roomId" ||
+      m.routeId === "/create",
   );
   return isChildRoute ? <Outlet /> : <ExchangeListPage />;
 }
@@ -74,7 +88,7 @@ function ExchangeListPage() {
     } else {
       setInviteDiary(diary);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [invite]);
 
   const handleJoinConfirm = () => {
@@ -98,7 +112,9 @@ function ExchangeListPage() {
             <Link to="/my" className="p-1 -ml-1">
               <ChevronLeft className="h-5 w-5 text-foreground" />
             </Link>
-            <h1 className="flex-1 font-bold text-foreground text-[18px] tracking-tight">교환 일기</h1>
+            <h1 className="flex-1 font-bold text-foreground text-[18px] tracking-tight">
+              교환 일기
+            </h1>
             <Link
               to="/exchange/create"
               className="flex items-center gap-1.5 rounded-full bg-[var(--primary)] px-3.5 py-1.5 active:scale-[0.97] transition"
@@ -169,7 +185,10 @@ function ExchangeListPage() {
                   type="password"
                   placeholder="비밀번호"
                   value={invitePw}
-                  onChange={(e) => { setInvitePw(e.target.value); setInviteError(""); }}
+                  onChange={(e) => {
+                    setInvitePw(e.target.value);
+                    setInviteError("");
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.nativeEvent.isComposing) handleJoinConfirm();
                   }}
@@ -214,15 +233,16 @@ function EmptyMy() {
         아직 공유한 일기가 없어요
       </p>
       <p className="text-[13px] text-[#aaa] tracking-tight leading-relaxed mb-8">
-        일기를 만들고 소중한 사람에게<br />초대 링크를 공유해 보세요.
+        일기를 만들고 소중한 사람에게
+        <br />
+        초대 링크를 공유해 보세요.
       </p>
       <Link
         to="/exchange/create"
         className="flex items-center gap-2 rounded-2xl px-6 py-3.5 font-bold text-white text-[15px] tracking-tight active:scale-[0.98] transition shadow-md"
         style={{ background: "var(--primary)" }}
       >
-        <Plus className="h-5 w-5" strokeWidth={2.5} />
-        새 일기 공유하기
+        <Plus className="h-5 w-5" strokeWidth={2.5} />새 일기 공유하기
       </Link>
     </div>
   );
@@ -245,13 +265,7 @@ function EmptyShared() {
 }
 
 // ── 일기 카드 ─────────────────────────────────────────────────────────────────
-function DiaryCard({
-  diary,
-  showAuthor,
-}: {
-  diary: ExchangeDiary;
-  showAuthor: boolean;
-}) {
+function DiaryCard({ diary, showAuthor }: { diary: ExchangeDiary; showAuthor: boolean }) {
   const commentCount = getComments(diary.id).length;
   const color = coverColorForId(diary.id);
 
@@ -319,7 +333,7 @@ export function InviteLinkButton({ diary }: { diary: ExchangeDiary }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
-    const url = `${window.location.origin}/exchange?invite=${diary.inviteCode}`;
+    const url = `${getAppOrigin()}/exchange?invite=${diary.inviteCode}`;
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
@@ -338,7 +352,13 @@ export function InviteLinkButton({ diary }: { diary: ExchangeDiary }) {
       {copied ? (
         <Check className="h-3.5 w-3.5 text-green-500" />
       ) : (
-        <svg className="h-3.5 w-3.5 text-[var(--primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+        <svg
+          className="h-3.5 w-3.5 text-[var(--primary)]"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
         </svg>
