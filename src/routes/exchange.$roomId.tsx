@@ -31,35 +31,42 @@ function ExchangeDiaryPage() {
   const myId = typeof window !== "undefined" ? getMyId() : "";
 
   const [diary, setDiary] = useState<ExchangeDiary | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState<ExchangeComment[]>([]);
   const [authorized, setAuthorized] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [replyTo, setReplyTo] = useState<ExchangeComment | null>(null);
   const commentInputRef = useRef<HTMLInputElement>(null);
 
-  // 비번 인증 (직접 URL 진입 시)
   const pwInputRef = useRef<HTMLInputElement>(null);
   const [pwError, setPwError] = useState("");
 
   useEffect(() => {
-    const d = getDiaryById(diaryId);
-    if (!d) {
-      navigate({ to: "/exchange", search: {} });
-      return;
-    }
-    setDiary(d);
-    const auth = isDiaryAuthorized(diaryId);
-    setAuthorized(auth);
-    if (auth) {
-      addViewer(diaryId);
-      setComments(getComments(diaryId));
-    }
+    const init = async () => {
+      setLoading(true);
+      const d = await getDiaryById(diaryId);
+      setLoading(false);
+      if (!d) {
+        navigate({ to: "/exchange", search: {} });
+        return;
+      }
+      setDiary(d);
+      // 작성자 본인이거나 이미 비밀번호 인증한 경우 바로 열람
+      const isAuthor = d.authorId === myId;
+      const auth = isAuthor || isDiaryAuthorized(diaryId);
+      setAuthorized(auth);
+      if (auth) {
+        await addViewer(diaryId);
+        setComments(await getComments(diaryId));
+      }
+    };
+    init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [diaryId]);
 
-  const refreshComments = () => setComments(getComments(diaryId));
+  const refreshComments = async () => setComments(await getComments(diaryId));
 
-  const handleAuthorize = () => {
+  const handleAuthorize = async () => {
     if (!diary) return;
     const password = pwInputRef.current?.value ?? "";
     if (password.trim() !== diary.password) {
@@ -67,20 +74,30 @@ function ExchangeDiaryPage() {
       return;
     }
     authorizeDiary(diaryId);
-    addViewer(diaryId);
+    await addViewer(diaryId);
     setAuthorized(true);
-    setComments(getComments(diaryId));
+    setComments(await getComments(diaryId));
   };
 
-  const handleSendComment = () => {
+  const handleSendComment = async () => {
     const input = commentInputRef.current;
     const comment = input?.value ?? "";
     if (!comment.trim()) return;
-    createComment(diaryId, comment.trim(), replyTo?.id);
+    await createComment(diaryId, comment.trim(), replyTo?.id);
     if (input) input.value = "";
     setReplyTo(null);
-    refreshComments();
+    await refreshComments();
   };
+
+  if (loading) {
+    return (
+      <div className="app-shell">
+        <div className="app-frame flex flex-col items-center justify-center" style={{ background: "#f5f6f8" }}>
+          <p className="text-[15px] text-[#aaa] tracking-tight">불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!diary) return null;
 
@@ -168,7 +185,6 @@ function ExchangeDiaryPage() {
 
           {/* 일기 콘텐츠 */}
           <article>
-            {/* 이미지 */}
             {diary.imageDataUrl ? (
               <img
                 src={diary.imageDataUrl}
@@ -188,7 +204,6 @@ function ExchangeDiaryPage() {
             )}
 
             <div className="px-4 pt-4 pb-2">
-              {/* 작성자 + 날짜 */}
               <div className="flex items-center gap-2 mb-3">
                 <div
                   className="grid h-8 w-8 place-items-center rounded-full text-white text-[13px] font-bold shrink-0"
@@ -206,12 +221,10 @@ function ExchangeDiaryPage() {
                 </div>
               </div>
 
-              {/* 제목 */}
               <h1 className="font-bold text-foreground text-[20px] tracking-tight leading-snug mb-3">
                 {diary.title}
               </h1>
 
-              {/* 키워드 */}
               {diary.keywords.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   {diary.keywords.map((k) => (
@@ -226,13 +239,11 @@ function ExchangeDiaryPage() {
                 </div>
               )}
 
-              {/* 본문 */}
               <p className="text-[15px] text-[#333] leading-relaxed tracking-tight whitespace-pre-wrap">
                 {diary.body}
               </p>
             </div>
 
-            {/* 뷰어 섹션 */}
             {diary.viewerIds.length > 0 && (
               <div className="mx-4 mt-4 rounded-2xl bg-white border border-[#f0f0f0] px-4 py-3">
                 <p className="text-[12px] text-[#bbb] tracking-tight mb-2">
@@ -260,7 +271,6 @@ function ExchangeDiaryPage() {
               </div>
             )}
 
-            {/* 작성자: 초대 링크 복사 */}
             {isAuthor && (
               <div className="mx-4 mt-3 mb-2 flex justify-end">
                 <InviteLinkButton diary={diary} />
@@ -268,7 +278,6 @@ function ExchangeDiaryPage() {
             )}
           </article>
 
-          {/* 구분선 */}
           <div className="mx-4 mt-2 mb-4 border-t border-[#f0f0f0]" />
 
           {/* 댓글 목록 */}
@@ -290,9 +299,9 @@ function ExchangeDiaryPage() {
                     setReplyTo(c);
                     commentInputRef.current?.focus();
                   }}
-                  onDelete={() => {
-                    deleteComment(c.id);
-                    refreshComments();
+                  onDelete={async () => {
+                    await deleteComment(c.id);
+                    await refreshComments();
                   }}
                 />
                 {repliesOf(c.id).map((r) => (
@@ -301,9 +310,9 @@ function ExchangeDiaryPage() {
                       comment={r}
                       myId={myId}
                       isReply
-                      onDelete={() => {
-                        deleteComment(r.id);
-                        refreshComments();
+                      onDelete={async () => {
+                        await deleteComment(r.id);
+                        await refreshComments();
                       }}
                     />
                   </div>
@@ -383,9 +392,9 @@ function ExchangeDiaryPage() {
               {isAuthor && (
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={async () => {
                     if (!confirm("이 일기를 삭제하면 댓글도 모두 사라져요. 삭제할까요?")) return;
-                    deleteDiary(diaryId);
+                    await deleteDiary(diaryId);
                     navigate({ to: "/exchange", search: {} });
                   }}
                   className="w-full flex items-center justify-center gap-2 rounded-2xl border border-red-100 bg-red-50 py-3 text-red-400 font-semibold text-[14px] tracking-tight active:scale-[0.99] transition"

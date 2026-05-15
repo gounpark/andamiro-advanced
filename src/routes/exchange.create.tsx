@@ -86,19 +86,23 @@ function ExchangeCreatePage() {
   };
 
   // ── 실제 생성 ─────────────────────────────────────────────────────────────
-  const handleCreate = () => {
+  const handleCreate = async () => {
     const title = titleRef.current?.value ?? "";
     const body = bodyRef.current?.value ?? "";
     const password = passwordRef.current?.value ?? "";
 
-    const diary = createDiary({
-      title: title.trim(),
-      body: body.trim(),
-      password: password.trim(),
-      keywords: [],
-      imageDataUrl,
-    });
-    navigate({ to: "/exchange/$roomId", params: { roomId: diary.id } });
+    try {
+      const diary = await createDiary({
+        title: title.trim(),
+        body: body.trim(),
+        password: password.trim(),
+        keywords: [],
+        imageDataUrl,
+      });
+      navigate({ to: "/exchange/$roomId", params: { roomId: diary.id } });
+    } catch {
+      setError("일기 저장에 실패했어요. 잠시 후 다시 시도해 주세요.");
+    }
   };
 
   return (

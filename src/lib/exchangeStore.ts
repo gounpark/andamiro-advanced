@@ -1,7 +1,9 @@
 // ── 교환일기 데이터 레이어 ──────────────────────────────────────────────────
-// 개별 일기 게시글 단위 공유 구조
-// - 각 ExchangeDiary 가 독립적인 공유 단위
-// - 초대 링크 + 비밀번호로 접근 제어
+// Supabase 기반 — 어떤 브라우저/기기에서도 동일 데이터 접근 가능
+// localStorage는 익명 사용자 ID / 비밀번호 인증 캐시에만 사용
+
+import { supabase } from "./supabase";
+import { getAuthUserId, getAuthDisplayName } from "./auth";
 
 export interface ExchangeDiary {
   id: string;
@@ -13,7 +15,7 @@ export interface ExchangeDiary {
   inviteCode: string;
   imageDataUrl?: string;
   keywords: string[];
-  viewerIds: string[]; // 초대받아 열람한 사람 ID 목록
+  viewerIds: string[];
   createdAt: string;
 }
 
@@ -27,12 +29,39 @@ export interface ExchangeComment {
   createdAt: string;
 }
 
-// ── localStorage 키 ──────────────────────────────────────────────────────────
-const KEY_DIARIES = "andamiro_exchange_diaries";
-const KEY_COMMENTS = "andamiro_exchange_comments";
+// Supabase row → 앱 인터페이스 변환
+function rowToDiary(row: Record<string, unknown>): ExchangeDiary {
+  return {
+    id: row.id as string,
+    authorId: row.author_id as string,
+    authorName: row.author_name as string,
+    title: row.title as string,
+    body: row.body as string,
+    password: row.password as string,
+    inviteCode: row.invite_code as string,
+    imageDataUrl: (row.image_data_url as string | null) ?? undefined,
+    keywords: (row.keywords as string[]) ?? [],
+    viewerIds: (row.viewer_ids as string[]) ?? [],
+    createdAt: row.created_at as string,
+  };
+}
+
+function rowToComment(row: Record<string, unknown>): ExchangeComment {
+  return {
+    id: row.id as string,
+    diaryId: row.diary_id as string,
+    authorId: row.author_id as string,
+    authorName: row.author_name as string,
+    body: row.body as string,
+    parentId: (row.parent_id as string | null) ?? undefined,
+    createdAt: row.created_at as string,
+  };
+}
+
+// ── localStorage 키 (기기 로컬 상태 전용) ────────────────────────────────────
 const KEY_MY_ID = "andamiro_my_id";
 const KEY_MY_NAME = "andamiro_my_name";
-const KEY_AUTH = "andamiro_authorized_diaries"; // 비번 인증한 일기 ID[]
+const KEY_AUTH = "andamiro_authorized_diaries";
 
 const NICKNAME_PREFIXES = ["구름", "햇살", "달빛", "바람", "별빛", "새벽", "노을", "마음"];
 const NICKNAME_SUFFIXES = ["친구", "기록자", "산책자", "작가", "수집가", "동행", "여행자", "지기"];
@@ -44,25 +73,6 @@ function uid(): string {
 
 function isBrowser(): boolean {
   return typeof window !== "undefined";
-}
-
-function load<T>(key: string, fallback: T): T {
-  if (!isBrowser()) return fallback;
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function save<T>(key: string, value: T): void {
-  if (!isBrowser()) return;
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // 스토리지 용량 초과 등 무시
-  }
 }
 
 function hashText(text: string): number {
@@ -85,8 +95,12 @@ function createNickname(id: string): string {
   return `${prefix}${suffix}${code}`;
 }
 
-// ── 사용자 ID / 이름 ─────────────────────────────────────────────────────────
+// ── 사용자 ID / 이름 ──────────────────────────────────────────────────────────
+// 로그인된 경우 Supabase auth user ID/이름 우선, 없으면 localStorage 익명 ID
 export function getMyId(): string {
+  const authId = getAuthUserId();
+  if (authId) return authId;
+
   if (!isBrowser()) return "server";
   let id = localStorage.getItem(KEY_MY_ID);
   if (!id) {
@@ -97,6 +111,9 @@ export function getMyId(): string {
 }
 
 export function getMyName(): string {
+  const authName = getAuthDisplayName();
+  if (authName) return authName;
+
   if (!isBrowser()) return "";
   const savedName = localStorage.getItem(KEY_MY_NAME)?.trim();
   if (savedName) return savedName;
@@ -111,29 +128,52 @@ export function setMyName(name: string): void {
   localStorage.setItem(KEY_MY_NAME, name);
 }
 
-// ── 일기 CRUD ─────────────────────────────────────────────────────────────────
-export function getMyDiaries(): ExchangeDiary[] {
+// ── 일기 조회 ─────────────────────────────────────────────────────────────────
+export async function getMyDiaries(): Promise<ExchangeDiary[]> {
   const myId = getMyId();
-  return load<ExchangeDiary[]>(KEY_DIARIES, [])
-    .filter((d) => d.authorId === myId)
-    .sort((a, b) => (b.createdAt > a.createdAt ? 1 : -1));
+  const { data, error } = await supabase
+    .from("exchange_diaries")
+    .select("*")
+    .eq("author_id", myId)
+    .order("created_at", { ascending: false });
+  if (error) return [];
+  return (data ?? []).map(rowToDiary);
 }
 
-export function getSharedDiaries(): ExchangeDiary[] {
+export async function getSharedDiaries(): Promise<ExchangeDiary[]> {
   const myId = getMyId();
-  return load<ExchangeDiary[]>(KEY_DIARIES, [])
-    .filter((d) => d.authorId !== myId && d.viewerIds.includes(myId))
-    .sort((a, b) => (b.createdAt > a.createdAt ? 1 : -1));
+  const { data, error } = await supabase
+    .from("exchange_diaries")
+    .select("*")
+    .contains("viewer_ids", [myId])
+    .neq("author_id", myId)
+    .order("created_at", { ascending: false });
+  if (error) return [];
+  return (data ?? []).map(rowToDiary);
 }
 
-export function getDiaryById(id: string): ExchangeDiary | undefined {
-  return load<ExchangeDiary[]>(KEY_DIARIES, []).find((d) => d.id === id);
+export async function getDiaryById(id: string): Promise<ExchangeDiary | undefined> {
+  const { data, error } = await supabase
+    .from("exchange_diaries")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error || !data) return undefined;
+  return rowToDiary(data as Record<string, unknown>);
 }
 
-export function getDiaryByInviteCode(code: string): ExchangeDiary | undefined {
-  return load<ExchangeDiary[]>(KEY_DIARIES, []).find((d) => d.inviteCode === code);
+// ── 핵심 수정: invite_code는 Supabase에서 조회 → 다른 브라우저에서도 동작 ──
+export async function getDiaryByInviteCode(code: string): Promise<ExchangeDiary | undefined> {
+  const { data, error } = await supabase
+    .from("exchange_diaries")
+    .select("*")
+    .eq("invite_code", code)
+    .maybeSingle();
+  if (error || !data) return undefined;
+  return rowToDiary(data as Record<string, unknown>);
 }
 
+// ── 일기 생성 / 삭제 ──────────────────────────────────────────────────────────
 export interface CreateDiaryParams {
   title: string;
   body: string;
@@ -142,7 +182,7 @@ export interface CreateDiaryParams {
   imageDataUrl?: string;
 }
 
-export function createDiary(params: CreateDiaryParams): ExchangeDiary {
+export async function createDiary(params: CreateDiaryParams): Promise<ExchangeDiary> {
   const myId = getMyId();
   const myName = getMyName();
   const diary: ExchangeDiary = {
@@ -158,57 +198,88 @@ export function createDiary(params: CreateDiaryParams): ExchangeDiary {
     viewerIds: [],
     createdAt: new Date().toISOString(),
   };
-  const list = load<ExchangeDiary[]>(KEY_DIARIES, []);
-  save(KEY_DIARIES, [diary, ...list]);
+
+  const { error } = await supabase.from("exchange_diaries").insert({
+    id: diary.id,
+    author_id: diary.authorId,
+    author_name: diary.authorName,
+    title: diary.title,
+    body: diary.body,
+    password: diary.password,
+    invite_code: diary.inviteCode,
+    image_data_url: diary.imageDataUrl ?? null,
+    keywords: diary.keywords,
+    viewer_ids: diary.viewerIds,
+    created_at: diary.createdAt,
+  });
+
+  if (error) throw new Error(`일기 생성 실패: ${error.message}`);
   return diary;
 }
 
-export function deleteDiary(id: string): void {
+export async function deleteDiary(id: string): Promise<void> {
   const myId = getMyId();
-  save(
-    KEY_DIARIES,
-    load<ExchangeDiary[]>(KEY_DIARIES, []).filter((d) => !(d.id === id && d.authorId === myId)),
-  );
-  // 관련 댓글도 삭제
-  save(
-    KEY_COMMENTS,
-    load<ExchangeComment[]>(KEY_COMMENTS, []).filter((c) => c.diaryId !== id),
-  );
+  await supabase.from("exchange_diaries").delete().eq("id", id).eq("author_id", myId);
 }
 
 // ── 뷰어 / 인증 ──────────────────────────────────────────────────────────────
 export function isDiaryAuthorized(id: string): boolean {
   if (!isBrowser()) return false;
-  const diary = getDiaryById(id);
-  if (!diary) return false;
-  if (diary.authorId === getMyId()) return true; // 작성자는 항상 허용
-  return load<string[]>(KEY_AUTH, []).includes(id);
-}
-
-export function authorizeDiary(id: string): void {
-  const list = load<string[]>(KEY_AUTH, []);
-  if (!list.includes(id)) {
-    save(KEY_AUTH, [...list, id]);
+  try {
+    const list: string[] = JSON.parse(localStorage.getItem(KEY_AUTH) ?? "[]");
+    return list.includes(id);
+  } catch {
+    return false;
   }
 }
 
-export function addViewer(id: string): void {
+export function authorizeDiary(id: string): void {
+  if (!isBrowser()) return;
+  try {
+    const list: string[] = JSON.parse(localStorage.getItem(KEY_AUTH) ?? "[]");
+    if (!list.includes(id)) {
+      localStorage.setItem(KEY_AUTH, JSON.stringify([...list, id]));
+    }
+  } catch {
+    // 무시
+  }
+}
+
+export async function addViewer(id: string): Promise<void> {
   const myId = getMyId();
-  const list = load<ExchangeDiary[]>(KEY_DIARIES, []);
-  const updated = list.map((d) =>
-    d.id === id && !d.viewerIds.includes(myId) ? { ...d, viewerIds: [...d.viewerIds, myId] } : d,
-  );
-  save(KEY_DIARIES, updated);
+  // viewer_ids 배열에 myId가 없을 때만 append (DB 레벨 중복 방지)
+  const { data } = await supabase
+    .from("exchange_diaries")
+    .select("viewer_ids")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (!data) return;
+  const current: string[] = (data as { viewer_ids: string[] }).viewer_ids ?? [];
+  if (current.includes(myId)) return;
+
+  await supabase
+    .from("exchange_diaries")
+    .update({ viewer_ids: [...current, myId] })
+    .eq("id", id);
 }
 
 // ── 댓글 CRUD ─────────────────────────────────────────────────────────────────
-export function getComments(diaryId: string): ExchangeComment[] {
-  return load<ExchangeComment[]>(KEY_COMMENTS, [])
-    .filter((c) => c.diaryId === diaryId)
-    .sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
+export async function getComments(diaryId: string): Promise<ExchangeComment[]> {
+  const { data, error } = await supabase
+    .from("exchange_comments")
+    .select("*")
+    .eq("diary_id", diaryId)
+    .order("created_at", { ascending: true });
+  if (error) return [];
+  return (data ?? []).map(rowToComment);
 }
 
-export function createComment(diaryId: string, body: string, parentId?: string): ExchangeComment {
+export async function createComment(
+  diaryId: string,
+  body: string,
+  parentId?: string,
+): Promise<ExchangeComment> {
   const comment: ExchangeComment = {
     id: uid(),
     diaryId,
@@ -218,21 +289,23 @@ export function createComment(diaryId: string, body: string, parentId?: string):
     parentId,
     createdAt: new Date().toISOString(),
   };
-  save(KEY_COMMENTS, [...load<ExchangeComment[]>(KEY_COMMENTS, []), comment]);
+
+  const { error } = await supabase.from("exchange_comments").insert({
+    id: comment.id,
+    diary_id: comment.diaryId,
+    author_id: comment.authorId,
+    author_name: comment.authorName,
+    body: comment.body,
+    parent_id: comment.parentId ?? null,
+    created_at: comment.createdAt,
+  });
+
+  if (error) throw new Error(`댓글 생성 실패: ${error.message}`);
   return comment;
 }
 
-export function deleteComment(id: string): void {
-  // 댓글 + 그 답글도 함께 삭제
-  const all = load<ExchangeComment[]>(KEY_COMMENTS, []);
-  const toDelete = new Set<string>([id]);
-  all.forEach((c) => {
-    if (c.parentId && toDelete.has(c.parentId)) toDelete.add(c.id);
-  });
-  save(
-    KEY_COMMENTS,
-    all.filter((c) => !toDelete.has(c.id)),
-  );
+export async function deleteComment(id: string): Promise<void> {
+  await supabase.from("exchange_comments").delete().eq("id", id);
 }
 
 // ── 시간 포맷 ─────────────────────────────────────────────────────────────────

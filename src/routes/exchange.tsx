@@ -17,12 +17,14 @@ import {
   isDiaryAuthorized,
   authorizeDiary,
   addViewer,
+  getMyId,
   getComments,
   relativeTime,
   coverColorForId,
   type ExchangeDiary,
 } from "@/lib/exchangeStore";
 import { getAppOrigin } from "@/lib/navigate";
+import { getCachedUser } from "@/lib/auth";
 
 export const Route = createFileRoute("/exchange")({
   head: () => ({
@@ -40,7 +42,6 @@ export const Route = createFileRoute("/exchange")({
 
 type TabId = "my" | "shared";
 
-// 라우터: 자식 라우트면 Outlet, 아니면 목록 페이지
 function ExchangePage() {
   const matches = useMatches();
   const isChildRoute = matches.some(
@@ -50,20 +51,55 @@ function ExchangePage() {
       m.routeId === "/$roomId" ||
       m.routeId === "/create",
   );
+
+  // 로그인 가드: 미로그인 시 로그인 페이지로 안내
+  if (!getCachedUser()) {
+    return <LoginPrompt />;
+  }
+
   return isChildRoute ? <Outlet /> : <ExchangeListPage />;
+}
+
+function LoginPrompt() {
+  return (
+    <div className="app-shell">
+      <div className="app-frame flex flex-col items-center justify-center px-6" style={{ background: "#f5f6f8" }}>
+        <div className="grid h-20 w-20 place-items-center rounded-3xl mb-6 shadow-md" style={{ background: "var(--primary)" }}>
+          <span className="text-white text-[40px]">📖</span>
+        </div>
+        <p className="text-[18px] font-bold text-foreground tracking-tight mb-2 text-center">
+          교환일기는 로그인이 필요해요
+        </p>
+        <p className="text-[13px] text-[#aaa] tracking-tight mb-8 text-center leading-relaxed">
+          로그인하면 누가 일기를 읽었는지,<br />
+          누가 댓글을 달았는지 확인할 수 있어요.
+        </p>
+        <Link
+          to="/login"
+          search={{ redirect: "/exchange" }}
+          className="w-full flex items-center justify-center gap-2 rounded-2xl py-4 font-bold text-white text-[15px] tracking-tight active:scale-[0.99] transition"
+          style={{ background: "var(--primary)" }}
+        >
+          Google로 로그인하기
+        </Link>
+      </div>
+    </div>
+  );
 }
 
 function ExchangeListPage() {
   const { invite } = Route.useSearch();
   const navigate = useNavigate();
+  const myId = typeof window !== "undefined" ? getMyId() : "";
 
   const [tab, setTab] = useState<TabId>("my");
   const [myDiaries, setMyDiaries] = useState<ExchangeDiary[]>([]);
   const [sharedDiaries, setSharedDiaries] = useState<ExchangeDiary[]>([]);
 
-  const refresh = () => {
-    setMyDiaries(getMyDiaries());
-    setSharedDiaries(getSharedDiaries());
+  const refresh = async () => {
+    const [mine, shared] = await Promise.all([getMyDiaries(), getSharedDiaries()]);
+    setMyDiaries(mine);
+    setSharedDiaries(shared);
   };
 
   useEffect(() => {
@@ -74,34 +110,51 @@ function ExchangeListPage() {
   const [inviteDiary, setInviteDiary] = useState<ExchangeDiary | null>(null);
   const [invitePw, setInvitePw] = useState("");
   const [inviteError, setInviteError] = useState("");
+  const [inviteLoading, setInviteLoading] = useState(false);
 
   useEffect(() => {
     if (!invite) return;
-    const diary = getDiaryByInviteCode(invite);
-    if (!diary) {
-      alert("유효하지 않은 초대 링크예요.");
-      return;
-    }
-    if (isDiaryAuthorized(diary.id)) {
-      addViewer(diary.id);
-      navigate({ to: "/exchange/$roomId", params: { roomId: diary.id } });
-    } else {
-      setInviteDiary(diary);
-    }
+    const process = async () => {
+      setInviteLoading(true);
+      const diary = await getDiaryByInviteCode(invite);
+      setInviteLoading(false);
+      if (!diary) {
+        alert("유효하지 않은 초대 링크예요.");
+        return;
+      }
+      // 작성자 본인이거나 이미 인증한 경우 바로 진입
+      if (diary.authorId === myId || isDiaryAuthorized(diary.id)) {
+        await addViewer(diary.id);
+        navigate({ to: "/exchange/$roomId", params: { roomId: diary.id } });
+      } else {
+        setInviteDiary(diary);
+      }
+    };
+    process();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [invite]);
 
-  const handleJoinConfirm = () => {
+  const handleJoinConfirm = async () => {
     if (!inviteDiary) return;
     if (invitePw.trim() !== inviteDiary.password) {
       setInviteError("비밀번호가 맞지 않아요.");
       return;
     }
     authorizeDiary(inviteDiary.id);
-    addViewer(inviteDiary.id);
-    refresh();
+    await addViewer(inviteDiary.id);
+    await refresh();
     navigate({ to: "/exchange/$roomId", params: { roomId: inviteDiary.id } });
   };
+
+  if (inviteLoading) {
+    return (
+      <div className="app-shell">
+        <div className="app-frame flex flex-col items-center justify-center" style={{ background: "#f5f6f8" }}>
+          <p className="text-[15px] text-[#aaa] tracking-tight">초대 링크 확인 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="app-shell">
@@ -266,8 +319,12 @@ function EmptyShared() {
 
 // ── 일기 카드 ─────────────────────────────────────────────────────────────────
 function DiaryCard({ diary, showAuthor }: { diary: ExchangeDiary; showAuthor: boolean }) {
-  const commentCount = getComments(diary.id).length;
+  const [commentCount, setCommentCount] = useState(0);
   const color = coverColorForId(diary.id);
+
+  useEffect(() => {
+    getComments(diary.id).then((c) => setCommentCount(c.length));
+  }, [diary.id]);
 
   return (
     <Link
