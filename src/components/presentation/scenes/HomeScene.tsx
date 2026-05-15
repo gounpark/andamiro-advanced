@@ -88,11 +88,7 @@ export function HomeScene({ isActive }: Props) {
         }}
       >
         <img src={splashWebp} alt="" style={{ width: 140, height: 140, objectFit: "contain" }} />
-        <img
-          src={logoSvg}
-          alt="안다미로"
-          style={{ height: 28, marginTop: 16, opacity: 0.7 }}
-        />
+        <img src={logoSvg} alt="안다미로" style={{ height: 28, marginTop: 16, opacity: 0.7 }} />
       </div>
 
       {/* ── Main Home Screen ── */}
@@ -138,7 +134,15 @@ export function HomeScene({ isActive }: Props) {
                   }}
                 />
               ))}
-              <div style={{ width: 16, height: 8, background: "rgba(255,255,255,0.7)", borderRadius: 3, marginLeft: 4 }} />
+              <div
+                style={{
+                  width: 16,
+                  height: 8,
+                  background: "rgba(255,255,255,0.7)",
+                  borderRadius: 3,
+                  marginLeft: 4,
+                }}
+              />
             </div>
           </div>
 
@@ -163,22 +167,19 @@ export function HomeScene({ isActive }: Props) {
         {/* Calendar */}
         <div className="flex-1 bg-white px-4 pt-4 overflow-hidden relative">
           {/* Weekday header */}
-          <div
-            className="grid gap-0 mb-2"
-            style={{ gridTemplateColumns: "repeat(7, 1fr)" }}
-          >
+          <div className="grid gap-0 mb-2" style={{ gridTemplateColumns: "repeat(7, 1fr)" }}>
             {DAYS_OF_WEEK.map((d) => (
-              <div key={d} style={{ textAlign: "center", fontSize: 11, color: "#aaa", fontWeight: 500 }}>
+              <div
+                key={d}
+                style={{ textAlign: "center", fontSize: 11, color: "#aaa", fontWeight: 500 }}
+              >
                 {d}
               </div>
             ))}
           </div>
 
           {/* Days grid */}
-          <div
-            className="grid gap-y-2"
-            style={{ gridTemplateColumns: "repeat(7, 1fr)" }}
-          >
+          <div className="grid gap-y-2" style={{ gridTemplateColumns: "repeat(7, 1fr)" }}>
             {/* Leading empty cells */}
             {[...Array(APRIL_START_DOW)].map((_, i) => (
               <div key={`empty-${i}`} />
@@ -196,11 +197,7 @@ export function HomeScene({ isActive }: Props) {
               const isSelected = step >= 3 && day === 14;
 
               return (
-                <div
-                  key={day}
-                  className="flex flex-col items-center"
-                  style={{ gap: 2 }}
-                >
+                <div key={day} className="flex flex-col items-center" style={{ gap: 2 }}>
                   <span
                     style={{
                       fontSize: 11,

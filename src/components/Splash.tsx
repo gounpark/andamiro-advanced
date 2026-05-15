@@ -70,11 +70,7 @@ export function Splash() {
         >
           건너뛰기
         </button>
-        <img
-          src={splashGif}
-          alt=""
-          className="max-h-full max-w-full object-contain"
-        />
+        <img src={splashGif} alt="" className="max-h-full max-w-full object-contain" />
       </div>
     </div>
   );

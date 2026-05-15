@@ -125,17 +125,16 @@ function ExchangeListPage() {
           </header>
 
           {/* 탭 */}
-          <div className="sticky top-[103px] z-10 bg-white flex border-b border-[#f0f0f0]">
+          <div className="sticky top-[95px] z-10 bg-white flex border-b border-[#f0f0f0]">
             {(["my", "shared"] as TabId[]).map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setTab(t)}
-                className={`flex-1 py-3 text-[14px] font-semibold tracking-tight transition ${
-                  tab === t
+                className={`flex-1 py-3 text-[14px] font-semibold tracking-tight transition ${tab === t
                     ? "text-[var(--primary)] border-b-2 border-[var(--primary)]"
                     : "text-[#bbb]"
-                }`}
+                  }`}
               >
                 {t === "my" ? "내가 공유한" : "공유 받은"}
               </button>

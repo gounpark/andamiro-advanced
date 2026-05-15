@@ -13,16 +13,36 @@ type ScriptEntry =
   | { role: "typing"; delay: number; duration: number };
 
 const SCRIPT: ScriptEntry[] = [
-  { role: "bot", text: "안녕하세요! 😊\n오늘 기분이 좋으셨군요.\n어떤 점이 특히 좋았나요?", delay: 600 },
+  {
+    role: "bot",
+    text: "안녕하세요! 😊\n오늘 기분이 좋으셨군요.\n어떤 점이 특히 좋았나요?",
+    delay: 600,
+  },
   { role: "typing", delay: 2200, duration: 1400 },
   { role: "chip", text: "😊 기분이 아주 좋아요", delay: 2200 },
   { role: "bot", text: "그렇군요 💙\n오늘 어떤 일이 있었는지 조금 더 들려주실래요?", delay: 4200 },
-  { role: "user", text: "오늘 오랜만에 친구를 만났어요. 밥도 먹고 카페도 갔는데 너무 좋았어요", delay: 6000 },
+  {
+    role: "user",
+    text: "오늘 오랜만에 친구를 만났어요. 밥도 먹고 카페도 갔는데 너무 좋았어요",
+    delay: 6000,
+  },
   { role: "typing", delay: 7200, duration: 1800 },
-  { role: "bot", text: "소중한 사람과의 시간이었네요 🤍\n오랜만에 만난 만큼 더 특별하게 느껴졌을 것 같아요.\n그 자리에서 어떤 이야기를 나눴나요?", delay: 9000 },
-  { role: "user", text: "근황 얘기도 하고, 옛날 얘기도 많이 했어요. 오래됐는데도 어색하지 않았어요", delay: 11000 },
+  {
+    role: "bot",
+    text: "소중한 사람과의 시간이었네요 🤍\n오랜만에 만난 만큼 더 특별하게 느껴졌을 것 같아요.\n그 자리에서 어떤 이야기를 나눴나요?",
+    delay: 9000,
+  },
+  {
+    role: "user",
+    text: "근황 얘기도 하고, 옛날 얘기도 많이 했어요. 오래됐는데도 어색하지 않았어요",
+    delay: 11000,
+  },
   { role: "typing", delay: 12400, duration: 1600 },
-  { role: "bot", text: "마음이 편한 관계라는 게 느껴져요 😊\n오늘 하루가 충전된 것 같네요.\n기록 잘 남겼어요 🍀", delay: 14000 },
+  {
+    role: "bot",
+    text: "마음이 편한 관계라는 게 느껴져요 😊\n오늘 하루가 충전된 것 같네요.\n기록 잘 남겼어요 🍀",
+    delay: 14000,
+  },
 ];
 
 type MsgItem =
@@ -74,12 +94,20 @@ export function ChatScene({ isActive }: Props) {
         className="flex items-center shrink-0 px-4 pb-3"
         style={{ borderBottom: "1px solid #f0f0f0" }}
       >
-        <button type="button" className="flex items-center justify-center rounded-full" style={{ width: 36, height: 36, background: "#f2f3f7" }}>
+        <button
+          type="button"
+          className="flex items-center justify-center rounded-full"
+          style={{ width: 36, height: 36, background: "#f2f3f7" }}
+        >
           <ChevronLeft size={18} color="#444" />
         </button>
         <div className="flex-1 flex flex-col items-center" style={{ marginLeft: -36 }}>
           <div className="flex items-center gap-2">
-            <img src={moodGoodWebp} alt="" style={{ width: 24, height: 24, objectFit: "contain" }} />
+            <img
+              src={moodGoodWebp}
+              alt=""
+              style={{ width: 24, height: 24, objectFit: "contain" }}
+            />
             <span style={{ fontSize: 15, fontWeight: 700, color: "#111" }}>안다미로</span>
           </div>
           <span style={{ fontSize: 11, color: "#888", marginTop: 1 }}>AI 감정 기록</span>
@@ -157,10 +185,7 @@ export function ChatScene({ isActive }: Props) {
         {/* Typing indicator */}
         {isTyping && (
           <div className="flex justify-start">
-            <div
-              className="rounded-2xl rounded-tl-md px-4 py-3"
-              style={{ background: "#f1f3f6" }}
-            >
+            <div className="rounded-2xl rounded-tl-md px-4 py-3" style={{ background: "#f1f3f6" }}>
               <div className="flex items-end gap-1">
                 {[0, 1, 2].map((i) => (
                   <div
@@ -186,7 +211,11 @@ export function ChatScene({ isActive }: Props) {
         className="shrink-0 flex items-center gap-1 px-3 py-2"
         style={{ borderTop: "1px solid #f0f0f0" }}
       >
-        <button type="button" className="flex items-center justify-center rounded-full" style={{ width: 36, height: 36, color: "#888" }}>
+        <button
+          type="button"
+          className="flex items-center justify-center rounded-full"
+          style={{ width: 36, height: 36, color: "#888" }}
+        >
           <Plus size={20} />
         </button>
         <div
@@ -195,7 +224,11 @@ export function ChatScene({ isActive }: Props) {
         >
           질문을 입력해 보세요
         </div>
-        <button type="button" className="flex items-center justify-center rounded-full" style={{ width: 36, height: 36, color: "#888" }}>
+        <button
+          type="button"
+          className="flex items-center justify-center rounded-full"
+          style={{ width: 36, height: 36, color: "#888" }}
+        >
           <Mic size={18} />
         </button>
         <button

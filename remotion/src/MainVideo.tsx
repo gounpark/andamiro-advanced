@@ -13,8 +13,7 @@ import { Scene6Advice } from "./scenes/Scene6Advice";
 import { Scene7Analysis } from "./scenes/Scene7Analysis";
 import { Scene8Ending } from "./scenes/Scene8Ending";
 
-const T = (frames: number) =>
-  springTiming({ config: { damping: 200 }, durationInFrames: frames });
+const T = (frames: number) => springTiming({ config: { damping: 200 }, durationInFrames: frames });
 
 export const MainVideo: React.FC = () => {
   return (

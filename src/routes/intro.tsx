@@ -22,11 +22,7 @@ function IntroPage() {
   return (
     <div className="app-shell">
       <div className="app-frame flex items-center justify-center bg-white overflow-hidden">
-        <img
-          src={splashGif}
-          alt=""
-          className="max-h-full max-w-full object-contain"
-        />
+        <img src={splashGif} alt="" className="max-h-full max-w-full object-contain" />
       </div>
     </div>
   );

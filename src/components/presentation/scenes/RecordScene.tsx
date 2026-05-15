@@ -78,11 +78,7 @@ export function RecordScene({ isActive }: Props) {
           transition: "all 0.7s cubic-bezier(0.34,1.56,0.64,1)",
         }}
       >
-        <img
-          src={moodGoodBigWebp}
-          alt=""
-          style={{ height: 280, objectFit: "contain" }}
-        />
+        <img src={moodGoodBigWebp} alt="" style={{ height: 280, objectFit: "contain" }} />
       </div>
 
       {/* Status bar */}
@@ -185,7 +181,11 @@ export function RecordScene({ isActive }: Props) {
                     boxShadow: isSelected ? `0 0 0 4px ${mood.color}33` : "none",
                   }}
                 >
-                  <img src={mood.img} alt={mood.label} style={{ width: 40, height: 40, objectFit: "contain" }} />
+                  <img
+                    src={mood.img}
+                    alt={mood.label}
+                    style={{ width: 40, height: 40, objectFit: "contain" }}
+                  />
                 </div>
                 <span
                   style={{
@@ -219,7 +219,9 @@ export function RecordScene({ isActive }: Props) {
         }}
       >
         <p style={{ fontSize: 13, color: "#888", marginBottom: 12, textAlign: "center" }}>
-          {selectedMood ? `'${MOODS.find((m) => m.key === selectedMood)?.label}' 감정으로 기록을 시작할게요` : "감정을 선택하면 기록이 시작됩니다"}
+          {selectedMood
+            ? `'${MOODS.find((m) => m.key === selectedMood)?.label}' 감정으로 기록을 시작할게요`
+            : "감정을 선택하면 기록이 시작됩니다"}
         </p>
         <button
           type="button"

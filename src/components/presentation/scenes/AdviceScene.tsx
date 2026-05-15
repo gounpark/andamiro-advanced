@@ -29,7 +29,10 @@ export function AdviceScene({ isActive }: Props) {
       let v = 0;
       const interval = setInterval(() => {
         v += 2;
-        if (v >= 80) { v = 80; clearInterval(interval); }
+        if (v >= 80) {
+          v = 80;
+          clearInterval(interval);
+        }
         setScore(v);
       }, 18);
     }, 1000);
@@ -51,7 +54,10 @@ export function AdviceScene({ isActive }: Props) {
         className="flex items-center px-4 pb-3 shrink-0"
         style={{ borderBottom: "1px solid #f0f0f0" }}
       >
-        <button type="button" style={{ width: 32, height: 32, display: "flex", alignItems: "center" }}>
+        <button
+          type="button"
+          style={{ width: 32, height: 32, display: "flex", alignItems: "center" }}
+        >
           <ChevronLeft size={20} color="#444" />
         </button>
         <span
@@ -90,7 +96,11 @@ export function AdviceScene({ isActive }: Props) {
                 <span style={{ fontSize: 16, color: "#888", marginBottom: 4 }}>점</span>
               </div>
             </div>
-            <img src={moodGoodWebp} alt="" style={{ width: 64, height: 64, objectFit: "contain" }} />
+            <img
+              src={moodGoodWebp}
+              alt=""
+              style={{ width: 64, height: 64, objectFit: "contain" }}
+            />
           </div>
 
           {/* Tags */}
@@ -134,9 +144,12 @@ export function AdviceScene({ isActive }: Props) {
             boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
           }}
         >
-          <p style={{ fontSize: 13, fontWeight: 600, color: "#333", marginBottom: 8 }}>AI의 한마디</p>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "#333", marginBottom: 8 }}>
+            AI의 한마디
+          </p>
           <p style={{ fontSize: 13, color: "#555", lineHeight: 1.7 }}>
-            오늘 좋은 에너지로 하루를 보냈네요. 소중한 관계에서 충전된 에너지가 내일도 이어지길 바랍니다. 오늘 하루 정말 수고하셨어요 🌿
+            오늘 좋은 에너지로 하루를 보냈네요. 소중한 관계에서 충전된 에너지가 내일도 이어지길
+            바랍니다. 오늘 하루 정말 수고하셨어요 🌿
           </p>
         </div>
 

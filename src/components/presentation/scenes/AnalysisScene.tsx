@@ -57,7 +57,10 @@ export function AnalysisScene({ isActive }: Props) {
   return (
     <div className="w-full h-full flex flex-col" style={{ background: "#f5f6f8" }}>
       {/* Status bar */}
-      <div className="flex items-center justify-between px-5" style={{ height: 44, background: "white" }}>
+      <div
+        className="flex items-center justify-between px-5"
+        style={{ height: 44, background: "white" }}
+      >
         <span style={{ fontSize: 13, fontWeight: 600, color: "#222" }}>9:41</span>
       </div>
 
@@ -66,7 +69,16 @@ export function AnalysisScene({ isActive }: Props) {
         className="flex items-center px-4 py-3 bg-white shrink-0"
         style={{ borderBottom: "1px solid #f0f0f0" }}
       >
-        <button type="button" style={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <button
+          type="button"
+          style={{
+            width: 32,
+            height: 32,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           <ChevronLeft size={20} color="#444" />
         </button>
         <span
@@ -96,7 +108,11 @@ export function AnalysisScene({ isActive }: Props) {
           }}
         >
           <div className="flex items-center gap-2 mb-4">
-            <img src={moodGoodWebp} alt="" style={{ width: 28, height: 28, objectFit: "contain" }} />
+            <img
+              src={moodGoodWebp}
+              alt=""
+              style={{ width: 28, height: 28, objectFit: "contain" }}
+            />
             <span style={{ fontSize: 14, fontWeight: 600, color: "#333" }}>좋아요 · 4월 14일</span>
           </div>
 
@@ -106,7 +122,9 @@ export function AnalysisScene({ isActive }: Props) {
               <svg width="160" height="90" viewBox="0 0 160 90">
                 {/* Background arc */}
                 <circle
-                  cx="80" cy="80" r="60"
+                  cx="80"
+                  cy="80"
+                  r="60"
                   fill="none"
                   stroke="#f0f0f0"
                   strokeWidth="10"
@@ -117,7 +135,9 @@ export function AnalysisScene({ isActive }: Props) {
                 />
                 {/* Foreground arc */}
                 <circle
-                  cx="80" cy="80" r="60"
+                  cx="80"
+                  cy="80"
+                  r="60"
                   fill="none"
                   stroke="#4B82F5"
                   strokeWidth="10"
@@ -151,15 +171,21 @@ export function AnalysisScene({ isActive }: Props) {
             boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
           }}
         >
-          <p style={{ fontSize: 13, fontWeight: 600, color: "#333", marginBottom: 14 }}>세부 지표</p>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "#333", marginBottom: 14 }}>
+            세부 지표
+          </p>
           <div className="flex flex-col gap-3">
             {METRICS.map((m, i) => (
               <div key={m.label}>
                 <div className="flex justify-between mb-1">
                   <span style={{ fontSize: 12, color: "#666" }}>{m.label}</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: m.color }}>{barValues[i]}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: m.color }}>
+                    {barValues[i]}
+                  </span>
                 </div>
-                <div style={{ height: 7, background: "#f0f0f0", borderRadius: 4, overflow: "hidden" }}>
+                <div
+                  style={{ height: 7, background: "#f0f0f0", borderRadius: 4, overflow: "hidden" }}
+                >
                   <div
                     style={{
                       height: "100%",
@@ -190,7 +216,8 @@ export function AnalysisScene({ isActive }: Props) {
             <span style={{ fontSize: 13, fontWeight: 600, color: "#333" }}>AI 요약</span>
           </div>
           <p style={{ fontSize: 13, color: "#555", lineHeight: 1.7 }}>
-            오늘은 소중한 사람과의 재회로 감정이 충전된 하루였어요. 에너지 지수가 높고 전반적으로 긍정적인 상태입니다. 이런 날을 더 자주 만들어 보세요 🍀
+            오늘은 소중한 사람과의 재회로 감정이 충전된 하루였어요. 에너지 지수가 높고 전반적으로
+            긍정적인 상태입니다. 이런 날을 더 자주 만들어 보세요 🍀
           </p>
         </div>
       </div>

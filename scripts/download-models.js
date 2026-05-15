@@ -9,8 +9,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MODELS_DIR = path.join(__dirname, "..", "public", "models");
-const BASE =
-  "https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights";
+const BASE = "https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights";
 
 const FILES = [
   "tiny_face_detector_model-weights_manifest.json",

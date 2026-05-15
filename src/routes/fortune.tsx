@@ -70,7 +70,7 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
       if (cookie && frame) {
         const cr = cookie.getBoundingClientRect();
         const fr = frame.getBoundingClientRect();
-        setCursor(c => ({
+        setCursor((c) => ({
           ...c,
           x: cr.left - fr.left + cr.width / 2,
           y: cr.top - fr.top + cr.height / 2,
@@ -78,14 +78,19 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
       }
     });
     const timers: ReturnType<typeof setTimeout>[] = [];
-    timers.push(setTimeout(() => setCursor(c => ({ ...c, visible: true })), 1200));
-    timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 2000));
-    timers.push(setTimeout(() => {
-      setCursor(c => ({ ...c, tapping: false, visible: false })); // 탭 후 즉시 숨김
-      handleTap();
-    }, 2250));
-    return () => { cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    timers.push(setTimeout(() => setCursor((c) => ({ ...c, visible: true })), 1200));
+    timers.push(setTimeout(() => setCursor((c) => ({ ...c, tapping: true })), 2000));
+    timers.push(
+      setTimeout(() => {
+        setCursor((c) => ({ ...c, tapping: false, visible: false })); // 탭 후 즉시 숨김
+        handleTap();
+      }, 2250),
+    );
+    return () => {
+      cancelAnimationFrame(raf);
+      timers.forEach(clearTimeout);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demo]);
 
   const goBack = () => navigate({ to: "/advice", search: { empty: false } });
@@ -94,7 +99,7 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
   if (stage === "revealed") {
     return (
       <div className="app-shell">
-      <div className="app-frame relative flex flex-col bg-[#0d0d0d] overflow-hidden">
+        <div className="app-frame relative flex flex-col bg-[#0d0d0d] overflow-hidden">
           {/* 은은한 광선 — 매우 약하게 + 강한 딤 오버레이로 가독성 확보 */}
           <img
             src={rays}
@@ -166,8 +171,22 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
     <div className="app-shell">
       <div ref={frameRef} className="app-frame relative flex flex-col bg-white overflow-hidden">
         {demo && <DemoCursor {...cursor} />}
-        <img src={cookieCracked} alt="" aria-hidden className="hidden" loading="eager" decoding="async" />
-        <img src={cookieResult} alt="" aria-hidden className="hidden" loading="eager" decoding="async" />
+        <img
+          src={cookieCracked}
+          alt=""
+          aria-hidden
+          className="hidden"
+          loading="eager"
+          decoding="async"
+        />
+        <img
+          src={cookieResult}
+          alt=""
+          aria-hidden
+          className="hidden"
+          loading="eager"
+          decoding="async"
+        />
         <img
           src={fortuneMessageTitle}
           alt=""
@@ -207,7 +226,8 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
             />
             <p className="mt-5 text-foreground/70 tracking-tight text-base">
               바삭한 쿠키속에 숨겨진{" "}
-              <span className="text-[var(--primary)] font-semibold">당신의 행운</span>을 확인해보세요!
+              <span className="text-[var(--primary)] font-semibold">당신의 행운</span>을
+              확인해보세요!
             </p>
           </div>
         )}
@@ -366,7 +386,8 @@ function FortunePageLegacy() {
             />
             <p className="mt-5 text-foreground/70 tracking-tight text-base">
               바삭한 쿠키속에 숨겨진{" "}
-              <span className="text-[var(--primary)] font-semibold">당신의 행운</span>을 확인해보세요!
+              <span className="text-[var(--primary)] font-semibold">당신의 행운</span>을
+              확인해보세요!
             </p>
           </div>
         )}

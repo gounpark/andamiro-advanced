@@ -1,7 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import React, { useEffect, useRef, useState } from "react";
 import { ChevronLeft, Trash2, BookOpen } from "lucide-react";
-import { getVideoRecord, clearVideoRecord, type VideoRecord, type EmotionSnapshot, type MoodKey } from "@/lib/videoStore";
+import {
+  getVideoRecord,
+  clearVideoRecord,
+  type VideoRecord,
+  type EmotionSnapshot,
+  type MoodKey,
+} from "@/lib/videoStore";
 import { saveDiaryEntry, todayString } from "@/lib/diaryStore";
 
 import moodBest from "@/assets/moods/mood-best.webp";
@@ -57,13 +63,17 @@ type DailyData = {
 
 const DAILY_DATA: Record<number, DailyData> = {
   1: {
-    score: 82, mood: "설렘",
+    score: 82,
+    mood: "설렘",
     metrics: [
-      { label: "에너지", value: 85 }, { label: "안정감", value: 70 },
-      { label: "집중력", value: 78 }, { label: "긍정성", value: 88 },
+      { label: "에너지", value: 85 },
+      { label: "안정감", value: 70 },
+      { label: "집중력", value: 78 },
+      { label: "긍정성", value: 88 },
     ],
     summaryTitle: "새 출발의 활기가 가득해요!",
-    summaryBody: "새로운 달의 시작과 함께 들뜬 마음이 잘 드러나는 하루였어요. 작은 목표를 세워두면 이 설렘이 좋은 동력이 될 거예요. 너무 욕심내기보다는 하나씩 차근히 즐기며 시작하시길 바라요.",
+    summaryBody:
+      "새로운 달의 시작과 함께 들뜬 마음이 잘 드러나는 하루였어요. 작은 목표를 세워두면 이 설렘이 좋은 동력이 될 거예요. 너무 욕심내기보다는 하나씩 차근히 즐기며 시작하시길 바라요.",
     chatRecap: "달의 첫날을 작은 기대들로 채우며, 가볍지만 활기찬 분위기로 보낸 하루였어요.",
     tomorrow: [
       { num: 1, title: "월간 목표 정리", body: "들뜬 에너지를 명확한 계획으로 옮겨보세요." },
@@ -71,13 +81,17 @@ const DAILY_DATA: Record<number, DailyData> = {
     ],
   },
   4: {
-    score: 78, mood: "활기참",
+    score: 78,
+    mood: "활기참",
     metrics: [
-      { label: "에너지", value: 90 }, { label: "안정감", value: 65 },
-      { label: "집중력", value: 70 }, { label: "긍정성", value: 82 },
+      { label: "에너지", value: 90 },
+      { label: "안정감", value: 65 },
+      { label: "집중력", value: 70 },
+      { label: "긍정성", value: 82 },
     ],
     summaryTitle: "햇살처럼 환한 하루였어요!",
-    summaryBody: "산책과 햇살이 만들어준 상쾌함이 종일 이어진 하루였어요. 이런 활기는 몸과 마음의 좋은 리듬을 만들어주니, 내일도 가볍게 움직이는 습관을 이어가 보세요.",
+    summaryBody:
+      "산책과 햇살이 만들어준 상쾌함이 종일 이어진 하루였어요. 이런 활기는 몸과 마음의 좋은 리듬을 만들어주니, 내일도 가볍게 움직이는 습관을 이어가 보세요.",
     chatRecap: "햇살 아래 산책과 함께 가벼운 마음으로 활기를 충전한 하루였어요.",
     tomorrow: [
       { num: 1, title: "20분 야외 걷기", body: "오늘의 좋은 흐름을 자연스럽게 이어가요." },
@@ -85,13 +99,17 @@ const DAILY_DATA: Record<number, DailyData> = {
     ],
   },
   5: {
-    score: 80, mood: "감사",
+    score: 80,
+    mood: "감사",
     metrics: [
-      { label: "에너지", value: 70 }, { label: "안정감", value: 85 },
-      { label: "집중력", value: 72 }, { label: "긍정성", value: 90 },
+      { label: "에너지", value: 70 },
+      { label: "안정감", value: 85 },
+      { label: "집중력", value: 72 },
+      { label: "긍정성", value: 90 },
     ],
     summaryTitle: "따뜻함이 마음에 머문 하루",
-    summaryBody: "여유로운 아침과 작은 친절이 더해진 따뜻한 하루였어요. 감사의 감정은 안정감을 키워주니, 짧은 메모로 오늘의 고마움을 적어두면 좋아요.",
+    summaryBody:
+      "여유로운 아침과 작은 친절이 더해진 따뜻한 하루였어요. 감사의 감정은 안정감을 키워주니, 짧은 메모로 오늘의 고마움을 적어두면 좋아요.",
     chatRecap: "느긋한 아침과 따뜻한 마주침으로 마음이 차분히 채워진 하루.",
     tomorrow: [
       { num: 1, title: "감사 일기 한 줄", body: "오늘 받은 따뜻함을 기록해보세요." },
@@ -99,13 +117,17 @@ const DAILY_DATA: Record<number, DailyData> = {
     ],
   },
   8: {
-    score: 76, mood: "집중",
+    score: 76,
+    mood: "집중",
     metrics: [
-      { label: "에너지", value: 68 }, { label: "안정감", value: 74 },
-      { label: "집중력", value: 92 }, { label: "긍정성", value: 70 },
+      { label: "에너지", value: 68 },
+      { label: "안정감", value: 74 },
+      { label: "집중력", value: 92 },
+      { label: "긍정성", value: 70 },
     ],
     summaryTitle: "깊이 몰입한 하루였네요!",
-    summaryBody: "한 가지 일에 깊게 빠져들어 좋은 결과를 만든 하루였어요. 다만 집중 후엔 충분한 휴식이 필요하니, 저녁엔 화면을 잠시 멀리해 보세요.",
+    summaryBody:
+      "한 가지 일에 깊게 빠져들어 좋은 결과를 만든 하루였어요. 다만 집중 후엔 충분한 휴식이 필요하니, 저녁엔 화면을 잠시 멀리해 보세요.",
     chatRecap: "한 가지 일에 깊게 빠져들어 뿌듯한 마무리를 한 하루.",
     tomorrow: [
       { num: 1, title: "딥워크 1시간", body: "집중 흐름을 짧고 강하게 이어가요." },
@@ -113,13 +135,17 @@ const DAILY_DATA: Record<number, DailyData> = {
     ],
   },
   10: {
-    score: 85, mood: "기쁨",
+    score: 85,
+    mood: "기쁨",
     metrics: [
-      { label: "에너지", value: 82 }, { label: "안정감", value: 75 },
-      { label: "집중력", value: 65 }, { label: "긍정성", value: 95 },
+      { label: "에너지", value: 82 },
+      { label: "안정감", value: 75 },
+      { label: "집중력", value: 65 },
+      { label: "긍정성", value: 95 },
     ],
     summaryTitle: "마음이 한껏 채워진 저녁!",
-    summaryBody: "오랜만에 만난 친구와의 시간으로 긍정 점수가 크게 올라간 하루였어요. 좋은 관계는 가장 든든한 회복제이니, 자주 시간을 만들어보세요.",
+    summaryBody:
+      "오랜만에 만난 친구와의 시간으로 긍정 점수가 크게 올라간 하루였어요. 좋은 관계는 가장 든든한 회복제이니, 자주 시간을 만들어보세요.",
     chatRecap: "오랜만의 친구와의 저녁, 즐거운 대화로 마음이 가득 찬 하루.",
     tomorrow: [
       { num: 1, title: "감사 메시지 보내기", body: "함께한 사람에게 마음을 전해보세요." },
@@ -127,13 +153,17 @@ const DAILY_DATA: Record<number, DailyData> = {
     ],
   },
   14: {
-    score: 72, mood: "안정감",
+    score: 72,
+    mood: "안정감",
     metrics: [
-      { label: "에너지", value: 60 }, { label: "안정감", value: 88 },
-      { label: "집중력", value: 70 }, { label: "긍정성", value: 72 },
+      { label: "에너지", value: 60 },
+      { label: "안정감", value: 88 },
+      { label: "집중력", value: 70 },
+      { label: "긍정성", value: 72 },
     ],
     summaryTitle: "잔잔히 흘러간 하루",
-    summaryBody: "특별한 사건은 없었지만 마음이 고요했던 하루였어요. 이런 날의 평온함이 다음 날의 좋은 출발을 만들어줍니다.",
+    summaryBody:
+      "특별한 사건은 없었지만 마음이 고요했던 하루였어요. 이런 날의 평온함이 다음 날의 좋은 출발을 만들어줍니다.",
     chatRecap: "잔잔한 흐름 속에서 마음이 가만히 가라앉은 하루.",
     tomorrow: [
       { num: 1, title: "가벼운 정리", body: "안정된 마음에 작은 정돈을 더해봐요." },
@@ -141,13 +171,17 @@ const DAILY_DATA: Record<number, DailyData> = {
     ],
   },
   16: {
-    score: 88, mood: "성취",
+    score: 88,
+    mood: "성취",
     metrics: [
-      { label: "에너지", value: 80 }, { label: "안정감", value: 78 },
-      { label: "집중력", value: 85 }, { label: "긍정성", value: 90 },
+      { label: "에너지", value: 80 },
+      { label: "안정감", value: 78 },
+      { label: "집중력", value: 85 },
+      { label: "긍정성", value: 90 },
     ],
     summaryTitle: "완성한 만큼 단단해진 하루!",
-    summaryBody: "아침의 설렘으로 시작해 마무리의 만족감으로 끝난 균형 잡힌 하루였어요. 스스로에게 작은 보상을 주는 것도 좋은 습관이에요.",
+    summaryBody:
+      "아침의 설렘으로 시작해 마무리의 만족감으로 끝난 균형 잡힌 하루였어요. 스스로에게 작은 보상을 주는 것도 좋은 습관이에요.",
     chatRecap: "기대로 시작해 성취감으로 마무리한, 양 끝이 단단했던 하루.",
     tomorrow: [
       { num: 1, title: "셀프 리워드", body: "잘 해낸 자신에게 작은 선물 어떨까요." },
@@ -155,13 +189,17 @@ const DAILY_DATA: Record<number, DailyData> = {
     ],
   },
   18: {
-    score: 74, mood: "평온함",
+    score: 74,
+    mood: "평온함",
     metrics: [
-      { label: "에너지", value: 65 }, { label: "안정감", value: 86 },
-      { label: "집중력", value: 68 }, { label: "긍정성", value: 76 },
+      { label: "에너지", value: 65 },
+      { label: "안정감", value: 86 },
+      { label: "집중력", value: 68 },
+      { label: "긍정성", value: 76 },
     ],
     summaryTitle: "차분함이 깊었던 하루",
-    summaryBody: "차분하고 안정적인 흐름으로 보낸 하루였어요. 평온이 이어질 때는 작은 새로움 하나를 더해 보면 좋은 자극이 됩니다.",
+    summaryBody:
+      "차분하고 안정적인 흐름으로 보낸 하루였어요. 평온이 이어질 때는 작은 새로움 하나를 더해 보면 좋은 자극이 됩니다.",
     chatRecap: "큰 기복 없이 안정된 분위기로 채워진 하루였어요.",
     tomorrow: [
       { num: 1, title: "새로운 카페 탐방", body: "잔잔함에 작은 변화를 더해봐요." },
@@ -169,14 +207,19 @@ const DAILY_DATA: Record<number, DailyData> = {
     ],
   },
   21: {
-    score: 75, mood: "평온함",
+    score: 75,
+    mood: "평온함",
     metrics: [
-      { label: "에너지", value: 68 }, { label: "안정감", value: 80 },
-      { label: "집중력", value: 75 }, { label: "긍정성", value: 78 },
+      { label: "에너지", value: 68 },
+      { label: "안정감", value: 80 },
+      { label: "집중력", value: 75 },
+      { label: "긍정성", value: 78 },
     ],
     summaryTitle: "오늘은 이렇게 보내고 계시는군요!",
-    summaryBody: "평온한 에너지로 차분한 하루를 보내셨다니 참 좋습니다. 직장에서의 좋은 운을 살려 내일은 미뤄두었던 업무나 새로운 프로젝트에 도전해 보시면 어떨까요? 금전 운이 조금 낮은 만큼 불필요한 지출은 자제하고, 애정 운도 함께 상승 중이니 소중한 사람들과 따뜻한 시간을 나누며 오늘의 평온함을 내일까지 이어가시길 응원합니다.",
-    chatRecap: "해야 할 일을 차근차근 정리하고 중요한 일에 집중하면서, 일과 휴식의 균형 속에 무리 없이 하루를 마무리했어요.",
+    summaryBody:
+      "평온한 에너지로 차분한 하루를 보내셨다니 참 좋습니다. 직장에서의 좋은 운을 살려 내일은 미뤄두었던 업무나 새로운 프로젝트에 도전해 보시면 어떨까요? 금전 운이 조금 낮은 만큼 불필요한 지출은 자제하고, 애정 운도 함께 상승 중이니 소중한 사람들과 따뜻한 시간을 나누며 오늘의 평온함을 내일까지 이어가시길 응원합니다.",
+    chatRecap:
+      "해야 할 일을 차근차근 정리하고 중요한 일에 집중하면서, 일과 휴식의 균형 속에 무리 없이 하루를 마무리했어요.",
     tomorrow: [
       { num: 1, title: "중요한 기획·집중 작업", body: "평온감이 이어지면 깊은 작업에 최적이에요." },
       { num: 2, title: "산책 & 마음 챙김", body: "안정 무드로 내일도 좋은 흐름을 이어요." },
@@ -198,26 +241,34 @@ function computeAnalysisFromRecord(record: VideoRecord): DailyData {
   const score = Math.round(Math.min(100, Math.max(30, baseScore * 0.78 + conf * 22)));
 
   // 타임라인 감정 평균
-  let sumH = 0, sumN = 0, sumAngry = 0, sumFear = 0;
+  let sumH = 0,
+    sumN = 0,
+    sumAngry = 0,
+    sumFear = 0;
   for (const s of timeline) {
-    sumH     += s.expressions.happy   ?? 0;
-    sumN     += s.expressions.neutral ?? 0;
-    sumAngry += s.expressions.angry   ?? 0;
-    sumFear  += s.expressions.fearful ?? 0;
+    sumH += s.expressions.happy ?? 0;
+    sumN += s.expressions.neutral ?? 0;
+    sumAngry += s.expressions.angry ?? 0;
+    sumFear += s.expressions.fearful ?? 0;
   }
   const n = timeline.length || 1;
-  const avgH = sumH / n, avgN = sumN / n, avgNeg = (sumAngry + sumFear) / n;
+  const avgH = sumH / n,
+    avgN = sumN / n,
+    avgNeg = (sumAngry + sumFear) / n;
   const clamp = (v: number) => Math.round(Math.min(100, Math.max(35, v)));
 
   const metrics: Metric[] = [
-    { label: "에너지",  value: clamp((1 - avgN * 0.65) * 100 * 0.55 + conf * 45) },
-    { label: "안정감",  value: clamp(avgN * 60 + (1 - avgNeg * 4) * 40 + 20) },
-    { label: "집중력",  value: clamp(baseScore * 0.62 + conf * 38) },
-    { label: "긍정성",  value: clamp(avgH * 120 + baseScore * 0.38) },
+    { label: "에너지", value: clamp((1 - avgN * 0.65) * 100 * 0.55 + conf * 45) },
+    { label: "안정감", value: clamp(avgN * 60 + (1 - avgNeg * 4) * 40 + 20) },
+    { label: "집중력", value: clamp(baseScore * 0.62 + conf * 38) },
+    { label: "긍정성", value: clamp(avgH * 120 + baseScore * 0.38) },
   ];
 
   // 요약 템플릿
-  const T: Record<string, { title: string; body: string; tomorrow: { num: number; title: string; body: string }[] }> = {
+  const T: Record<
+    string,
+    { title: string; body: string; tomorrow: { num: number; title: string; body: string }[] }
+  > = {
     best: {
       title: "활기가 넘쳤던 하루예요!",
       body: "영상에서 환한 에너지와 기쁨이 느껴졌어요. 이런 날의 감정을 잘 기억해두면 힘든 날에 큰 힘이 됩니다. 오늘의 긍정 에너지를 내일도 이어가 보세요.",
@@ -230,7 +281,11 @@ function computeAnalysisFromRecord(record: VideoRecord): DailyData {
       title: "좋은 하루였네요!",
       body: "전반적으로 밝고 안정된 감정이 느껴지는 하루였어요. 작은 즐거움들이 모여 오늘을 만들었을 거예요. 이 흐름을 내일도 이어가 보세요.",
       tomorrow: [
-        { num: 1, title: "오늘 좋았던 순간 떠올리기", body: "긍정 감정을 강화하는 좋은 습관이에요." },
+        {
+          num: 1,
+          title: "오늘 좋았던 순간 떠올리기",
+          body: "긍정 감정을 강화하는 좋은 습관이에요.",
+        },
         { num: 2, title: "가벼운 운동이나 산책", body: "좋은 에너지를 몸으로도 이어가 보세요." },
       ],
     },
@@ -238,7 +293,11 @@ function computeAnalysisFromRecord(record: VideoRecord): DailyData {
       title: "평온하게 보낸 하루예요",
       body: "감정 기복 없이 안정된 흐름으로 보낸 하루였어요. 평온함 속에서도 작은 의미를 찾는 연습이 내일을 더 풍요롭게 만들어줄 거예요.",
       tomorrow: [
-        { num: 1, title: "한 가지 즐거운 계획 세우기", body: "내일에 기대할 것 하나를 만들어봐요." },
+        {
+          num: 1,
+          title: "한 가지 즐거운 계획 세우기",
+          body: "내일에 기대할 것 하나를 만들어봐요.",
+        },
         { num: 2, title: "충분한 수면", body: "평온한 하루의 마무리는 충분한 휴식이에요." },
       ],
     },
@@ -262,7 +321,9 @@ function computeAnalysisFromRecord(record: VideoRecord): DailyData {
   const t = T[aiMood] ?? T.okay;
 
   const chatRecap = record.transcript
-    ? (record.transcript.length > 90 ? record.transcript.slice(0, 88) + "…" : record.transcript)
+    ? record.transcript.length > 90
+      ? record.transcript.slice(0, 88) + "…"
+      : record.transcript
     : "영상을 통해 오늘의 감정을 기록했어요.";
 
   return {
@@ -284,18 +345,119 @@ const DEMO_RECORD: VideoRecord = {
   rawExpressions: { happy: 0.62, neutral: 0.28, surprised: 0.1 },
   userMood: null,
   userMoodLabel: null,
-  transcript: "오늘 팀 미팅에서 발표를 잘 마쳤어요. 준비를 많이 했는데 반응이 좋아서 기분이 너무 좋았고, 퇴근하면서 동료랑 같이 커피 한 잔 했는데 그것도 즐거웠어요.",
+  transcript:
+    "오늘 팀 미팅에서 발표를 잘 마쳤어요. 준비를 많이 했는데 반응이 좋아서 기분이 너무 좋았고, 퇴근하면서 동료랑 같이 커피 한 잔 했는데 그것도 즐거웠어요.",
   emotionTimeline: [
-    { sec: 0,  expressions: { neutral: 0.7, happy: 0.2, surprised: 0.05, sad: 0.02, angry: 0.02, fearful: 0.01 } },
-    { sec: 3,  expressions: { neutral: 0.55, happy: 0.35, surprised: 0.06, sad: 0.02, angry: 0.01, fearful: 0.01 } },
-    { sec: 6,  expressions: { neutral: 0.3, happy: 0.6, surprised: 0.07, sad: 0.01, angry: 0.01, fearful: 0.01 } },
-    { sec: 9,  expressions: { neutral: 0.25, happy: 0.68, surprised: 0.04, sad: 0.01, angry: 0.01, fearful: 0.01 } },
-    { sec: 12, expressions: { neutral: 0.4, happy: 0.45, surprised: 0.08, sad: 0.03, angry: 0.02, fearful: 0.02 } },
-    { sec: 15, expressions: { neutral: 0.5, happy: 0.35, surprised: 0.1, sad: 0.02, angry: 0.02, fearful: 0.01 } },
-    { sec: 18, expressions: { neutral: 0.35, happy: 0.55, surprised: 0.06, sad: 0.02, angry: 0.01, fearful: 0.01 } },
-    { sec: 21, expressions: { neutral: 0.3, happy: 0.62, surprised: 0.05, sad: 0.01, angry: 0.01, fearful: 0.01 } },
-    { sec: 24, expressions: { neutral: 0.45, happy: 0.42, surprised: 0.09, sad: 0.02, angry: 0.01, fearful: 0.01 } },
-    { sec: 27, expressions: { neutral: 0.28, happy: 0.65, surprised: 0.04, sad: 0.01, angry: 0.01, fearful: 0.01 } },
+    {
+      sec: 0,
+      expressions: {
+        neutral: 0.7,
+        happy: 0.2,
+        surprised: 0.05,
+        sad: 0.02,
+        angry: 0.02,
+        fearful: 0.01,
+      },
+    },
+    {
+      sec: 3,
+      expressions: {
+        neutral: 0.55,
+        happy: 0.35,
+        surprised: 0.06,
+        sad: 0.02,
+        angry: 0.01,
+        fearful: 0.01,
+      },
+    },
+    {
+      sec: 6,
+      expressions: {
+        neutral: 0.3,
+        happy: 0.6,
+        surprised: 0.07,
+        sad: 0.01,
+        angry: 0.01,
+        fearful: 0.01,
+      },
+    },
+    {
+      sec: 9,
+      expressions: {
+        neutral: 0.25,
+        happy: 0.68,
+        surprised: 0.04,
+        sad: 0.01,
+        angry: 0.01,
+        fearful: 0.01,
+      },
+    },
+    {
+      sec: 12,
+      expressions: {
+        neutral: 0.4,
+        happy: 0.45,
+        surprised: 0.08,
+        sad: 0.03,
+        angry: 0.02,
+        fearful: 0.02,
+      },
+    },
+    {
+      sec: 15,
+      expressions: {
+        neutral: 0.5,
+        happy: 0.35,
+        surprised: 0.1,
+        sad: 0.02,
+        angry: 0.02,
+        fearful: 0.01,
+      },
+    },
+    {
+      sec: 18,
+      expressions: {
+        neutral: 0.35,
+        happy: 0.55,
+        surprised: 0.06,
+        sad: 0.02,
+        angry: 0.01,
+        fearful: 0.01,
+      },
+    },
+    {
+      sec: 21,
+      expressions: {
+        neutral: 0.3,
+        happy: 0.62,
+        surprised: 0.05,
+        sad: 0.01,
+        angry: 0.01,
+        fearful: 0.01,
+      },
+    },
+    {
+      sec: 24,
+      expressions: {
+        neutral: 0.45,
+        happy: 0.42,
+        surprised: 0.09,
+        sad: 0.02,
+        angry: 0.01,
+        fearful: 0.01,
+      },
+    },
+    {
+      sec: 27,
+      expressions: {
+        neutral: 0.28,
+        happy: 0.65,
+        surprised: 0.04,
+        sad: 0.01,
+        angry: 0.01,
+        fearful: 0.01,
+      },
+    },
   ],
 };
 
@@ -304,10 +466,13 @@ function AnalysisPage() {
 
   // videoRecord: 뮤터블하게 관리 — 기록 완료 시 null로 세팅해 분석 화면으로 전환
   const [videoRecord, setVideoRecord] = useState<VideoRecord | null>(() =>
-    demo ? DEMO_RECORD : getVideoRecord()
+    demo ? DEMO_RECORD : getVideoRecord(),
   );
   useEffect(() => {
-    if (!demo) return () => { clearVideoRecord(); };
+    if (!demo)
+      return () => {
+        clearVideoRecord();
+      };
   }, [demo]);
 
   // 영상 기록 완료 후 계산된 분석 데이터 (onDone 콜백으로 직접 주입)
@@ -395,7 +560,6 @@ function AnalysisPage() {
         </header>
 
         <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide pb-10">
-
           {/* 점수 카드 */}
           <section className="bg-white px-5 pt-8 pb-10">
             <div style={fadeIn(1)}>
@@ -419,7 +583,11 @@ function AnalysisPage() {
           </section>
 
           {/* 오늘 요약 카드 */}
-          <section ref={summaryRef} className="mx-4 mt-6 rounded-2xl bg-white p-6 shadow-sm" style={fadeIn(4)}>
+          <section
+            ref={summaryRef}
+            className="mx-4 mt-6 rounded-2xl bg-white p-6 shadow-sm"
+            style={fadeIn(4)}
+          >
             <div className="flex flex-col items-center">
               <img src={iconChat} alt="" className="h-[52px] w-[52px] object-contain" />
               <h3 className="mt-2 font-bold text-foreground text-[17px] tracking-tight">
@@ -441,7 +609,11 @@ function AnalysisPage() {
           </section>
 
           {/* 내일은 이렇게 카드 */}
-          <section ref={tomorrowRef} className="mx-4 mt-6 rounded-2xl bg-white p-6 shadow-sm" style={fadeIn(5)}>
+          <section
+            ref={tomorrowRef}
+            className="mx-4 mt-6 rounded-2xl bg-white p-6 shadow-sm"
+            style={fadeIn(5)}
+          >
             <div className="flex flex-col items-center">
               <img src={iconAiBook} alt="" className="h-[52px] w-[52px] object-contain" />
               <h3 className="mt-2 font-bold text-foreground text-[17px] tracking-tight">
@@ -459,9 +631,7 @@ function AnalysisPage() {
                     <p className="font-semibold text-foreground text-[15px] tracking-tight">
                       {t.title}
                     </p>
-                    <p className="mt-0.5 text-[13px] text-foreground/65 tracking-tight">
-                      {t.body}
-                    </p>
+                    <p className="mt-0.5 text-[13px] text-foreground/65 tracking-tight">{t.body}</p>
                   </div>
                 </li>
               ))}
@@ -481,12 +651,17 @@ function AnalysisPage() {
               type="button"
               onClick={() => {
                 try {
-                  sessionStorage.setItem("exchange_draft", JSON.stringify({
-                    title: summaryTitle,
-                    body: summaryBody,
-                    keywords: metrics.map((m) => m.label),
-                  }));
-                } catch { /* 무시 */ }
+                  sessionStorage.setItem(
+                    "exchange_draft",
+                    JSON.stringify({
+                      title: summaryTitle,
+                      body: summaryBody,
+                      keywords: metrics.map((m) => m.label),
+                    }),
+                  );
+                } catch {
+                  /* 무시 */
+                }
                 navigate({ to: "/exchange/create" });
               }}
               className="flex w-full items-center justify-center gap-2 bg-white py-3.5 font-semibold text-[var(--primary)] text-[15px] tracking-tight border border-[var(--primary)]/20 active:scale-[0.99] transition rounded-2xl shadow-none"
@@ -502,7 +677,6 @@ function AnalysisPage() {
             </Link>
           </div>
         </div>
-
       </div>
     </div>
   );
@@ -537,13 +711,7 @@ function ScoreGauge({ score, label }: { score: number; label: string }) {
           </linearGradient>
         </defs>
         {/* 트랙 */}
-        <path
-          d={arcPath}
-          fill="none"
-          stroke="#eef1f5"
-          strokeWidth={STROKE}
-          strokeLinecap="round"
-        />
+        <path d={arcPath} fill="none" stroke="#eef1f5" strokeWidth={STROKE} strokeLinecap="round" />
         {/* 채움 */}
         <path
           d={arcPath}
@@ -557,13 +725,8 @@ function ScoreGauge({ score, label }: { score: number; label: string }) {
       </svg>
 
       {/* 중앙 라벨 */}
-      <div
-        className="absolute inset-x-0 flex flex-col items-center"
-        style={{ top: 44 }}
-      >
-        <span className="text-[13px] font-semibold text-foreground/80 tracking-tight">
-          {label}
-        </span>
+      <div className="absolute inset-x-0 flex flex-col items-center" style={{ top: 44 }}>
+        <span className="text-[13px] font-semibold text-foreground/80 tracking-tight">{label}</span>
         <div className="mt-2 font-extrabold text-foreground text-[38px] leading-none tracking-tight">
           {score}
         </div>
@@ -607,25 +770,41 @@ function MetricBar({ label, value }: { label: string; value: number }) {
 // 감정 리포트 전체 페이지
 // ─────────────────────────────────────────────
 
-const MOOD_META: Record<MoodKey, { label: string; thumb: string; big: string; bg: string; emoji: string }> = {
-  best:  { label: "최고예요!", thumb: moodBest,  big: moodBestBig,  bg: bgBest,  emoji: "🤩" },
-  good:  { label: "좋아요!",   thumb: moodGood,  big: moodGoodBig,  bg: bgGood,  emoji: "😊" },
-  okay:  { label: "보통이에요", thumb: moodOkay,  big: moodOkayBig,  bg: bgOkay,  emoji: "😐" },
-  bad:   { label: "별로예요",  thumb: moodBad,   big: moodBadBig,   bg: bgBad,   emoji: "😔" },
+const MOOD_META: Record<
+  MoodKey,
+  { label: string; thumb: string; big: string; bg: string; emoji: string }
+> = {
+  best: { label: "최고예요!", thumb: moodBest, big: moodBestBig, bg: bgBest, emoji: "🤩" },
+  good: { label: "좋아요!", thumb: moodGood, big: moodGoodBig, bg: bgGood, emoji: "😊" },
+  okay: { label: "보통이에요", thumb: moodOkay, big: moodOkayBig, bg: bgOkay, emoji: "😐" },
+  bad: { label: "별로예요", thumb: moodBad, big: moodBadBig, bg: bgBad, emoji: "😔" },
   worst: { label: "최악이에요", thumb: moodWorst, big: moodWorstBig, bg: bgWorst, emoji: "😭" },
 };
-const MOODS = (["best","good","okay","bad","worst"] as MoodKey[]).map(k => ({ key: k, ...MOOD_META[k] }));
+const MOODS = (["best", "good", "okay", "bad", "worst"] as MoodKey[]).map((k) => ({
+  key: k,
+  ...MOOD_META[k],
+}));
 
 const BIG_CHARACTER_OFFSET_X: Partial<Record<MoodKey, number>> = { good: 20, bad: 20 };
 const EMPTY_CHARACTER_OFFSET_X = 20;
 
 const EMOTION_KO: Record<string, string> = {
-  neutral: "평온", happy: "기쁨", sad: "슬픔",
-  angry: "긴장", fearful: "두려움", disgusted: "불쾌", surprised: "놀람",
+  neutral: "평온",
+  happy: "기쁨",
+  sad: "슬픔",
+  angry: "긴장",
+  fearful: "두려움",
+  disgusted: "불쾌",
+  surprised: "놀람",
 };
 const EMOTION_COLORS: Record<string, string> = {
-  neutral: "#94a3b8", happy: "#fbbf24", angry: "#f87171",
-  sad: "#60a5fa", surprised: "#c084fc", fearful: "#fb923c", disgusted: "#4ade80",
+  neutral: "#94a3b8",
+  happy: "#fbbf24",
+  angry: "#f87171",
+  sad: "#60a5fa",
+  surprised: "#c084fc",
+  fearful: "#fb923c",
+  disgusted: "#4ade80",
 };
 const GRAPH_EMOTIONS = ["neutral", "happy", "angry", "sad", "surprised", "fearful", "disgusted"];
 
@@ -635,7 +814,7 @@ function formatSec(s: number) {
 
 interface EmotionStats {
   strongest: { emotion: string; value: number; sec: number };
-  longest:   { emotion: string; durationSec: number; startSec: number };
+  longest: { emotion: string; durationSec: number; startSec: number };
   biggestChange: { sec: number; delta: number; toEmotion: string };
 }
 
@@ -655,8 +834,10 @@ function computeStats(timeline: EmotionSnapshot[]): EmotionStats | null {
   let longest = { emotion: "neutral", durationSec: 0, startSec: 0 };
   let cur = { emotion: "", durationSec: 0, startSec: 0 };
   for (const snap of timeline) {
-    const [dom] = Object.entries(snap.expressions)
-      .reduce<[string, number]>((mx, [k, v]) => (v ?? 0) > mx[1] ? [k, v ?? 0] : mx, ["neutral", 0]);
+    const [dom] = Object.entries(snap.expressions).reduce<[string, number]>(
+      (mx, [k, v]) => ((v ?? 0) > mx[1] ? [k, v ?? 0] : mx),
+      ["neutral", 0],
+    );
     if (dom === cur.emotion) {
       cur.durationSec++;
     } else {
@@ -674,8 +855,10 @@ function computeStats(timeline: EmotionSnapshot[]): EmotionStats | null {
     let delta = 0;
     for (const k of Object.keys(curr)) delta += Math.abs((curr[k] ?? 0) - (prev[k] ?? 0));
     if (delta > biggestChange.delta) {
-      const [dom] = Object.entries(curr)
-        .reduce<[string, number]>((mx, [k, v]) => (v ?? 0) > mx[1] ? [k, v ?? 0] : mx, ["neutral", 0]);
+      const [dom] = Object.entries(curr).reduce<[string, number]>(
+        (mx, [k, v]) => ((v ?? 0) > mx[1] ? [k, v ?? 0] : mx),
+        ["neutral", 0],
+      );
       biggestChange = { sec: timeline[i].sec, delta, toEmotion: dom };
     }
   }
@@ -691,28 +874,33 @@ function generateQuestions(stats: EmotionStats | null, timeline: EmotionSnapshot
     const label = EMOTION_KO[stats.biggestChange.toEmotion] ?? stats.biggestChange.toEmotion;
     questions.push(
       `${formatSec(stats.biggestChange.sec)} 즈음에 표정 변화가 있었어요.\n` +
-      `${label}에 가까운 반응이 추정됐는데, 그때 어떤 생각을 하고 있었나요?`
+        `${label}에 가까운 반응이 추정됐는데, 그때 어떤 생각을 하고 있었나요?`,
     );
   }
   if (stats.strongest.value > 0.4 && stats.strongest.emotion !== "neutral") {
     const label = EMOTION_KO[stats.strongest.emotion] ?? stats.strongest.emotion;
     questions.push(
       `${formatSec(stats.strongest.sec)} 지점에서 ${label} 반응이 가장 높게 추정됐어요.\n` +
-      `그 순간 이야기하던 내용이 무엇이었나요?`
+        `그 순간 이야기하던 내용이 무엇이었나요?`,
     );
   }
   return questions.slice(0, 2);
 }
 
 function EmotionGraph({ timeline }: { timeline: EmotionSnapshot[] }) {
-  if (timeline.length < 2) return (
-    <div className="flex items-center justify-center h-[100px] text-[13px] text-[#bbb]">
-      데이터가 충분하지 않아요
-    </div>
-  );
+  if (timeline.length < 2)
+    return (
+      <div className="flex items-center justify-center h-[100px] text-[13px] text-[#bbb]">
+        데이터가 충분하지 않아요
+      </div>
+    );
 
-  const W = 300, H = 160;
-  const PL = 10, PR = 10, PT = 12, PB = 16;
+  const W = 300,
+    H = 160;
+  const PL = 10,
+    PR = 10,
+    PT = 12,
+    PB = 16;
   const maxSec = timeline[timeline.length - 1].sec || 1;
 
   const toX = (sec: number) => PL + (sec / maxSec) * (W - PL - PR);
@@ -727,26 +915,42 @@ function EmotionGraph({ timeline }: { timeline: EmotionSnapshot[] }) {
     <div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 160 }}>
         {/* 그리드 라인 */}
-        {[0.25, 0.5, 0.75].map(v => (
-          <line key={v} x1={PL} y1={toY(v)} x2={W - PR} y2={toY(v)}
-            stroke="#f0f0f0" strokeWidth="1" />
+        {[0.25, 0.5, 0.75].map((v) => (
+          <line
+            key={v}
+            x1={PL}
+            y1={toY(v)}
+            x2={W - PR}
+            y2={toY(v)}
+            stroke="#f0f0f0"
+            strokeWidth="1"
+          />
         ))}
         {/* 감정 라인 */}
-        {GRAPH_EMOTIONS.map(emotion => {
+        {GRAPH_EMOTIONS.map((emotion) => {
           const pts = timeline
-            .map(s => `${toX(s.sec).toFixed(1)},${toY(s.expressions[emotion] ?? 0).toFixed(1)}`)
+            .map((s) => `${toX(s.sec).toFixed(1)},${toY(s.expressions[emotion] ?? 0).toFixed(1)}`)
             .join(" ");
           return (
-            <polyline key={emotion} points={pts} fill="none"
-              stroke={EMOTION_COLORS[emotion]} strokeWidth="1.8"
-              strokeLinecap="round" strokeLinejoin="round" opacity="0.85" />
+            <polyline
+              key={emotion}
+              points={pts}
+              fill="none"
+              stroke={EMOTION_COLORS[emotion]}
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              opacity="0.85"
+            />
           );
         })}
       </svg>
       {/* X축 시간 레이블 */}
       <div className="flex justify-between px-2 -mt-1">
-        {ticks.map(t => (
-          <span key={t} className="text-[9px] text-[#bbb]">{formatSec(t)}</span>
+        {ticks.map((t) => (
+          <span key={t} className="text-[9px] text-[#bbb]">
+            {formatSec(t)}
+          </span>
         ))}
       </div>
     </div>
@@ -773,7 +977,13 @@ function StepDots({ current }: { current: number }) {
   );
 }
 
-function EmotionReportPage({ record, onDone }: { record: VideoRecord; onDone: (data: DailyData) => void }) {
+function EmotionReportPage({
+  record,
+  onDone,
+}: {
+  record: VideoRecord;
+  onDone: (data: DailyData) => void;
+}) {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [selectedMood, setSelectedMood] = useState<MoodKey | null>(null);
@@ -782,18 +992,23 @@ function EmotionReportPage({ record, onDone }: { record: VideoRecord; onDone: (d
 
   const stats = computeStats(record.emotionTimeline ?? []);
   const questions = generateQuestions(stats, record.emotionTimeline ?? []);
-  const duration = (record.emotionTimeline ?? []).length > 0
-    ? (record.emotionTimeline[record.emotionTimeline.length - 1]?.sec ?? 0) : 0;
+  const duration =
+    (record.emotionTimeline ?? []).length > 0
+      ? (record.emotionTimeline[record.emotionTimeline.length - 1]?.sec ?? 0)
+      : 0;
 
   const aiMoodMeta = record.aiMood ? MOOD_META[record.aiMood as MoodKey] : null;
 
   const goNext = () => {
-    setStep(s => Math.min(s + 1, TOTAL_STEPS - 1));
+    setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
     scrollRef.current?.scrollTo({ top: 0 });
   };
   const goPrev = () => {
-    if (step === 0) { navigate({ to: "/" }); return; }
-    setStep(s => Math.max(s - 1, 0));
+    if (step === 0) {
+      navigate({ to: "/" });
+      return;
+    }
+    setStep((s) => Math.max(s - 1, 0));
     scrollRef.current?.scrollTo({ top: 0 });
   };
 
@@ -836,23 +1051,30 @@ function EmotionReportPage({ record, onDone }: { record: VideoRecord; onDone: (d
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
         {/* 헤더 */}
         <header className="relative shrink-0 flex items-center justify-center px-4 pt-[52px] pb-3 bg-white border-b border-[#f0f0f0]">
-          <button type="button" onClick={goPrev}
-            className="absolute left-3 top-[50px] grid h-9 w-9 place-items-center rounded-full text-foreground/70">
+          <button
+            type="button"
+            onClick={goPrev}
+            className="absolute left-3 top-[50px] grid h-9 w-9 place-items-center rounded-full text-foreground/70"
+          >
             <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
           </button>
           <div className="flex flex-col items-center gap-1">
-            <h1 className="font-semibold text-foreground text-[16px] tracking-tight">{stepTitles[step]}</h1>
+            <h1 className="font-semibold text-foreground text-[16px] tracking-tight">
+              {stepTitles[step]}
+            </h1>
             <StepDots current={step} />
           </div>
-          <button type="button" onClick={() => navigate({ to: "/record" })}
-            className="absolute right-3 top-[50px] grid h-9 w-9 place-items-center rounded-full text-foreground/40">
+          <button
+            type="button"
+            onClick={() => navigate({ to: "/record" })}
+            className="absolute right-3 top-[50px] grid h-9 w-9 place-items-center rounded-full text-foreground/40"
+          >
             <Trash2 className="h-4.5 w-4.5" />
           </button>
         </header>
 
         {/* 콘텐츠 */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide pb-32">
-
           {/* ── Step 1: 영상 확인 ── */}
           {step === 0 && (
             <div>
@@ -864,7 +1086,9 @@ function EmotionReportPage({ record, onDone }: { record: VideoRecord; onDone: (d
                 ) : (
                   <div className="rounded-2xl bg-[#f3f4f8] aspect-video flex flex-col items-center justify-center gap-2">
                     <span className="text-3xl">🎙</span>
-                    <p className="text-[13px] text-[#999] tracking-tight">음성으로만 기록되었어요</p>
+                    <p className="text-[13px] text-[#999] tracking-tight">
+                      음성으로만 기록되었어요
+                    </p>
                   </div>
                 )}
                 {record.videoUrl && duration > 0 && (
@@ -882,14 +1106,25 @@ function EmotionReportPage({ record, onDone }: { record: VideoRecord; onDone: (d
                 </h2>
                 {aiMoodMeta && (
                   <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#f7f8fc]">
-                    <img src={aiMoodMeta.thumb} alt="" className="h-14 w-14 object-contain shrink-0" />
+                    <img
+                      src={aiMoodMeta.thumb}
+                      alt=""
+                      className="h-14 w-14 object-contain shrink-0"
+                    />
                     <div>
-                      <p className="font-bold text-foreground text-[20px] tracking-tight">{aiMoodMeta.label}</p>
+                      <p className="font-bold text-foreground text-[20px] tracking-tight">
+                        {aiMoodMeta.label}
+                      </p>
                       {record.aiConfidence != null && (
                         <div className="mt-2 flex items-center gap-2">
                           <div className="h-2 w-28 rounded-full bg-[#eef1f5] overflow-hidden">
-                            <div className="h-full rounded-full bg-[var(--primary)]"
-                              style={{ width: `${Math.round(record.aiConfidence * 100)}%`, transition: "width 700ms ease-out" }} />
+                            <div
+                              className="h-full rounded-full bg-[var(--primary)]"
+                              style={{
+                                width: `${Math.round(record.aiConfidence * 100)}%`,
+                                transition: "width 700ms ease-out",
+                              }}
+                            />
                           </div>
                           <span className="text-[12px] text-[#9a9aa3] tracking-tight">
                             신뢰도 {Math.round(record.aiConfidence * 100)}%
@@ -905,8 +1140,14 @@ function EmotionReportPage({ record, onDone }: { record: VideoRecord; onDone: (d
                       .sort(([, a], [, b]) => (b ?? 0) - (a ?? 0))
                       .slice(0, 4)
                       .map(([emotion, val]) => (
-                        <span key={emotion} className="rounded-full px-3 py-1 text-[12px] font-medium"
-                          style={{ background: `${EMOTION_COLORS[emotion]}22`, color: EMOTION_COLORS[emotion] }}>
+                        <span
+                          key={emotion}
+                          className="rounded-full px-3 py-1 text-[12px] font-medium"
+                          style={{
+                            background: `${EMOTION_COLORS[emotion]}22`,
+                            color: EMOTION_COLORS[emotion],
+                          }}
+                        >
                           {EMOTION_KO[emotion] ?? emotion} {Math.round((val ?? 0) * 100)}%
                         </span>
                       ))}
@@ -922,16 +1163,21 @@ function EmotionReportPage({ record, onDone }: { record: VideoRecord; onDone: (d
               {(record.emotionTimeline ?? []).length >= 2 ? (
                 <section className="mx-4 mt-5 rounded-2xl bg-white p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-1">
-                    <h2 className="font-bold text-foreground text-[18px] tracking-tight">감정 흐름 그래프</h2>
+                    <h2 className="font-bold text-foreground text-[18px] tracking-tight">
+                      감정 흐름 그래프
+                    </h2>
                     <span className="text-[10px] text-[#bbb]">ⓘ AI 추정값</span>
                   </div>
                   <p className="text-[12px] text-[#9a9aa3] tracking-tight mb-4">
                     영상 전체에서 감지된 감정의 변화예요
                   </p>
                   <div className="flex flex-wrap gap-x-3 gap-y-1 mb-4">
-                    {GRAPH_EMOTIONS.map(e => (
+                    {GRAPH_EMOTIONS.map((e) => (
                       <div key={e} className="flex items-center gap-1">
-                        <span className="h-2 w-2 rounded-full shrink-0" style={{ background: EMOTION_COLORS[e] }} />
+                        <span
+                          className="h-2 w-2 rounded-full shrink-0"
+                          style={{ background: EMOTION_COLORS[e] }}
+                        />
                         <span className="text-[11px] text-[#666]">{EMOTION_KO[e]}</span>
                       </div>
                     ))}
@@ -946,14 +1192,25 @@ function EmotionReportPage({ record, onDone }: { record: VideoRecord; onDone: (d
 
               {stats && (
                 <section className="mx-4 mt-4 rounded-2xl bg-white p-5 shadow-sm">
-                  <h2 className="font-bold text-foreground text-[16px] tracking-tight mb-4">주요 감정 변화</h2>
+                  <h2 className="font-bold text-foreground text-[16px] tracking-tight mb-4">
+                    주요 감정 변화
+                  </h2>
                   <div className="flex flex-col gap-3">
-                    <SummaryRow icon="💪" label="가장 강하게 나타난 감정"
-                      value={`${EMOTION_KO[stats.strongest.emotion] ?? stats.strongest.emotion}  (${formatSec(stats.strongest.sec)} 지점)`} />
-                    <SummaryRow icon="⏱" label="가장 오래 지속된 감정"
-                      value={`${EMOTION_KO[stats.longest.emotion] ?? stats.longest.emotion}  (약 ${stats.longest.durationSec}초)`} />
-                    <SummaryRow icon="📈" label="감정 변화가 컸던 구간"
-                      value={`${formatSec(stats.biggestChange.sec)} 즈음`} />
+                    <SummaryRow
+                      icon="💪"
+                      label="가장 강하게 나타난 감정"
+                      value={`${EMOTION_KO[stats.strongest.emotion] ?? stats.strongest.emotion}  (${formatSec(stats.strongest.sec)} 지점)`}
+                    />
+                    <SummaryRow
+                      icon="⏱"
+                      label="가장 오래 지속된 감정"
+                      value={`${EMOTION_KO[stats.longest.emotion] ?? stats.longest.emotion}  (약 ${stats.longest.durationSec}초)`}
+                    />
+                    <SummaryRow
+                      icon="📈"
+                      label="감정 변화가 컸던 구간"
+                      value={`${formatSec(stats.biggestChange.sec)} 즈음`}
+                    />
                   </div>
                 </section>
               )}
@@ -971,7 +1228,10 @@ function EmotionReportPage({ record, onDone }: { record: VideoRecord; onDone: (d
                   </h2>
                   <div className="flex flex-col gap-3">
                     {questions.map((q, i) => (
-                      <div key={i} className="rounded-xl bg-[#f7f8fc] border border-[#eaecf4] px-4 py-3.5">
+                      <div
+                        key={i}
+                        className="rounded-xl bg-[#f7f8fc] border border-[#eaecf4] px-4 py-3.5"
+                      >
                         <p className="text-[13px] leading-relaxed text-foreground/85 tracking-tight whitespace-pre-line">
                           {q}
                         </p>
@@ -1010,17 +1270,26 @@ function EmotionReportPage({ record, onDone }: { record: VideoRecord; onDone: (d
                   AI 분석은 참고용이에요. 내가 느낀 감정을 직접 골라주세요.
                 </p>
                 <div className="grid grid-cols-5 gap-2">
-                  {MOODS.map(m => (
-                    <button key={m.key} type="button"
+                  {MOODS.map((m) => (
+                    <button
+                      key={m.key}
+                      type="button"
                       onClick={() => setSelectedMood(m.key)}
                       style={{ touchAction: "manipulation" }}
                       className={`flex flex-col items-center gap-1.5 rounded-2xl pt-3 pb-2.5 transition-all ${
-                        selectedMood === m.key ? "bg-[var(--primary)] shadow-md scale-105" : "bg-[#f3f4f8]"
-                      }`}>
+                        selectedMood === m.key
+                          ? "bg-[var(--primary)] shadow-md scale-105"
+                          : "bg-[#f3f4f8]"
+                      }`}
+                    >
                       <img src={m.thumb} alt="" className="h-10 w-10 object-contain" />
-                      <span className={`text-[10px] font-medium whitespace-nowrap leading-tight ${
-                        selectedMood === m.key ? "text-white" : "text-[#666]"
-                      }`}>{m.label}</span>
+                      <span
+                        className={`text-[10px] font-medium whitespace-nowrap leading-tight ${
+                          selectedMood === m.key ? "text-white" : "text-[#666]"
+                        }`}
+                      >
+                        {m.label}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -1032,24 +1301,34 @@ function EmotionReportPage({ record, onDone }: { record: VideoRecord; onDone: (d
         {/* 하단 버튼 */}
         <div className="shrink-0 bg-white border-t border-[#f0f0f0] px-4 pt-3 pb-8 flex gap-2.5">
           {step > 0 && (
-            <button type="button" onClick={goPrev}
-              className="flex-1 flex items-center justify-center rounded-2xl py-3.5 font-semibold text-[15px] tracking-tight border border-[#e0e0e8] text-foreground/70 active:scale-[0.99] transition bg-white">
+            <button
+              type="button"
+              onClick={goPrev}
+              className="flex-1 flex items-center justify-center rounded-2xl py-3.5 font-semibold text-[15px] tracking-tight border border-[#e0e0e8] text-foreground/70 active:scale-[0.99] transition bg-white"
+            >
               이전
             </button>
           )}
           {step < TOTAL_STEPS - 1 ? (
-            <button type="button" onClick={goNext}
-              className="flex-1 flex items-center justify-center rounded-2xl bg-[var(--primary)] py-3.5 font-semibold text-white text-[15px] tracking-tight shadow-md active:scale-[0.99] transition">
+            <button
+              type="button"
+              onClick={goNext}
+              className="flex-1 flex items-center justify-center rounded-2xl bg-[var(--primary)] py-3.5 font-semibold text-white text-[15px] tracking-tight shadow-md active:scale-[0.99] transition"
+            >
               다음
             </button>
           ) : (
-            <button type="button" onClick={handleSave} disabled={!selectedMood || saved}
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={!selectedMood || saved}
               style={{ touchAction: "manipulation" }}
               className={`flex-1 flex items-center justify-center rounded-2xl py-3.5 font-bold text-[15px] tracking-tight transition-all shadow-md ${
                 selectedMood && !saved
                   ? "bg-[var(--primary)] text-white active:scale-[0.99]"
                   : "bg-[#e8e8ec] text-[#b8bac2] cursor-not-allowed"
-              }`}>
+              }`}
+            >
               {saved ? "저장됐어요 ✓" : "기록 완료"}
             </button>
           )}
@@ -1075,9 +1354,7 @@ function MoodPickerFull({
   const PADDING_LEFT = 24;
   const selectedIndex = selected ? MOODS.findIndex((m) => m.key === selected) : -1;
   const ordered =
-    selectedIndex >= 0
-      ? [...MOODS.slice(selectedIndex), ...MOODS.slice(0, selectedIndex)]
-      : MOODS;
+    selectedIndex >= 0 ? [...MOODS.slice(selectedIndex), ...MOODS.slice(0, selectedIndex)] : MOODS;
 
   return (
     <div className="relative pb-8 pt-12 select-none overflow-hidden">
@@ -1176,7 +1453,9 @@ function MoodSelectionStep({
               className="mt-2 font-bold text-[28px] leading-[1.25] tracking-tight transition-colors duration-300"
               style={{ color: selectedMood === "worst" ? "#ffffff" : undefined }}
             >
-              내가 느낀 감정을<br />직접 골라주세요
+              내가 느낀 감정을
+              <br />
+              직접 골라주세요
             </h1>
           </section>
 
@@ -1290,8 +1569,13 @@ function VideoPlayer({ src }: { src: string }) {
   const toggle = () => {
     const v = ref.current;
     if (!v) return;
-    if (v.paused) { v.play(); setPlaying(true); }
-    else { v.pause(); setPlaying(false); }
+    if (v.paused) {
+      v.play();
+      setPlaying(true);
+    } else {
+      v.pause();
+      setPlaying(false);
+    }
   };
 
   return (
@@ -1322,13 +1606,16 @@ function VideoPlayer({ src }: { src: string }) {
         </div>
       )}
       {/* 하단 진행 바 */}
-      <div className="absolute bottom-0 left-0 right-0 px-3 pb-2.5 pt-6"
-        style={{ background: "linear-gradient(transparent, rgba(0,0,0,0.55))" }}>
+      <div
+        className="absolute bottom-0 left-0 right-0 px-3 pb-2.5 pt-6"
+        style={{ background: "linear-gradient(transparent, rgba(0,0,0,0.55))" }}
+      >
         <div className="flex items-center gap-2">
           <span className="text-white text-[11px] tabular-nums">
             {ref.current ? formatSec(Math.floor(ref.current.currentTime)) : "0:00"}
           </span>
-          <div className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden"
+          <div
+            className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden"
             onClick={(e) => {
               e.stopPropagation();
               const v = ref.current;
@@ -1336,9 +1623,12 @@ function VideoPlayer({ src }: { src: string }) {
               if (!v || !v.duration) return;
               const rect = bar.getBoundingClientRect();
               v.currentTime = ((e.clientX - rect.left) / rect.width) * v.duration;
-            }}>
-            <div className="h-full bg-white rounded-full transition-all"
-              style={{ width: `${progress * 100}%` }} />
+            }}
+          >
+            <div
+              className="h-full bg-white rounded-full transition-all"
+              style={{ width: `${progress * 100}%` }}
+            />
           </div>
           <span className="text-white text-[11px] tabular-nums">
             {formatSec(Math.floor(duration))}

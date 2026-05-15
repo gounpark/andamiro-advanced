@@ -12,10 +12,7 @@ import moodWorst from "@/assets/moods/mood-worst.webp";
 
 export const Route = createFileRoute("/diary")({
   head: () => ({
-    meta: [
-      { title: "일기 기록 — 안다미로" },
-      { name: "theme-color", content: "#ffffff" },
-    ],
+    meta: [{ title: "일기 기록 — 안다미로" }, { name: "theme-color", content: "#ffffff" }],
   }),
   component: DiaryPage,
 });
@@ -159,15 +156,11 @@ function EntryCard({ entry, onDelete }: { entry: DiaryEntry; onDelete: () => voi
           <p className="text-[12px] text-[#9a9aa3] mt-0.5 tracking-tight">
             {formatTime(entry.createdAt)}
             {entry.aiMood && entry.aiMood !== "surprised" && (
-              <span className="ml-2 text-cyan-500">
-                · AI: {entry.aiMoodLabel}
-              </span>
+              <span className="ml-2 text-cyan-500">· AI: {entry.aiMoodLabel}</span>
             )}
           </p>
         </div>
-        <span className="text-[11px] text-[#bbb] shrink-0">
-          {expanded ? "▲" : "▼"}
-        </span>
+        <span className="text-[11px] text-[#bbb] shrink-0">{expanded ? "▲" : "▼"}</span>
       </button>
 
       {/* 확장 영역 */}
@@ -183,8 +176,8 @@ function EntryCard({ entry, onDelete }: { entry: DiaryEntry; onDelete: () => voi
                 {entry.aiMood === "surprised"
                   ? "😮 놀람"
                   : entry.aiMood
-                  ? entry.aiMoodLabel
-                  : "감지 안 됨"}
+                    ? entry.aiMoodLabel
+                    : "감지 안 됨"}
               </p>
               {entry.aiConfidence > 0 && (
                 <p className="text-[10px] text-[#999] mt-0.5">

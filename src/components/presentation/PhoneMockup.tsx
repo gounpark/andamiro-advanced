@@ -147,8 +147,20 @@ export function PhoneMockup({ children }: PhoneMockupProps) {
                 {/* Wifi */}
                 <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
                   <path d="M8 9.5a1.2 1.2 0 100 2.4 1.2 1.2 0 000-2.4z" fill="#1C1C1E" />
-                  <path d="M4.5 7C5.7 5.8 7 5.2 8 5.2s2.3.6 3.5 1.8" stroke="#1C1C1E" strokeWidth="1.3" strokeLinecap="round" fill="none" />
-                  <path d="M1.5 4.2C3.3 2.4 5.5 1.4 8 1.4s4.7 1 6.5 2.8" stroke="#1C1C1E" strokeWidth="1.3" strokeLinecap="round" fill="none" />
+                  <path
+                    d="M4.5 7C5.7 5.8 7 5.2 8 5.2s2.3.6 3.5 1.8"
+                    stroke="#1C1C1E"
+                    strokeWidth="1.3"
+                    strokeLinecap="round"
+                    fill="none"
+                  />
+                  <path
+                    d="M1.5 4.2C3.3 2.4 5.5 1.4 8 1.4s4.7 1 6.5 2.8"
+                    stroke="#1C1C1E"
+                    strokeWidth="1.3"
+                    strokeLinecap="round"
+                    fill="none"
+                  />
                 </svg>
                 {/* Battery */}
                 <div style={{ display: "flex", alignItems: "center", gap: 1.5 }}>

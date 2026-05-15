@@ -28,20 +28,28 @@ export const Route = createFileRoute("/report")({
 
 // ── 무드 에너지 점수 ──────────────────────────────────────────────────────────
 const MOOD_ENERGY: Record<string, number> = {
-  best: 5, good: 4, okay: 3, bad: 2, worst: 1,
+  best: 5,
+  good: 4,
+  okay: 3,
+  bad: 2,
+  worst: 1,
 };
 const MOOD_SHORT: Record<string, string> = {
-  best: "최고예요", good: "좋아요", okay: "보통이에요", bad: "별로예요", worst: "힘들었어",
+  best: "최고예요",
+  good: "좋아요",
+  okay: "보통이에요",
+  bad: "별로예요",
+  worst: "힘들었어",
 };
 const MOOD_COLORS: Record<string, { bg: string; labelColor: string; daysColor: string }> = {
-  best:  { bg: "#79aaff", labelColor: "#fff",    daysColor: "#e6efff" },
-  good:  { bg: "#a2c4ff", labelColor: "#fff",    daysColor: "#e8f0ff" },
-  okay:  { bg: "#e6efff", labelColor: "#79aaff", daysColor: "#999"    },
-  bad:   { bg: "#e7eaee", labelColor: "#777",    daysColor: "#999"    },
-  worst: { bg: "#f7f8f9", labelColor: "#999",    daysColor: "#bbb"    },
+  best: { bg: "#79aaff", labelColor: "#fff", daysColor: "#e6efff" },
+  good: { bg: "#a2c4ff", labelColor: "#fff", daysColor: "#e8f0ff" },
+  okay: { bg: "#e6efff", labelColor: "#79aaff", daysColor: "#999" },
+  bad: { bg: "#e7eaee", labelColor: "#777", daysColor: "#999" },
+  worst: { bg: "#f7f8f9", labelColor: "#999", daysColor: "#bbb" },
 };
-const BAR_COLORS = ["#79aaff","#a2c4ff","#c8dcff","#c8dcff","#e6efff","#c8dcff","#a2c4ff"];
-const WEEKDAY_KO = ["일","월","화","수","목","금","토"];
+const BAR_COLORS = ["#79aaff", "#a2c4ff", "#c8dcff", "#c8dcff", "#e6efff", "#c8dcff", "#a2c4ff"];
+const WEEKDAY_KO = ["일", "월", "화", "수", "목", "금", "토"];
 
 // ── 데이터 계산 함수들 ────────────────────────────────────────────────────────
 type WeekBar = { label: string; height: number; color: string };
@@ -54,7 +62,7 @@ function computeWeekBars(entries: DiaryEntry[]): WeekBar[] {
     byWeekday[wd].push(MOOD_ENERGY[e.userMood] ?? 3);
   }
   const avgs = byWeekday.map((vals) =>
-    vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0
+    vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0,
   );
   const maxAvg = Math.max(...avgs, 1);
   return WEEKDAY_KO.map((label, i) => ({
@@ -65,18 +73,24 @@ function computeWeekBars(entries: DiaryEntry[]): WeekBar[] {
 }
 
 type BubbleData = {
-  label: string; days: number; size: number;
-  left: number; top: number;
-  bg: string; labelColor: string; daysColor: string;
-  labelSize: number; daysSize: number;
+  label: string;
+  days: number;
+  size: number;
+  left: number;
+  top: number;
+  bg: string;
+  labelColor: string;
+  daysColor: string;
+  labelSize: number;
+  daysSize: number;
   fontWeight: "bold" | "semibold";
 };
 
 const BUBBLE_POSITIONS = [
-  { left: 0,   top: 0   },
-  { left: 143, top: 1   },
+  { left: 0, top: 0 },
+  { left: 143, top: 1 },
   { left: 102, top: 116 },
-  { left: 19,  top: 144 },
+  { left: 19, top: 144 },
   { left: 223, top: 107 },
 ];
 
@@ -116,7 +130,7 @@ function generateInsights(entries: DiaryEntry[]): InsightItem[] {
     byWeekday[d.getDay()].push(MOOD_ENERGY[e.userMood] ?? 3);
   }
   const avgs = byWeekday.map((vals) =>
-    vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0
+    vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0,
   );
   const withData = avgs.map((v, i) => ({ v, i })).filter((x) => x.v > 0);
 
@@ -124,8 +138,8 @@ function generateInsights(entries: DiaryEntry[]): InsightItem[] {
 
   // 인사이트 1: 가장 에너지 높은 / 낮은 요일
   if (withData.length >= 2) {
-    const best = withData.reduce((mx, x) => x.v > mx.v ? x : mx);
-    const worst = withData.reduce((mn, x) => x.v < mn.v ? x : mn);
+    const best = withData.reduce((mx, x) => (x.v > mx.v ? x : mx));
+    const worst = withData.reduce((mn, x) => (x.v < mn.v ? x : mn));
     if (best.i !== worst.i) {
       insights.push({
         icon: insightIcon1,
@@ -197,20 +211,80 @@ function getPeriodLabel(entries: DiaryEntry[]): string {
 
 // ── 하드코딩 데모 데이터 (demo=true 일 때만 사용) ────────────────────────────
 const DEMO_WEEK_BARS: WeekBar[] = [
-  { label: "일", height: 69,  color: "#79aaff" },
+  { label: "일", height: 69, color: "#79aaff" },
   { label: "월", height: 102, color: "#a2c4ff" },
   { label: "화", height: 105, color: "#c8dcff" },
   { label: "수", height: 108, color: "#c8dcff" },
   { label: "목", height: 137, color: "#e6efff" },
   { label: "금", height: 126, color: "#c8dcff" },
-  { label: "토", height: 98,  color: "#a2c4ff" },
+  { label: "토", height: 98, color: "#a2c4ff" },
 ];
 const DEMO_BUBBLES: BubbleData[] = [
-  { label: "설렘",   days: 9, size: 140, left: 0,   top: 0,   bg: "#79aaff", labelColor: "#fff",    daysColor: "#e6efff", labelSize: 18, daysSize: 14, fontWeight: "bold" },
-  { label: "평온함", days: 8, size: 120, left: 143, top: 1,   bg: "#e6efff", labelColor: "#79aaff", daysColor: "#999",    labelSize: 16, daysSize: 14, fontWeight: "bold" },
-  { label: "활기참", days: 5, size: 120, left: 102, top: 116, bg: "#f1f6ff", labelColor: "#79aaff", daysColor: "#999",    labelSize: 16, daysSize: 14, fontWeight: "bold" },
-  { label: "무기력", days: 3, size: 80,  left: 19,  top: 144, bg: "#e7eaee", labelColor: "#999",    daysColor: "#999",    labelSize: 14, daysSize: 12, fontWeight: "semibold" },
-  { label: "불안한", days: 3, size: 80,  left: 223, top: 107, bg: "#f7f8f9", labelColor: "#999",    daysColor: "#999",    labelSize: 14, daysSize: 12, fontWeight: "semibold" },
+  {
+    label: "설렘",
+    days: 9,
+    size: 140,
+    left: 0,
+    top: 0,
+    bg: "#79aaff",
+    labelColor: "#fff",
+    daysColor: "#e6efff",
+    labelSize: 18,
+    daysSize: 14,
+    fontWeight: "bold",
+  },
+  {
+    label: "평온함",
+    days: 8,
+    size: 120,
+    left: 143,
+    top: 1,
+    bg: "#e6efff",
+    labelColor: "#79aaff",
+    daysColor: "#999",
+    labelSize: 16,
+    daysSize: 14,
+    fontWeight: "bold",
+  },
+  {
+    label: "활기참",
+    days: 5,
+    size: 120,
+    left: 102,
+    top: 116,
+    bg: "#f1f6ff",
+    labelColor: "#79aaff",
+    daysColor: "#999",
+    labelSize: 16,
+    daysSize: 14,
+    fontWeight: "bold",
+  },
+  {
+    label: "무기력",
+    days: 3,
+    size: 80,
+    left: 19,
+    top: 144,
+    bg: "#e7eaee",
+    labelColor: "#999",
+    daysColor: "#999",
+    labelSize: 14,
+    daysSize: 12,
+    fontWeight: "semibold",
+  },
+  {
+    label: "불안한",
+    days: 3,
+    size: 80,
+    left: 223,
+    top: 107,
+    bg: "#f7f8f9",
+    labelColor: "#999",
+    daysColor: "#999",
+    labelSize: 14,
+    daysSize: 12,
+    fontWeight: "semibold",
+  },
 ];
 const DEMO_INSIGHTS: InsightItem[] = [
   { icon: insightIcon1, text: "주초(월·화)에 에너지가 높고 주 중반 이후 낮아지는 패턴이 보여요." },
@@ -232,19 +306,19 @@ const DESIGN_H = 236;
 
 function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[] }) {
   // 데모면 하드코딩, 아니면 실제 계산
-  const weekBars   = demo ? DEMO_WEEK_BARS   : computeWeekBars(entries);
-  const bubbles    = demo ? DEMO_BUBBLES     : computeBubbles(entries);
-  const insights   = demo ? DEMO_INSIGHTS   : generateInsights(entries);
-  const headerSub  = demo ? "4월의 감정은 어땠을까요?" : getPeriodLabel(entries);
+  const weekBars = demo ? DEMO_WEEK_BARS : computeWeekBars(entries);
+  const bubbles = demo ? DEMO_BUBBLES : computeBubbles(entries);
+  const insights = demo ? DEMO_INSIGHTS : generateInsights(entries);
+  const headerSub = demo ? "4월의 감정은 어땠을까요?" : getPeriodLabel(entries);
   const headerMain = demo
     ? "한 달의 마음 흐름을 돌아보세요!"
     : `총 ${entries.length}번의 기록이 쌓였어요 🌱`;
 
-  const scrollRef    = useRef<HTMLDivElement>(null);
-  const energyRef    = useRef<HTMLElement>(null);
-  const bubbleRef    = useRef<HTMLElement>(null);
-  const insightsRef  = useRef<HTMLElement>(null);
-  const fortuneRef   = useRef<HTMLElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const energyRef = useRef<HTMLElement>(null);
+  const bubbleRef = useRef<HTMLElement>(null);
+  const insightsRef = useRef<HTMLElement>(null);
+  const fortuneRef = useRef<HTMLElement>(null);
 
   const [revealed, setRevealed] = useState(0);
   useEffect(() => {
@@ -260,7 +334,10 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
 
   useEffect(() => {
     const targets: Record<number, React.RefObject<HTMLElement | null>> = {
-      2: energyRef, 3: bubbleRef, 4: insightsRef, 5: fortuneRef,
+      2: energyRef,
+      3: bubbleRef,
+      4: insightsRef,
+      5: fortuneRef,
     };
     const el = targets[revealed]?.current;
     const container = scrollRef.current;
@@ -268,7 +345,8 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
     const containerRect = container.getBoundingClientRect();
     const elRect = el.getBoundingClientRect();
     const overflow = elRect.bottom - containerRect.bottom + 28;
-    if (overflow > 0) container.scrollTo({ top: container.scrollTop + overflow, behavior: "smooth" });
+    if (overflow > 0)
+      container.scrollTo({ top: container.scrollTop + overflow, behavior: "smooth" });
   }, [revealed]);
 
   const fadeIn = (n: number): React.CSSProperties => ({
@@ -281,31 +359,46 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
     <div className="app-shell">
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
         <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide pb-32">
-
           {/* 상단 블루 헤더 */}
           <div className="relative bg-[#3d78f3] text-white px-6 pt-[52px] pb-8" style={fadeIn(1)}>
             <header className="relative flex items-center justify-center pb-5">
-              <Link to="/" aria-label="뒤로"
-                className="absolute left-0 grid h-9 w-9 place-items-center rounded-full text-white/90">
+              <Link
+                to="/"
+                aria-label="뒤로"
+                className="absolute left-0 grid h-9 w-9 place-items-center rounded-full text-white/90"
+              >
                 <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
               </Link>
               <h1 className="font-semibold text-[18px] tracking-[-0.45px]">리포트</h1>
             </header>
-            <p className="text-[#f8f8f8] text-[20px] tracking-[-0.6px] leading-[1.5]">{headerSub}</p>
-            <p className="font-semibold text-white text-[22px] tracking-[-0.66px] leading-[1.5]">{headerMain}</p>
+            <p className="text-[#f8f8f8] text-[20px] tracking-[-0.6px] leading-[1.5]">
+              {headerSub}
+            </p>
+            <p className="font-semibold text-white text-[22px] tracking-[-0.66px] leading-[1.5]">
+              {headerMain}
+            </p>
           </div>
 
           {/* 요일별 에너지 */}
-          <section ref={energyRef} className="mx-4 mt-5 rounded-2xl bg-white px-5 pt-5 pb-5 shadow-sm" style={fadeIn(2)}>
+          <section
+            ref={energyRef}
+            className="mx-4 mt-5 rounded-2xl bg-white px-5 pt-5 pb-5 shadow-sm"
+            style={fadeIn(2)}
+          >
             <p className="text-[14px] text-[#a3a7ad] tracking-tight">한 주의 흐름</p>
             <h3 className="mt-1 font-bold text-[#222] text-[20px] tracking-tight">요일별 에너지</h3>
             {!demo && entries.length < 3 && (
-              <p className="mt-1 text-[12px] text-[#bbb] tracking-tight">기록이 쌓이면 패턴이 보여요!</p>
+              <p className="mt-1 text-[12px] text-[#bbb] tracking-tight">
+                기록이 쌓이면 패턴이 보여요!
+              </p>
             )}
             <div className="mt-5 flex items-end justify-between gap-1.5" style={{ height: 153 }}>
               {weekBars.map((b) => (
                 <div key={b.label} className="flex flex-1 flex-col items-center gap-3">
-                  <div className="w-full rounded-[4px]" style={{ height: b.height, background: b.color }} />
+                  <div
+                    className="w-full rounded-[4px]"
+                    style={{ height: b.height, background: b.color }}
+                  />
                   <span className="text-[14px] text-[#999]">{b.label}</span>
                 </div>
               ))}
@@ -313,12 +406,20 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
           </section>
 
           {/* 감정 순위 버블 */}
-          <section ref={bubbleRef} className="mx-4 mt-5 rounded-2xl bg-white px-5 pt-5 pb-5 shadow-sm" style={fadeIn(3)}>
+          <section
+            ref={bubbleRef}
+            className="mx-4 mt-5 rounded-2xl bg-white px-5 pt-5 pb-5 shadow-sm"
+            style={fadeIn(3)}
+          >
             <p className="text-[14px] text-[#a3a7ad] tracking-tight">감정 리포트</p>
-            <h3 className="mt-1 font-bold text-[#222] text-[20px] tracking-tight">자주 느낀 감정</h3>
+            <h3 className="mt-1 font-bold text-[#222] text-[20px] tracking-tight">
+              자주 느낀 감정
+            </h3>
             {!demo && entries.length < 2 ? (
               <div className="mt-4 rounded-xl bg-[#f7f8f9] px-4 py-6 text-center">
-                <p className="text-[13px] text-[#aaa]">기록이 2개 이상 있으면 감정 순위가 보여요!</p>
+                <p className="text-[13px] text-[#aaa]">
+                  기록이 2개 이상 있으면 감정 순위가 보여요!
+                </p>
               </div>
             ) : (
               <BubbleCluster bubbles={bubbles} />
@@ -326,26 +427,41 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
           </section>
 
           {/* 패턴 인사이트 */}
-          <section ref={insightsRef} className="mx-4 mt-5 rounded-[20px] bg-white shadow-sm"
-            style={{ ...fadeIn(4), padding: 20 }}>
+          <section
+            ref={insightsRef}
+            className="mx-4 mt-5 rounded-[20px] bg-white shadow-sm"
+            style={{ ...fadeIn(4), padding: 20 }}
+          >
             <div className="flex flex-col items-center gap-2.5">
               <img src={insightHeaderIcon} alt="" className="w-[50px] h-[50px]" />
               <p className="font-bold text-[#222] text-[20px] tracking-tight">패턴 인사이트</p>
             </div>
             <div className="mt-6 flex flex-col gap-[20px]">
               {insights.map((item, i) => (
-                <div key={i} className="flex gap-2 items-start rounded-[20px] border border-dashed border-[#eee] bg-white"
+                <div
+                  key={i}
+                  className="flex gap-2 items-start rounded-[20px] border border-dashed border-[#eee] bg-white"
                   style={{
                     padding: 16,
                     opacity: revealed >= 4 ? 1 : 0,
                     transform: revealed >= 4 ? "translateY(0)" : "translateY(10px)",
                     transition: `opacity 0.5s ease ${i * 0.18 + 0.1}s, transform 0.5s ease ${i * 0.18 + 0.1}s`,
-                  }}>
-                  <div className="shrink-0 overflow-hidden rounded-full"
-                    style={{ width: 40, height: 40, background: "#f8f8f8", position: "relative" }}>
-                    <img src={item.icon} alt="" className="absolute inset-0 w-full h-full object-contain" />
+                  }}
+                >
+                  <div
+                    className="shrink-0 overflow-hidden rounded-full"
+                    style={{ width: 40, height: 40, background: "#f8f8f8", position: "relative" }}
+                  >
+                    <img
+                      src={item.icon}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-contain"
+                    />
                   </div>
-                  <p className="flex-1 text-[14px] text-[#645955] min-w-0" style={{ lineHeight: 1.6 }}>
+                  <p
+                    className="flex-1 text-[14px] text-[#645955] min-w-0"
+                    style={{ lineHeight: 1.6 }}
+                  >
                     {item.text}
                   </p>
                 </div>
@@ -354,21 +470,34 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
           </section>
 
           {/* 포춘쿠키 카드 */}
-          <section ref={fortuneRef} className="mx-4 mt-5 mb-6 rounded-2xl overflow-hidden shadow-sm" style={fadeIn(5)}>
-            <Link to="/fortune"
+          <section
+            ref={fortuneRef}
+            className="mx-4 mt-5 mb-6 rounded-2xl overflow-hidden shadow-sm"
+            style={fadeIn(5)}
+          >
+            <Link
+              to="/fortune"
               className="flex items-center gap-4 px-5 py-4"
-              style={{ background: "linear-gradient(135deg, #FFF8EC 0%, #FFF3D6 100%)" }}>
-              <img src={fortuneClover} alt="포춘쿠키" className="w-[72px] h-[72px] object-contain shrink-0" />
+              style={{ background: "linear-gradient(135deg, #FFF8EC 0%, #FFF3D6 100%)" }}
+            >
+              <img
+                src={fortuneClover}
+                alt="포춘쿠키"
+                className="w-[72px] h-[72px] object-contain shrink-0"
+              />
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold text-[#C49A3A] tracking-tight uppercase">오늘의 운세</p>
+                <p className="text-[11px] font-semibold text-[#C49A3A] tracking-tight uppercase">
+                  오늘의 운세
+                </p>
                 <h3 className="mt-0.5 font-bold text-foreground text-[14px] tracking-tight leading-tight">
                   포춘쿠키가 기다리고 있어요!
                 </h3>
-                <p className="mt-1 text-[12px] text-foreground/60 tracking-tight">하루를 마무리하는 작은 선물</p>
+                <p className="mt-1 text-[12px] text-foreground/60 tracking-tight">
+                  하루를 마무리하는 작은 선물
+                </p>
               </div>
             </Link>
           </section>
-
         </div>
         <BottomNav active="report" />
       </div>
@@ -402,18 +531,32 @@ function BubbleCluster({ bubbles }: { bubbles: BubbleData[] }) {
   const dynamicH = Math.max(DESIGN_H, ...bubbles.map((b) => b.top + b.size + 8));
 
   return (
-    <div ref={ref} className="relative mt-4 w-full overflow-hidden" style={{ height: dynamicH * scale }}>
+    <div
+      ref={ref}
+      className="relative mt-4 w-full overflow-hidden"
+      style={{ height: dynamicH * scale }}
+    >
       {bubbles.map((b, idx) => (
-        <div key={b.label}
+        <div
+          key={b.label}
           className={`bubble-anim absolute flex flex-col items-center justify-center rounded-full select-none ${animated ? "is-animated" : ""}`}
           style={{
-            width: b.size * scale, height: b.size * scale,
-            left: b.left * scale, top: b.top * scale,
+            width: b.size * scale,
+            height: b.size * scale,
+            left: b.left * scale,
+            top: b.top * scale,
             background: b.bg,
             ["--bubble-delay" as string]: `${idx * 0.18}s`,
-          }}>
-          <strong className="leading-tight tracking-tight"
-            style={{ fontSize: b.labelSize * scale, color: b.labelColor, fontWeight: b.fontWeight === "bold" ? 700 : 600 }}>
+          }}
+        >
+          <strong
+            className="leading-tight tracking-tight"
+            style={{
+              fontSize: b.labelSize * scale,
+              color: b.labelColor,
+              fontWeight: b.fontWeight === "bold" ? 700 : 600,
+            }}
+          >
             {b.label}
           </strong>
           <span style={{ fontSize: b.daysSize * scale, color: b.daysColor, marginTop: 2 * scale }}>

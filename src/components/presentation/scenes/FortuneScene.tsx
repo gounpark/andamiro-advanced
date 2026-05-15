@@ -39,7 +39,15 @@ export function FortuneScene({ isActive }: Props) {
         className="flex items-center justify-between px-5"
         style={{ height: 44, zIndex: 10, position: "relative" }}
       >
-        <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? "rgba(255,255,255,0.7)" : "#222" }}>9:41</span>
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: isDark ? "rgba(255,255,255,0.7)" : "#222",
+          }}
+        >
+          9:41
+        </span>
       </div>
 
       {/* Header */}
@@ -48,7 +56,10 @@ export function FortuneScene({ isActive }: Props) {
           className="flex items-center px-4 pb-3 shrink-0"
           style={{ borderBottom: "1px solid #f0f0f0", zIndex: 10, position: "relative" }}
         >
-          <button type="button" style={{ width: 32, height: 32, display: "flex", alignItems: "center" }}>
+          <button
+            type="button"
+            style={{ width: 32, height: 32, display: "flex", alignItems: "center" }}
+          >
             <ChevronLeft size={20} color="#444" />
           </button>
           <span
@@ -137,7 +148,11 @@ export function FortuneScene({ isActive }: Props) {
             <img
               src={fortunePaperPng}
               alt=""
-              style={{ width: 200, objectFit: "contain", filter: "drop-shadow(0 4px 20px rgba(255,255,255,0.1))" }}
+              style={{
+                width: 200,
+                objectFit: "contain",
+                filter: "drop-shadow(0 4px 20px rgba(255,255,255,0.1))",
+              }}
             />
             <p
               style={{
@@ -162,10 +177,17 @@ export function FortuneScene({ isActive }: Props) {
         {state === "idle" && (
           <div className="flex flex-col items-center gap-2">
             <p style={{ fontSize: 18, fontWeight: 700, color: "#111" }}>오늘의 포춘쿠키</p>
-            <p style={{ fontSize: 13, color: "#888", textAlign: "center" }}>탭하면 오늘의 행운 메시지가 열립니다</p>
+            <p style={{ fontSize: 13, color: "#888", textAlign: "center" }}>
+              탭하면 오늘의 행운 메시지가 열립니다
+            </p>
             <div
               className="mt-2 rounded-full px-4 py-2"
-              style={{ background: "#4B82F5", display: "inline-flex", alignItems: "center", gap: 6 }}
+              style={{
+                background: "#4B82F5",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
             >
               <span style={{ fontSize: 13, color: "white", fontWeight: 600 }}>쿠키 열기</span>
             </div>

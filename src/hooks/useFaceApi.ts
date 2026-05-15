@@ -38,13 +38,12 @@ export async function ensureModelsLoaded(): Promise<void> {
 
 export function useFaceApi(
   videoRef: React.RefObject<HTMLVideoElement | null>,
-  active: boolean
+  active: boolean,
 ): UseFaceApiResult {
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [modelError, setModelError] = useState<string | null>(null);
   const [expressions, setExpressions] = useState<ExpressionMap | null>(null);
-  const [dominantExpression, setDominantExpression] =
-    useState<FaceExpression | null>(null);
+  const [dominantExpression, setDominantExpression] = useState<FaceExpression | null>(null);
   const [dominantConfidence, setDominantConfidence] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const mountedRef = useRef(true);
@@ -65,9 +64,7 @@ export function useFaceApi(
         // 모델 로드 실패 시 다음 마운트에서 재시도 가능하도록 캐시 초기화
         modelsLoadPromise = null;
         if (mountedRef.current)
-          setModelError(
-            err instanceof Error ? err.message : "모델 로드 실패"
-          );
+          setModelError(err instanceof Error ? err.message : "모델 로드 실패");
       });
   }, []);
 
@@ -104,7 +101,7 @@ export function useFaceApi(
       const entries = Object.entries(filtered) as [FaceExpression, number][];
       const [dom, conf] = entries.reduce<[FaceExpression, number]>(
         (max, cur) => (cur[1] > max[1] ? cur : max),
-        ["neutral", 0]
+        ["neutral", 0],
       );
       setDominantExpression(dom);
       setDominantConfidence(conf);

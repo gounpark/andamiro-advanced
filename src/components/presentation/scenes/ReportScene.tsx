@@ -71,9 +71,13 @@ export function ReportScene({ isActive }: Props) {
       >
         <div className="flex items-center gap-2">
           <img src={logoSvg} alt="" style={{ height: 18, filter: "invert(1) brightness(10)" }} />
-          <span style={{ color: "rgba(255,255,255,0.9)", fontSize: 13, fontWeight: 600 }}>리포트</span>
+          <span style={{ color: "rgba(255,255,255,0.9)", fontSize: 13, fontWeight: 600 }}>
+            리포트
+          </span>
         </div>
-        <p style={{ color: "white", fontSize: 20, fontWeight: 700, marginTop: 8 }}>이번 주 감정 흐름</p>
+        <p style={{ color: "white", fontSize: 20, fontWeight: 700, marginTop: 8 }}>
+          이번 주 감정 흐름
+        </p>
         <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, marginTop: 2 }}>Apr 7 – Apr 13</p>
       </div>
 
@@ -88,7 +92,9 @@ export function ReportScene({ isActive }: Props) {
             boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
           }}
         >
-          <p style={{ fontSize: 13, fontWeight: 600, color: "#333", marginBottom: 16 }}>에너지 지수</p>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "#333", marginBottom: 16 }}>
+            에너지 지수
+          </p>
           <div className="flex items-end gap-2 justify-between" style={{ height: 80 }}>
             {BAR_DATA.map((bar, i) => (
               <div key={bar.day} className="flex flex-col items-center gap-1 flex-1">
@@ -118,7 +124,9 @@ export function ReportScene({ isActive }: Props) {
             boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
           }}
         >
-          <p style={{ fontSize: 13, fontWeight: 600, color: "#333", marginBottom: 12 }}>자주 느낀 감정</p>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "#333", marginBottom: 12 }}>
+            자주 느낀 감정
+          </p>
           <div className="relative" style={{ height: 120 }}>
             {BUBBLES.map((b, i) => (
               <div
@@ -137,7 +145,11 @@ export function ReportScene({ isActive }: Props) {
                   transition: `all 0.6s cubic-bezier(0.34,1.56,0.64,1) ${i * 100}ms`,
                 }}
               >
-                <span style={{ fontSize: 11, color: b.color, fontWeight: 600, whiteSpace: "nowrap" }}>{b.label}</span>
+                <span
+                  style={{ fontSize: 11, color: b.color, fontWeight: 600, whiteSpace: "nowrap" }}
+                >
+                  {b.label}
+                </span>
               </div>
             ))}
           </div>
@@ -158,7 +170,8 @@ export function ReportScene({ isActive }: Props) {
             <span style={{ fontSize: 13, fontWeight: 600, color: "#333" }}>AI 인사이트</span>
           </div>
           <p style={{ fontSize: 12, color: "#666", lineHeight: 1.65 }}>
-            이번 주 목요일 에너지가 가장 높았어요. 긍정적인 감정이 전체의 73%를 차지했습니다. 설렘과 평온함이 주 감정이네요 🌿
+            이번 주 목요일 에너지가 가장 높았어요. 긍정적인 감정이 전체의 73%를 차지했습니다. 설렘과
+            평온함이 주 감정이네요 🌿
           </p>
         </div>
       </div>

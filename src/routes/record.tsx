@@ -41,11 +41,11 @@ type MoodKey = "best" | "good" | "okay" | "bad" | "worst";
 
 type Mood = {
   key: MoodKey;
-  label: string;       // 라벨 (말풍선)
-  cta: string;         // 하단 CTA 문구
-  thumb: string;       // 작은 썸네일 (선택 바)
-  big: string;         // 큰 캐릭터
-  bg: string;          // 배경
+  label: string; // 라벨 (말풍선)
+  cta: string; // 하단 CTA 문구
+  thumb: string; // 작은 썸네일 (선택 바)
+  big: string; // 큰 캐릭터
+  bg: string; // 배경
 };
 
 const MOODS: Mood[] = [
@@ -133,7 +133,7 @@ function RecordPage() {
       if (btn && frame) {
         const br = btn.getBoundingClientRect();
         const fr = frame.getBoundingClientRect();
-        setCursor(c => ({
+        setCursor((c) => ({
           ...c,
           x: br.left - fr.left + br.width / 2,
           y: br.top - fr.top + br.height / 2,
@@ -141,11 +141,18 @@ function RecordPage() {
       }
     });
     const timers: ReturnType<typeof setTimeout>[] = [];
-    timers.push(setTimeout(() => setCursor(c => ({ ...c, visible: true })), 700));
-    timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1200));
-    timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 1450));
-    timers.push(setTimeout(() => { navigate({ to: "/chat", search: { mood: "good", demo: "1" } }); }, 1650));
-    return () => { cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
+    timers.push(setTimeout(() => setCursor((c) => ({ ...c, visible: true })), 700));
+    timers.push(setTimeout(() => setCursor((c) => ({ ...c, tapping: true })), 1200));
+    timers.push(setTimeout(() => setCursor((c) => ({ ...c, tapping: false })), 1450));
+    timers.push(
+      setTimeout(() => {
+        navigate({ to: "/chat", search: { mood: "good", demo: "1" } });
+      }, 1650),
+    );
+    return () => {
+      cancelAnimationFrame(raf);
+      timers.forEach(clearTimeout);
+    };
   }, [demo1]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // demo=3: 감정 순환 선택 애니메이션 (화면 전환 없이 종료)
@@ -159,7 +166,7 @@ function RecordPage() {
         const pr = picker.getBoundingClientRect();
         const fr = frame.getBoundingClientRect();
         // 첫 번째 슬롯 center: paddingLeft(24) + chipRadius(36), pt(48) + chipRadius(36)
-        setCursor(c => ({
+        setCursor((c) => ({
           ...c,
           x: pr.left - fr.left + 24 + 36,
           y: pr.top - fr.top + 48 + 36,
@@ -167,17 +174,25 @@ function RecordPage() {
       }
     });
     const timers: ReturnType<typeof setTimeout>[] = [];
-    timers.push(setTimeout(() => setCursor(c => ({ ...c, visible: true })), 400));
+    timers.push(setTimeout(() => setCursor((c) => ({ ...c, visible: true })), 400));
 
     const sequence: MoodKey[] = ["best", "good", "okay", "bad", "worst", "good"];
-    const delays =              [800,   1700,  2600,  3500,  4400,  5300];
+    const delays = [800, 1700, 2600, 3500, 4400, 5300];
     sequence.forEach((mood, i) => {
-      timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })),  delays[i] - 150));
-      timers.push(setTimeout(() => { setCursor(c => ({ ...c, tapping: false })); setSelected(mood); }, delays[i]));
+      timers.push(setTimeout(() => setCursor((c) => ({ ...c, tapping: true })), delays[i] - 150));
+      timers.push(
+        setTimeout(() => {
+          setCursor((c) => ({ ...c, tapping: false }));
+          setSelected(mood);
+        }, delays[i]),
+      );
     });
 
-    return () => { cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
-  }, [demo3]); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => {
+      cancelAnimationFrame(raf);
+      timers.forEach(clearTimeout);
+    };
+  }, [demo3]);
 
   const current = selected ? MOODS.find((m) => m.key === selected)! : null;
   const hasSelection = current !== null;
@@ -311,11 +326,7 @@ function RecordPage() {
 
           {/* 무드 선택 — 순환 슬라이딩 트랙 */}
           <div ref={pickerWrapRef}>
-            <MoodPicker
-              moods={MOODS}
-              selected={selected}
-              onSelect={(k) => setSelected(k)}
-            />
+            <MoodPicker moods={MOODS} selected={selected} onSelect={(k) => setSelected(k)} />
           </div>
 
           {/* 하단 CTA 패널 — Figma 121:632 기준: 둥근 모서리 + 상단 ▲ 노치 */}
@@ -338,8 +349,7 @@ function RecordPage() {
                   left: 24 + 36,
                   top: -16,
                   transform: "translateX(-50%)",
-                  filter:
-                    "drop-shadow(0 -3px 4px rgba(20, 30, 60, 0.10))",
+                  filter: "drop-shadow(0 -3px 4px rgba(20, 30, 60, 0.10))",
                 }}
               >
                 <path
@@ -369,7 +379,6 @@ function RecordPage() {
             >
               시작하기
             </button>
-
           </section>
         </div>
       </div>
@@ -391,7 +400,7 @@ function MoodPicker({
   onSelect: (k: MoodKey) => void;
 }) {
   const ITEM = 72; // chip diameter
-  const GAP = 16;  // gap between chips
+  const GAP = 16; // gap between chips
   const PADDING_LEFT = 24;
 
   const selectedIndex = selected ? moods.findIndex((m) => m.key === selected) : -1;
@@ -399,9 +408,7 @@ function MoodPicker({
   // 순환 정렬: 선택된 칩이 첫 번째에 오고, 이후는 원래 순서대로 뒤에서 이어짐.
   // 예) 선택 = worst(4) → [worst, best, good, okay, bad]
   const ordered =
-    selectedIndex >= 0
-      ? [...moods.slice(selectedIndex), ...moods.slice(0, selectedIndex)]
-      : moods;
+    selectedIndex >= 0 ? [...moods.slice(selectedIndex), ...moods.slice(0, selectedIndex)] : moods;
 
   return (
     <div className="relative pb-8 pt-12 select-none overflow-hidden">

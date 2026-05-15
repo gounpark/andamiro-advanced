@@ -1,7 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { DemoCursor } from "@/components/DemoCursor";
-import { ArrowRight, ChevronLeft, ChevronRight, ChevronRight as ChevronRightSm } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  ChevronRight as ChevronRightSm,
+} from "lucide-react";
 import cloverEmptySvg from "@/assets/icons/clover-empty.svg";
 import cloverSpecialSvg from "@/assets/icons/clover-special.svg";
 import cloverActiveSvg from "@/assets/icons/clover-active.svg";
@@ -27,8 +32,16 @@ import moodEmptyUrl from "@/assets/moods/mood-empty.webp?url";
 
 const RECORD_PRELOAD_URLS = [
   moodEmptyUrl,
-  bigBest, bigGood, bigOkay, bigBad, bigWorst,
-  bgBest, bgGood, bgOkay, bgBad, bgWorst,
+  bigBest,
+  bigGood,
+  bigOkay,
+  bigBad,
+  bigWorst,
+  bgBest,
+  bgGood,
+  bgOkay,
+  bgBad,
+  bgWorst,
 ];
 
 function preloadRecordAssets() {
@@ -77,7 +90,9 @@ const DEMO_TODAY_DAY = 21;
 type DemoEntry = { time: string; title: string; description: string };
 const DEMO_ENTRIES: Record<number, DemoEntry[]> = {
   1: [{ time: "21:10", title: "설렘", description: "새로운 달의 시작, 작은 기대들로 가득했어요." }],
-  4: [{ time: "11:24", title: "활기참", description: "산책하며 햇살을 듬뿍 받은 상쾌한 하루였어요." }],
+  4: [
+    { time: "11:24", title: "활기참", description: "산책하며 햇살을 듬뿍 받은 상쾌한 하루였어요." },
+  ],
   5: [
     { time: "08:40", title: "평온함", description: "여유로운 아침, 천천히 흘러간 시간." },
     { time: "20:02", title: "감사", description: "작은 친절에 마음이 따뜻해졌어요." },
@@ -89,9 +104,19 @@ const DEMO_ENTRIES: Record<number, DemoEntry[]> = {
     { time: "07:50", title: "설렘", description: "기대감으로 시작한 아침." },
     { time: "22:10", title: "성취", description: "마무리한 일을 돌아보며 만족스러운 마무리." },
   ],
-  18: [{ time: "09:12", title: "평온함", description: "차분하고 안정적인 하루, 이날의 기록을 함께 돌아봐요." }],
+  18: [
+    {
+      time: "09:12",
+      title: "평온함",
+      description: "차분하고 안정적인 하루, 이날의 기록을 함께 돌아봐요.",
+    },
+  ],
   21: [
-    { time: "06:56", title: "평온함", description: "차분하고 안정적인 하루, 이날의 기록을 함께 돌아봐요." },
+    {
+      time: "06:56",
+      title: "평온함",
+      description: "차분하고 안정적인 하루, 이날의 기록을 함께 돌아봐요.",
+    },
     { time: "16:35", title: "설렘", description: "기대감으로 가득한 순간이었어요." },
   ],
 };
@@ -106,7 +131,7 @@ function buildCalendar(
   year: number,
   month: number,
   activeDays: Set<number>,
-  todayDay: number | null
+  todayDay: number | null,
 ): { day: number; state: DayState }[][] {
   const firstDay = new Date(year, month - 1, 1).getDay(); // 0=일
   const daysInMonth = new Date(year, month, 0).getDate();
@@ -126,7 +151,11 @@ function buildCalendar(
 
 // ── 무드 메타 ────────────────────────────────────────────────────────────────
 const MOOD_EMOJI: Record<MoodKey, string> = {
-  best: "🤩", good: "😊", okay: "😐", bad: "😔", worst: "😭",
+  best: "🤩",
+  good: "😊",
+  okay: "😐",
+  bad: "😔",
+  worst: "😭",
 };
 
 function formatEntryTime(ts: number): string {
@@ -135,23 +164,38 @@ function formatEntryTime(ts: number): string {
 }
 
 // ── DayCell ─────────────────────────────────────────────────────────────────
-function DayCell({ day, state, selected, onClick }: {
-  day: number; state: DayState; selected?: boolean; onClick?: () => void;
+function DayCell({
+  day,
+  state,
+  selected,
+  onClick,
+}: {
+  day: number;
+  state: DayState;
+  selected?: boolean;
+  onClick?: () => void;
 }) {
   if (state === "out") return <div className="h-[38px] w-[38px]" />;
   const labelColor = state === "empty" ? "text-[#9395a1]" : "text-white";
   const cloverSrc =
     state === "active" ? cloverActiveSvg : state === "today" ? cloverSpecialSvg : cloverEmptySvg;
   return (
-    <button type="button" onClick={onClick} aria-label={`${day}일`} aria-pressed={selected}
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={`${day}일`}
+      aria-pressed={selected}
       className="relative h-[38px] w-[38px] rounded-full transition-all"
     >
       <img src={cloverSrc} alt="" className="absolute inset-0 h-full w-full" />
-      <span className={`absolute inset-0 flex items-center justify-center text-[12px] font-semibold ${labelColor}`}>
+      <span
+        className={`absolute inset-0 flex items-center justify-center text-[12px] font-semibold ${labelColor}`}
+      >
         {day}
       </span>
       {selected && (
-        <span aria-hidden
+        <span
+          aria-hidden
           className="absolute left-1/2 -translate-x-1/2 -bottom-2 block h-[5px] w-[5px] rounded-full bg-[#11a757]"
         />
       )}
@@ -177,7 +221,9 @@ function Index() {
   // 화면 포커스 시 최신 일기 데이터 다시 로드 (녹화 후 돌아올 때)
   useEffect(() => {
     const reload = () => setAllEntries(getDiaryEntries());
-    const onVisibility = () => { if (document.visibilityState === "visible") reload(); };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") reload();
+    };
     window.addEventListener("focus", reload);
     document.addEventListener("visibilitychange", onVisibility);
     return () => {
@@ -187,7 +233,9 @@ function Index() {
   }, []);
 
   // 월 변경 시 선택 날짜 초기화
-  useEffect(() => { setSelectedDay(null); }, [viewYear, viewMonth]);
+  useEffect(() => {
+    setSelectedDay(null);
+  }, [viewYear, viewMonth]);
 
   // 실제 데이터 계산
   const now = new Date();
@@ -200,9 +248,10 @@ function Index() {
   });
   const realActiveDays = new Set(monthEntries.map((e) => parseInt(e.date.split("-")[2])));
 
-  const realEntriesForDay: DiaryEntry[] = selectedDay !== null
-    ? monthEntries.filter((e) => parseInt(e.date.split("-")[2]) === selectedDay)
-    : [];
+  const realEntriesForDay: DiaryEntry[] =
+    selectedDay !== null
+      ? monthEntries.filter((e) => parseInt(e.date.split("-")[2]) === selectedDay)
+      : [];
 
   // ── 데모 vs 실제 데이터 선택 ────────────────────────────────────────────────
   const dispYear = demo ? 2026 : viewYear;
@@ -211,17 +260,22 @@ function Index() {
   const dispTodayDay = demo ? DEMO_TODAY_DAY : realTodayDay;
   const weeks = buildCalendar(dispYear, dispMonth, dispActiveDays, dispTodayDay);
 
-  const demoEntries: DemoEntry[] = demo && selectedDay !== null ? (DEMO_ENTRIES[selectedDay] ?? []) : [];
+  const demoEntries: DemoEntry[] =
+    demo && selectedDay !== null ? (DEMO_ENTRIES[selectedDay] ?? []) : [];
   const entryCount = demo ? demoEntries.length : realEntriesForDay.length;
 
   // 월 이동 (실제 모드)
   const prevMonth = () => {
-    if (viewMonth === 1) { setViewYear((y) => y - 1); setViewMonth(12); }
-    else setViewMonth((m) => m - 1);
+    if (viewMonth === 1) {
+      setViewYear((y) => y - 1);
+      setViewMonth(12);
+    } else setViewMonth((m) => m - 1);
   };
   const nextMonth = () => {
-    if (viewMonth === 12) { setViewYear((y) => y + 1); setViewMonth(1); }
-    else setViewMonth((m) => m + 1);
+    if (viewMonth === 12) {
+      setViewYear((y) => y + 1);
+      setViewMonth(1);
+    } else setViewMonth((m) => m + 1);
   };
   const monthLabel = `${dispYear}. ${String(dispMonth).padStart(2, "0")}`;
 
@@ -237,7 +291,9 @@ function Index() {
     let cancelled = false;
     const timers: ReturnType<typeof setTimeout>[] = [];
     const track = (fn: () => void, delay: number) => {
-      const t = setTimeout(() => { if (!cancelled) fn(); }, delay);
+      const t = setTimeout(() => {
+        if (!cancelled) fn();
+      }, delay);
       timers.push(t);
       return t;
     };
@@ -258,7 +314,11 @@ function Index() {
         track(() => setCursor((c) => ({ ...c, tapping: false })), 1300);
         track(() => navigate({ to: "/record", search: { demo: "3" } }), 1500);
       });
-      return () => { cancelled = true; cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
+      return () => {
+        cancelled = true;
+        cancelAnimationFrame(raf);
+        timers.forEach(clearTimeout);
+      };
     } else if (demoToReport) {
       const raf = requestAnimationFrame(() => {
         const frame = frameRef.current;
@@ -275,7 +335,11 @@ function Index() {
         track(() => setCursor((c) => ({ ...c, tapping: false })), 1300);
         track(() => navigate({ to: "/report", search: { demo: true } }), 1500);
       });
-      return () => { cancelled = true; cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
+      return () => {
+        cancelled = true;
+        cancelAnimationFrame(raf);
+        timers.forEach(clearTimeout);
+      };
     } else if (demoToAdvice) {
       const raf = requestAnimationFrame(() => {
         const frame = frameRef.current;
@@ -292,7 +356,11 @@ function Index() {
         track(() => setCursor((c) => ({ ...c, tapping: false })), 1300);
         track(() => navigate({ to: "/advice", search: { empty: false } }), 1500);
       });
-      return () => { cancelled = true; cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
+      return () => {
+        cancelled = true;
+        cancelAnimationFrame(raf);
+        timers.forEach(clearTimeout);
+      };
     } else {
       // demo=1: 날짜 셀 클릭 시연
       const raf = requestAnimationFrame(() => {
@@ -310,19 +378,29 @@ function Index() {
           track(() => setCursor({ x: p16.x, y: p16.y + 100, tapping: false, visible: true }), 500);
           track(() => setCursor({ x: p16.x, y: p16.y, tapping: false, visible: true }), 900);
           track(() => setCursor((c) => ({ ...c, tapping: true })), 1300);
-          track(() => { setCursor((c) => ({ ...c, tapping: false })); setSelectedDay(16); }, 1500);
+          track(() => {
+            setCursor((c) => ({ ...c, tapping: false }));
+            setSelectedDay(16);
+          }, 1500);
         }
         if (p21) {
           track(() => setCursor({ x: p21.x, y: p21.y, tapping: false, visible: true }), 3500);
           track(() => setCursor((c) => ({ ...c, tapping: true })), 3900);
-          track(() => { setCursor((c) => ({ ...c, tapping: false })); setSelectedDay(21); }, 4100);
+          track(() => {
+            setCursor((c) => ({ ...c, tapping: false }));
+            setSelectedDay(21);
+          }, 4100);
         }
         track(() => setCursor({ x: 195, y: 668, tapping: false, visible: true }), 5600);
         track(() => setCursor((c) => ({ ...c, tapping: true })), 6000);
         track(() => setCursor((c) => ({ ...c, tapping: false })), 6200);
         track(() => navigate({ to: "/analysis", search: { day: 21 } }), 6300);
       });
-      return () => { cancelled = true; cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
+      return () => {
+        cancelled = true;
+        cancelAnimationFrame(raf);
+        timers.forEach(clearTimeout);
+      };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demo, demoToRecord, demoToReport, demoToAdvice]);
@@ -332,7 +410,9 @@ function Index() {
     const w = window as unknown as { requestIdleCallback?: (cb: () => void) => number };
     const schedule = w.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1200));
     const id = schedule(() => preloadRecordAssets());
-    return () => { if (typeof id === "number") window.clearTimeout(id); };
+    return () => {
+      if (typeof id === "number") window.clearTimeout(id);
+    };
   }, []);
 
   // 선택한 날 요일
@@ -345,15 +425,29 @@ function Index() {
         <div className="absolute inset-0 overflow-y-auto pb-[126px] bg-white">
           {/* 상단 그라디언트 헤더 */}
           <div className="relative overflow-hidden" style={{ background: "var(--gradient-sky)" }}>
-            <img src={bgShapeLargeSvg} alt="" aria-hidden
-              className="pointer-events-none absolute -top-2 -right-4 w-[260px] h-[275px] z-0" />
-            <img src={bgShapeSmallSvg} alt="" aria-hidden
-              className="pointer-events-none absolute top-[140px] -left-8 w-[142px] h-[196px] z-0" />
+            <img
+              src={bgShapeLargeSvg}
+              alt=""
+              aria-hidden
+              className="pointer-events-none absolute -top-2 -right-4 w-[260px] h-[275px] z-0"
+            />
+            <img
+              src={bgShapeSmallSvg}
+              alt=""
+              aria-hidden
+              className="pointer-events-none absolute top-[140px] -left-8 w-[142px] h-[196px] z-0"
+            />
 
             <header className="relative z-10 flex items-center justify-start px-6 pt-[52px] pb-2">
               <h1 className="m-0 inline-flex">
-                <img src={logoSvg} alt="안다미로" width={81} height={28}
-                  className="block h-7 w-auto shrink-0" style={{ aspectRatio: "81 / 28" }} />
+                <img
+                  src={logoSvg}
+                  alt="안다미로"
+                  width={81}
+                  height={28}
+                  className="block h-7 w-auto shrink-0"
+                  style={{ aspectRatio: "81 / 28" }}
+                />
               </h1>
             </header>
 
@@ -386,14 +480,18 @@ function Index() {
                 {monthLabel}
               </h2>
               <div className="flex items-center gap-1">
-                <button type="button" aria-label="이전 달"
+                <button
+                  type="button"
+                  aria-label="이전 달"
                   onClick={demo ? undefined : prevMonth}
                   disabled={demo}
                   className="grid h-6 w-6 place-items-center rounded text-muted-foreground hover:text-foreground disabled:opacity-30"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
-                <button type="button" aria-label="다음 달"
+                <button
+                  type="button"
+                  aria-label="다음 달"
                   onClick={demo ? undefined : nextMonth}
                   disabled={demo}
                   className="grid h-6 w-6 place-items-center rounded text-muted-foreground hover:text-foreground disabled:opacity-30"
@@ -405,7 +503,10 @@ function Index() {
 
             <div className="mt-5 grid grid-cols-7 gap-y-5">
               {WEEK_LABELS.map((d) => (
-                <div key={d} className="text-center text-[12px] font-medium text-[#999] tracking-tight">
+                <div
+                  key={d}
+                  className="text-center text-[12px] font-medium text-[#999] tracking-tight"
+                >
                   {d}
                 </div>
               ))}
@@ -415,7 +516,11 @@ function Index() {
                   className="flex justify-center"
                   ref={
                     demo
-                      ? cell.day === 16 ? day16Ref : cell.day === 21 ? day21Ref : undefined
+                      ? cell.day === 16
+                        ? day16Ref
+                        : cell.day === 21
+                          ? day21Ref
+                          : undefined
                       : undefined
                   }
                 >
@@ -452,15 +557,13 @@ function Index() {
                   ) : (
                     <DemoEntryList entries={demoEntries} day={selectedDay} />
                   )
+                ) : // ── 실제 모드: localStorage 데이터 표시 ──
+                realEntriesForDay.length === 0 ? (
+                  <EmptyEntry />
+                ) : realEntriesForDay.length === 1 ? (
+                  <RealSingleEntry entry={realEntriesForDay[0]} />
                 ) : (
-                  // ── 실제 모드: localStorage 데이터 표시 ──
-                  realEntriesForDay.length === 0 ? (
-                    <EmptyEntry />
-                  ) : realEntriesForDay.length === 1 ? (
-                    <RealSingleEntry entry={realEntriesForDay[0]} />
-                  ) : (
-                    <RealEntryList entries={realEntriesForDay} />
-                  )
+                  <RealEntryList entries={realEntriesForDay} />
                 )}
               </div>
             </section>
@@ -478,8 +581,10 @@ function DemoEmptyEntry() {
   return (
     <div className="rounded-xl bg-[#f7f7f9] px-4 py-5 text-center">
       <p className="text-[13px] text-[#888]">아직 작성한 일기가 없어요.</p>
-      <button type="button"
-        className="mt-3 inline-flex items-center gap-1 font-semibold text-foreground text-[14px] tracking-tight">
+      <button
+        type="button"
+        className="mt-3 inline-flex items-center gap-1 font-semibold text-foreground text-[14px] tracking-tight"
+      >
         일기쓰러 가기
         <ChevronRightSm className="h-4 w-4" strokeWidth={2.2} />
       </button>
@@ -489,8 +594,11 @@ function DemoEmptyEntry() {
 
 function DemoSingleEntry({ entry, day }: { entry: DemoEntry; day: number }) {
   return (
-    <Link to="/analysis" search={{ day }}
-      className="flex w-full items-start justify-between gap-3 rounded-xl bg-[#f7f7f9] px-4 py-4 text-left transition-colors hover:bg-[#f0f0f3]">
+    <Link
+      to="/analysis"
+      search={{ day }}
+      className="flex w-full items-start justify-between gap-3 rounded-xl bg-[#f7f7f9] px-4 py-4 text-left transition-colors hover:bg-[#f0f0f3]"
+    >
       <div className="min-w-0 flex-1">
         <p className="font-semibold text-foreground text-[14px] tracking-tight">{entry.title}</p>
         <p className="mt-1 text-[12px] leading-relaxed text-[#888]">{entry.description}</p>
@@ -504,11 +612,17 @@ function DemoEntryList({ entries, day }: { entries: DemoEntry[]; day: number }) 
   return (
     <div className="flex flex-col gap-2">
       {entries.map((entry, i) => (
-        <Link key={i} to="/analysis" search={{ day }}
-          className="flex items-center justify-between gap-3 rounded-xl bg-[#f7f7f9] px-4 py-3.5 text-left transition-colors hover:bg-[#f0f0f3]">
+        <Link
+          key={i}
+          to="/analysis"
+          search={{ day }}
+          className="flex items-center justify-between gap-3 rounded-xl bg-[#f7f7f9] px-4 py-3.5 text-left transition-colors hover:bg-[#f0f0f3]"
+        >
           <div className="flex items-center gap-3 min-w-0">
             <span className="text-[12px] tabular-nums text-[#888]">{entry.time}</span>
-            <span className="font-semibold text-foreground text-[14px] tracking-tight">{entry.title}</span>
+            <span className="font-semibold text-foreground text-[14px] tracking-tight">
+              {entry.title}
+            </span>
           </div>
           <ChevronRightSm className="h-4 w-4 shrink-0 text-[#bbb]" strokeWidth={2.2} />
         </Link>
@@ -522,8 +636,10 @@ function EmptyEntry() {
   return (
     <div className="rounded-xl bg-[#f7f7f9] px-4 py-5 text-center">
       <p className="text-[13px] text-[#888]">아직 작성한 일기가 없어요.</p>
-      <Link to="/record"
-        className="mt-3 inline-flex items-center gap-1 font-semibold text-[var(--primary)] text-[14px] tracking-tight">
+      <Link
+        to="/record"
+        className="mt-3 inline-flex items-center gap-1 font-semibold text-[var(--primary)] text-[14px] tracking-tight"
+      >
         기록하러 가기
         <ChevronRightSm className="h-4 w-4" strokeWidth={2.2} />
       </Link>
@@ -536,12 +652,14 @@ function RealSingleEntry({ entry }: { entry: DiaryEntry }) {
   const excerpt = entry.transcript
     ? entry.transcript.slice(0, 70) + (entry.transcript.length > 70 ? "..." : "")
     : entry.aiMoodLabel
-    ? `AI 분석: ${entry.aiMoodLabel}`
-    : "기록이 저장되었어요.";
+      ? `AI 분석: ${entry.aiMoodLabel}`
+      : "기록이 저장되었어요.";
 
   return (
-    <Link to="/diary"
-      className="flex w-full items-start justify-between gap-3 rounded-xl bg-[#f7f7f9] px-4 py-4 text-left transition-colors hover:bg-[#f0f0f3]">
+    <Link
+      to="/diary"
+      className="flex w-full items-start justify-between gap-3 rounded-xl bg-[#f7f7f9] px-4 py-4 text-left transition-colors hover:bg-[#f0f0f3]"
+    >
       <div className="min-w-0 flex-1">
         <p className="font-semibold text-foreground text-[14px] tracking-tight">
           {emoji} {entry.userMoodLabel}
@@ -559,8 +677,11 @@ function RealEntryList({ entries }: { entries: DiaryEntry[] }) {
       {entries.map((entry) => {
         const emoji = MOOD_EMOJI[entry.userMood as MoodKey] ?? "😐";
         return (
-          <Link key={entry.id} to="/diary"
-            className="flex items-center justify-between gap-3 rounded-xl bg-[#f7f7f9] px-4 py-3.5 text-left transition-colors hover:bg-[#f0f0f3]">
+          <Link
+            key={entry.id}
+            to="/diary"
+            className="flex items-center justify-between gap-3 rounded-xl bg-[#f7f7f9] px-4 py-3.5 text-left transition-colors hover:bg-[#f0f0f3]"
+          >
             <div className="flex items-center gap-3 min-w-0">
               <span className="text-[12px] tabular-nums text-[#888]">
                 {formatEntryTime(entry.createdAt)}

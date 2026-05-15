@@ -10,20 +10,21 @@ export const Route = createFileRoute("/video-record")({
     mood: (s.mood as MoodKey) ?? undefined,
   }),
   head: () => ({
-    meta: [
-      { title: "영상 기록 — 안다미로" },
-      { name: "theme-color", content: "#000000" },
-    ],
+    meta: [{ title: "영상 기록 — 안다미로" }, { name: "theme-color", content: "#000000" }],
   }),
   component: VideoRecordPage,
 });
 
 type SpeechRecognitionType = {
-  lang: string; continuous: boolean; interimResults: boolean;
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
   onresult: ((e: SpeechRecognitionEvent) => void) | null;
   onend: (() => void) | null;
   onerror: ((e: { error: string }) => void) | null;
-  start: () => void; stop: () => void; abort: () => void;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
 };
 type SpeechRecognitionEvent = { results: SpeechRecognitionResultList; resultIndex: number };
 
@@ -36,8 +37,13 @@ function getSpeechRecognition(): (new () => SpeechRecognitionType) | null {
 }
 
 const EXPRESSION_KO: Record<string, string> = {
-  neutral: "평온", happy: "기쁨", sad: "슬픔",
-  angry: "긴장", fearful: "두려움", disgusted: "불쾌", surprised: "놀람",
+  neutral: "평온",
+  happy: "기쁨",
+  sad: "슬픔",
+  angry: "긴장",
+  fearful: "두려움",
+  disgusted: "불쾌",
+  surprised: "놀람",
 };
 void EXPRESSION_KO; // suppress unused warning
 
@@ -61,11 +67,15 @@ function computeOverallMood(timeline: EmotionSnapshot[]) {
   for (const snap of timeline) {
     const entries = Object.entries(snap.expressions);
     if (!entries.length) continue;
-    const [dom] = entries.reduce<[string, number]>((mx, [k, v]) => (v ?? 0) > mx[1] ? [k, v ?? 0] : mx, ["", 0]);
+    const [dom] = entries.reduce<[string, number]>(
+      (mx, [k, v]) => ((v ?? 0) > mx[1] ? [k, v ?? 0] : mx),
+      ["", 0],
+    );
     if (dom) counts[dom] = (counts[dom] ?? 0) + 1;
   }
   const [topEmotion, topCount] = Object.entries(counts).reduce<[string, number]>(
-    (mx, cur) => cur[1] > mx[1] ? cur : mx, ["neutral", 0]
+    (mx, cur) => (cur[1] > mx[1] ? cur : mx),
+    ["neutral", 0],
   );
   const confidence = timeline.length > 0 ? topCount / timeline.length : 0;
   return {
@@ -87,8 +97,14 @@ async function analyzeRecordedVideo(blobUrl: string): Promise<EmotionSnapshot[]>
 
   // 메타데이터 로드 대기
   await new Promise<void>((resolve, reject) => {
-    const onMeta = () => { video.removeEventListener("loadedmetadata", onMeta); resolve(); };
-    const onErr = () => { video.removeEventListener("error", onErr); reject(new Error("video load failed")); };
+    const onMeta = () => {
+      video.removeEventListener("loadedmetadata", onMeta);
+      resolve();
+    };
+    const onErr = () => {
+      video.removeEventListener("error", onErr);
+      reject(new Error("video load failed"));
+    };
     video.addEventListener("loadedmetadata", onMeta);
     video.addEventListener("error", onErr);
     video.load();
@@ -107,7 +123,10 @@ async function analyzeRecordedVideo(blobUrl: string): Promise<EmotionSnapshot[]>
     video.currentTime = Math.min(t, duration - 0.1);
 
     await new Promise<void>((res) => {
-      const onSeeked = () => { video.removeEventListener("seeked", onSeeked); res(); };
+      const onSeeked = () => {
+        video.removeEventListener("seeked", onSeeked);
+        res();
+      };
       video.addEventListener("seeked", onSeeked);
       setTimeout(res, 1500); // seeked 타임아웃 fallback
     });
@@ -125,7 +144,9 @@ async function analyzeRecordedVideo(blobUrl: string): Promise<EmotionSnapshot[]>
         }
         snapshots.push({ sec: Math.round(t), expressions: filtered });
       }
-    } catch { /* 프레임 분석 실패 무시 */ }
+    } catch {
+      /* 프레임 분석 실패 무시 */
+    }
   }
 
   return snapshots;
@@ -141,8 +162,8 @@ function VideoRecordPage() {
   const streamRef = useRef<MediaStream | null>(null);
 
   // localStorage 플래그 있으면 perm 화면 스킵, 없으면 사용 안내 먼저
-  const [recordState, setRecordState] = useState<RecordState>(
-    () => (localStorage.getItem(PERM_CACHE_KEY) === "1" ? "idle" : "perm")
+  const [recordState, setRecordState] = useState<RecordState>(() =>
+    localStorage.getItem(PERM_CACHE_KEY) === "1" ? "idle" : "perm",
   );
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
@@ -167,7 +188,9 @@ function VideoRecordPage() {
 
   // 모델 백그라운드 프리로드 (녹화 시작 전에 미리 로드해서 분석 대기 시간 단축)
   useEffect(() => {
-    ensureModelsLoaded().catch(() => { /* 실패해도 무시 - 분석 시 재시도 */ });
+    ensureModelsLoaded().catch(() => {
+      /* 실패해도 무시 - 분석 시 재시도 */
+    });
   }, []);
 
   const startCamera = useCallback(async () => {
@@ -190,7 +213,7 @@ function VideoRecordPage() {
       setCameraError(
         isNotAllowed
           ? "카메라 접근이 거부되었습니다.\n브라우저 설정 → 사이트 권한에서 카메라/마이크를 허용해 주세요."
-          : "카메라를 시작할 수 없습니다."
+          : "카메라를 시작할 수 없습니다.",
       );
       // 거부됐으면 다음엔 perm 화면 다시 보여주기 (재허용 유도)
       if (isNotAllowed) localStorage.removeItem(PERM_CACHE_KEY);
@@ -246,9 +269,12 @@ function VideoRecordPage() {
     if (!SR) return;
     finalTranscriptRef.current = transcript;
     const rec = new SR();
-    rec.lang = "ko-KR"; rec.continuous = true; rec.interimResults = true;
+    rec.lang = "ko-KR";
+    rec.continuous = true;
+    rec.interimResults = true;
     rec.onresult = (e: SpeechRecognitionEvent) => {
-      let interim = ""; let final = finalTranscriptRef.current;
+      let interim = "";
+      let final = finalTranscriptRef.current;
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const r = e.results[i];
         if (r.isFinal) final += r[0].transcript;
@@ -267,10 +293,20 @@ function VideoRecordPage() {
       }
     };
     rec.onend = () => {
-      if (speechActive) { try { rec.start(); } catch { /* ignore */ } }
-      else { setSpeechActive(false); setInterimText(""); }
+      if (speechActive) {
+        try {
+          rec.start();
+        } catch {
+          /* ignore */
+        }
+      } else {
+        setSpeechActive(false);
+        setInterimText("");
+      }
     };
-    rec.onerror = (e) => { if (e.error !== "no-speech" && e.error !== "aborted") setSpeechActive(false); };
+    rec.onerror = (e) => {
+      if (e.error !== "no-speech" && e.error !== "aborted") setSpeechActive(false);
+    };
     rec.start();
     recognitionRef.current = rec;
     setSpeechActive(true);
@@ -279,7 +315,8 @@ function VideoRecordPage() {
   const stopSpeech = useCallback(() => {
     recognitionRef.current?.stop();
     recognitionRef.current = null;
-    setSpeechActive(false); setInterimText("");
+    setSpeechActive(false);
+    setInterimText("");
     if (interimThrottleRef.current) {
       clearTimeout(interimThrottleRef.current);
       interimThrottleRef.current = null;
@@ -294,10 +331,14 @@ function VideoRecordPage() {
 
     const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
       ? "video/webm;codecs=vp9"
-      : MediaRecorder.isTypeSupported("video/webm") ? "video/webm" : "video/mp4";
+      : MediaRecorder.isTypeSupported("video/webm")
+        ? "video/webm"
+        : "video/mp4";
 
     const recorder = new MediaRecorder(streamRef.current, { mimeType });
-    recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+    recorder.ondataavailable = (e) => {
+      if (e.data.size > 0) chunksRef.current.push(e.data);
+    };
     recorder.onstop = async () => {
       const blob = new Blob(chunksRef.current, { type: mimeType });
       const url = URL.createObjectURL(blob);
@@ -334,9 +375,12 @@ function VideoRecordPage() {
 
   const resetRecording = () => {
     if (recordedUrl) URL.revokeObjectURL(recordedUrl);
-    setRecordedBlob(null); setRecordedUrl(null);
-    setRecordSec(0); setRecordState("idle");
-    setTranscript(""); setInterimText("");
+    setRecordedBlob(null);
+    setRecordedUrl(null);
+    setRecordSec(0);
+    setRecordState("idle");
+    setTranscript("");
+    setInterimText("");
     finalTranscriptRef.current = "";
     timelineRef.current = [];
     // 다시 녹화 시 카메라 재시작
@@ -346,9 +390,18 @@ function VideoRecordPage() {
   const completeRecording = () => {
     const videoUrl = recordedBlob && recordedUrl ? recordedUrl : "";
     const { aiMood, aiConfidence } = computeOverallMood(timelineRef.current);
-    const aiMoodLabel = aiMood && aiMood !== "surprised"
-      ? { best: "최고예요!", good: "좋아요!", okay: "보통이에요", bad: "별로예요", worst: "최악이에요" }[aiMood] ?? "-"
-      : aiMood === "surprised" ? "놀람" : "-";
+    const aiMoodLabel =
+      aiMood && aiMood !== "surprised"
+        ? ({
+            best: "최고예요!",
+            good: "좋아요!",
+            okay: "보통이에요",
+            bad: "별로예요",
+            worst: "최악이에요",
+          }[aiMood] ?? "-")
+        : aiMood === "surprised"
+          ? "놀람"
+          : "-";
 
     setVideoRecord({
       videoUrl,
@@ -401,10 +454,15 @@ function VideoRecordPage() {
             </div>
 
             <h2 className="text-white font-bold text-[22px] tracking-tight leading-tight mb-3">
-              카메라와 마이크를<br />사용해요
+              카메라와 마이크를
+              <br />
+              사용해요
             </h2>
             <p className="text-white/60 text-[14px] leading-relaxed tracking-tight mb-8">
-              영상 일기를 기록하고<br />음성으로 오늘의 이야기를 남겨요.<br />
+              영상 일기를 기록하고
+              <br />
+              음성으로 오늘의 이야기를 남겨요.
+              <br />
               <span className="text-white/40 text-[12px]">허용 후엔 다시 묻지 않아요 ✓</span>
             </p>
 
@@ -414,13 +472,17 @@ function VideoRecordPage() {
                 { icon: <Camera className="h-4 w-4" />, label: "카메라", desc: "영상 기록에 사용" },
                 { icon: <Mic className="h-4 w-4" />, label: "마이크", desc: "음성 인식에 사용" },
               ].map((item) => (
-                <div key={item.label}
-                  className="flex items-center gap-3 rounded-2xl bg-white/8 border border-white/10 px-4 py-3 text-left">
+                <div
+                  key={item.label}
+                  className="flex items-center gap-3 rounded-2xl bg-white/8 border border-white/10 px-4 py-3 text-left"
+                >
                   <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white/10 text-white">
                     {item.icon}
                   </span>
                   <div>
-                    <p className="text-white font-semibold text-[14px] tracking-tight">{item.label}</p>
+                    <p className="text-white font-semibold text-[14px] tracking-tight">
+                      {item.label}
+                    </p>
                     <p className="text-white/50 text-[12px] tracking-tight">{item.desc}</p>
                   </div>
                 </div>
@@ -455,7 +517,9 @@ function VideoRecordPage() {
               <div className="h-16 w-16 rounded-full border-4 border-white/10 border-t-white/70 animate-spin" />
             </div>
             <div className="flex flex-col items-center gap-1.5">
-              <p className="text-white font-bold text-[18px] tracking-tight">AI가 영상을 분석하고 있어요</p>
+              <p className="text-white font-bold text-[18px] tracking-tight">
+                AI가 영상을 분석하고 있어요
+              </p>
               <p className="text-white/50 text-[13px] tracking-tight">잠시만 기다려주세요...</p>
             </div>
           </div>
@@ -494,16 +558,23 @@ function VideoRecordPage() {
           </button>
 
           {/* 녹화 시간 칩 */}
-          <div className="absolute z-20 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5"
-            style={{ top: "calc(52px + 4px)", left: "50%", transform: "translateX(-50%)" }}>
+          <div
+            className="absolute z-20 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5"
+            style={{ top: "calc(52px + 4px)", left: "50%", transform: "translateX(-50%)" }}
+          >
             <span className="text-white text-[13px] font-semibold tabular-nums">
               {formatSec(recordSec)} 녹화됨
             </span>
           </div>
 
           {/* 하단 액션 오버레이 */}
-          <div className="absolute bottom-0 left-0 right-0 z-20 px-5 pb-12"
-            style={{ background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)" }}>
+          <div
+            className="absolute bottom-0 left-0 right-0 z-20 px-5 pb-12"
+            style={{
+              background:
+                "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)",
+            }}
+          >
             <p className="text-white text-center font-bold text-[18px] tracking-tight mb-1">
               녹화를 마칠까요?
             </p>
@@ -541,7 +612,9 @@ function VideoRecordPage() {
         {/* 카메라 프리뷰 */}
         <video
           ref={videoRef}
-          autoPlay playsInline muted
+          autoPlay
+          playsInline
+          muted
           className="absolute inset-0 w-full h-full object-cover"
           style={{ transform: "scaleX(-1)" }}
         />
@@ -551,17 +624,22 @@ function VideoRecordPage() {
           <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/90 px-8 text-center">
             <Camera className="h-10 w-10 text-white/50 mb-3" />
             <p className="text-white text-[14px] leading-relaxed mb-5">{cameraError}</p>
-            <button type="button" onClick={startCamera}
+            <button
+              type="button"
+              onClick={startCamera}
               style={{ touchAction: "manipulation" }}
-              className="rounded-full bg-white/20 px-5 py-2.5 text-white text-[13px] font-medium">
+              className="rounded-full bg-white/20 px-5 py-2.5 text-white text-[13px] font-medium"
+            >
               다시 시도
             </button>
           </div>
         )}
 
         {/* ── 상단 오버레이 ── */}
-        <div className="absolute top-0 left-0 right-0 z-20 flex items-start px-4"
-          style={{ paddingTop: "52px" }}>
+        <div
+          className="absolute top-0 left-0 right-0 z-20 flex items-start px-4"
+          style={{ paddingTop: "52px" }}
+        >
           {/* X / 뒤로가기 */}
           <button
             type="button"
@@ -597,8 +675,10 @@ function VideoRecordPage() {
 
         {/* idle: 카메라 준비 완료 표시 */}
         {recordState === "idle" && streamReady && (
-          <div className="absolute z-20 flex items-center gap-2 rounded-full bg-black/55 px-3.5 py-2 backdrop-blur-sm"
-            style={{ top: "calc(52px + 56px)", left: "16px" }}>
+          <div
+            className="absolute z-20 flex items-center gap-2 rounded-full bg-black/55 px-3.5 py-2 backdrop-blur-sm"
+            style={{ top: "calc(52px + 56px)", left: "16px" }}
+          >
             <span className="h-2 w-2 rounded-full bg-green-400 flex-shrink-0" />
             <span className="text-[11px] font-medium text-green-300">카메라 준비 완료</span>
           </div>
@@ -606,8 +686,10 @@ function VideoRecordPage() {
 
         {/* 녹화 중 음성 인식 안내 배지 */}
         {recordState === "recording" && speechActive && (
-          <div className="absolute z-20 flex items-center gap-1.5 rounded-full bg-black/55 px-3 py-1.5 backdrop-blur-sm"
-            style={{ top: "calc(52px + 56px)", right: "16px" }}>
+          <div
+            className="absolute z-20 flex items-center gap-1.5 rounded-full bg-black/55 px-3 py-1.5 backdrop-blur-sm"
+            style={{ top: "calc(52px + 56px)", right: "16px" }}
+          >
             <Mic className="h-3 w-3 text-red-400 animate-pulse" />
             <span className="text-red-300 text-[11px] font-medium">음성 인식 중</span>
           </div>
@@ -629,9 +711,10 @@ function VideoRecordPage() {
         )}
 
         {/* ── 하단 컨트롤 ── */}
-        <div className="absolute bottom-0 left-0 right-0 z-20 flex flex-col items-center pb-12"
-          style={{ background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 100%)" }}>
-
+        <div
+          className="absolute bottom-0 left-0 right-0 z-20 flex flex-col items-center pb-12"
+          style={{ background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 100%)" }}
+        >
           {recordState === "idle" && (
             <>
               <p className="text-white/60 text-[12px] mb-5 tracking-tight">

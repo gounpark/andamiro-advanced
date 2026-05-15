@@ -85,7 +85,7 @@ function AdviceWithData() {
       if (banner && frame) {
         const br = banner.getBoundingClientRect();
         const fr = frame.getBoundingClientRect();
-        setCursor(c => ({
+        setCursor((c) => ({
           ...c,
           x: br.left - fr.left + br.width / 2,
           y: br.top - fr.top + br.height / 2,
@@ -93,12 +93,19 @@ function AdviceWithData() {
       }
     });
     const timers: ReturnType<typeof setTimeout>[] = [];
-    timers.push(setTimeout(() => setCursor(c => ({ ...c, visible: true })), 600));
-    timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: true })), 1200));
-    timers.push(setTimeout(() => setCursor(c => ({ ...c, tapping: false })), 1450));
-    timers.push(setTimeout(() => { navigate({ to: "/fortune", search: { demo: "1" } }); }, 1650));
-    return () => { cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
-  }, [demo]);
+    timers.push(setTimeout(() => setCursor((c) => ({ ...c, visible: true })), 600));
+    timers.push(setTimeout(() => setCursor((c) => ({ ...c, tapping: true })), 1200));
+    timers.push(setTimeout(() => setCursor((c) => ({ ...c, tapping: false })), 1450));
+    timers.push(
+      setTimeout(() => {
+        navigate({ to: "/fortune", search: { demo: "1" } });
+      }, 1650),
+    );
+    return () => {
+      cancelAnimationFrame(raf);
+      timers.forEach(clearTimeout);
+    };
+  }, [demo, navigate]);
 
   const fadeIn = (n: number): React.CSSProperties => ({
     opacity: revealed >= n ? 1 : 0,
@@ -108,7 +115,11 @@ function AdviceWithData() {
 
   return (
     <div className="app-shell">
-      <div ref={frameRef} className="app-frame flex flex-col bg-white" style={{ position: "relative" }}>
+      <div
+        ref={frameRef}
+        className="app-frame flex flex-col bg-white"
+        style={{ position: "relative" }}
+      >
         {demo && <DemoCursor {...cursor} />}
         {/* 헤더 */}
         <header className="relative shrink-0 flex items-center justify-center px-4 pt-[52px] pb-4">
@@ -145,7 +156,11 @@ function AdviceWithData() {
           </div>
 
           {/* 점수 카드 */}
-          <section ref={scoreRef} className="pt-5 pb-6 py-[40px] px-[28px] mt-[12px] mb-[16px]" style={fadeIn(2)}>
+          <section
+            ref={scoreRef}
+            className="pt-5 pb-6 py-[40px] px-[28px] mt-[12px] mb-[16px]"
+            style={fadeIn(2)}
+          >
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-[12px] text-[#9a9aa3] tracking-tight">4월 20일 월요일</p>
@@ -170,7 +185,11 @@ function AdviceWithData() {
           {/* 회색 배경 영역 */}
           <div className="bg-[#f5f6f8] pt-6 pb-10 space-y-5">
             {/* 한줄 요약 + 태그 */}
-            <section ref={summaryRef} className="mx-4 rounded-2xl bg-white p-5 shadow-sm" style={fadeIn(3)}>
+            <section
+              ref={summaryRef}
+              className="mx-4 rounded-2xl bg-white p-5 shadow-sm"
+              style={fadeIn(3)}
+            >
               <p className="text-[13.5px] leading-[1.65] text-foreground/85 tracking-tight">
                 오늘은 블루(파란색)이 당신에게 긍정적인 에너지를 가져다 줄 거예요!{" "}
                 <span className="text-[var(--primary)]">💙</span>
@@ -188,7 +207,11 @@ function AdviceWithData() {
             </section>
 
             {/* 인용 카드 + 채팅 말풍선 */}
-            <section ref={quoteRef} className="mx-4 rounded-2xl bg-white p-5 shadow-sm" style={fadeIn(4)}>
+            <section
+              ref={quoteRef}
+              className="mx-4 rounded-2xl bg-white p-5 shadow-sm"
+              style={fadeIn(4)}
+            >
               <div className="flex flex-col items-center">
                 <img src={quoteRight} alt="" className="h-10 w-10 object-contain" />
                 <h3 className="mt-1 font-bold text-foreground text-[15.5px] tracking-tight">

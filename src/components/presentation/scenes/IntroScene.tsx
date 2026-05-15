@@ -74,7 +74,11 @@ export function IntroScene({ isActive }: Props) {
           transitionDelay: "100ms",
         }}
       >
-        <img src={logoSvg} alt="안다미로" style={{ height: 32, filter: "invert(1) brightness(10)" }} />
+        <img
+          src={logoSvg}
+          alt="안다미로"
+          style={{ height: 32, filter: "invert(1) brightness(10)" }}
+        />
       </div>
 
       {/* Tagline */}
@@ -85,7 +89,14 @@ export function IntroScene({ isActive }: Props) {
           transform: step >= 3 ? "translateY(0)" : "translateY(10px)",
         }}
       >
-        <p style={{ color: "rgba(255,255,255,0.85)", fontSize: 18, fontWeight: 600, lineHeight: 1.5 }}>
+        <p
+          style={{
+            color: "rgba(255,255,255,0.85)",
+            fontSize: 18,
+            fontWeight: 600,
+            lineHeight: 1.5,
+          }}
+        >
           나를 안다, 안다미로
         </p>
         <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, marginTop: 8, lineHeight: 1.6 }}>

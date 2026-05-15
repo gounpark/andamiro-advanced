@@ -57,7 +57,11 @@ export function OutroScene({ isActive }: Props) {
           transform: step >= 2 ? "translateY(0)" : "translateY(10px)",
         }}
       >
-        <img src={logoSvg} alt="안다미로" style={{ height: 28, filter: "invert(1) brightness(10)" }} />
+        <img
+          src={logoSvg}
+          alt="안다미로"
+          style={{ height: 28, filter: "invert(1) brightness(10)" }}
+        />
       </div>
 
       {/* Message */}
@@ -68,7 +72,9 @@ export function OutroScene({ isActive }: Props) {
           transform: step >= 3 ? "translateY(0)" : "translateY(8px)",
         }}
       >
-        <p style={{ color: "rgba(255,255,255,0.9)", fontSize: 20, fontWeight: 700, lineHeight: 1.5 }}>
+        <p
+          style={{ color: "rgba(255,255,255,0.9)", fontSize: 20, fontWeight: 700, lineHeight: 1.5 }}
+        >
           안다미로와 함께
         </p>
         <p style={{ color: "rgba(255,255,255,0.65)", fontSize: 14, marginTop: 8, lineHeight: 1.7 }}>

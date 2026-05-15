@@ -44,7 +44,8 @@ const SLIDES: SlideData[] = [
     category: "소개",
     title: "AI 감정일기, 안다미로",
     body: "월간 달력에서 기록을 확인하고, 날짜를 눌러 그날의 일기를 바로 볼 수 있어요.",
-    narration: "안녕하세요, 안다미로를 소개할게요. 달력에서 노란색은 기록이 있는 날, 초록은 오늘이에요. 날짜를 누르면 그날의 기록을 바로 확인할 수 있어요.",
+    narration:
+      "안녕하세요, 안다미로를 소개할게요. 달력에서 노란색은 기록이 있는 날, 초록은 오늘이에요. 날짜를 누르면 그날의 기록을 바로 확인할 수 있어요.",
     accent: "#4B82F5",
     iframeRoute: "/intro?nosplash=1",
   },
@@ -52,7 +53,8 @@ const SLIDES: SlideData[] = [
     category: "주요 기능 01",
     title: "오늘의 감정 선택으로 기록을 시작해요",
     body: "지금 가장 가까운 감정을 고르면 기록의 맥락이 자연스럽게 시작됩니다.",
-    narration: "홈에서 기록 버튼을 누르면 감정 선택 화면으로 이어집니다. 지금 기분과 가장 가까운 것을 골라보세요.",
+    narration:
+      "홈에서 기록 버튼을 누르면 감정 선택 화면으로 이어집니다. 지금 기분과 가장 가까운 것을 골라보세요.",
     accent: "#FFCA2D",
     // 홈에서 기록 CTA 버튼 클릭 → 감정선택 이동 (주요기능01 시작 장면)
     iframeRoute: "/?demo=2&nosplash=1",
@@ -61,7 +63,8 @@ const SLIDES: SlideData[] = [
     category: "주요 기능 02",
     title: "AI기록 : AI와 대화하며 편하게 기록해요",
     body: "감정을 선택하면 AI가 자연스러운 대화로 오늘의 기록을 함께 완성합니다.",
-    narration: "오늘의 감정을 선택하면 AI가 친근한 대화로 기록을 시작합니다. 대화하듯 편하게 이어가다 보면 오늘 하루가 자연스럽게 정리돼요.",
+    narration:
+      "오늘의 감정을 선택하면 AI가 친근한 대화로 기록을 시작합니다. 대화하듯 편하게 이어가다 보면 오늘 하루가 자연스럽게 정리돼요.",
     accent: "#4B82F5",
     // 감정선택에서 시작하기 클릭 → 채팅 이동 (주요기능02 시작 장면)
     iframeRoute: "/record?demo=1&nosplash=1",
@@ -115,10 +118,7 @@ const SLIDES: SlideData[] = [
 // ── Route ──────────────────────────────────────────────────────────────────
 export const Route = createFileRoute("/presentation")({
   head: () => ({
-    meta: [
-      { title: "안다미로 — 인터랙티브 데모" },
-      { name: "theme-color", content: "#4B82F5" },
-    ],
+    meta: [{ title: "안다미로 — 인터랙티브 데모" }, { name: "theme-color", content: "#4B82F5" }],
   }),
   component: PresentationPage,
 });
@@ -133,32 +133,49 @@ function SlideText({ slide, index, total }: { slide: SlideData; index: number; t
           style={{
             background: `${slide.accent}18`,
             color: slide.accent,
-            fontSize: 11, fontWeight: 700,
-            letterSpacing: "0.08em", textTransform: "uppercase",
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
           }}
         >
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: slide.accent, display: "inline-block" }} />
+          <span
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: "50%",
+              background: slide.accent,
+              display: "inline-block",
+            }}
+          />
           {slide.category}
         </span>
       </div>
 
-      <h1 style={{
-        fontSize: "clamp(20px, 2.4vw, 32px)",
-        fontWeight: 800, color: "#0D1B3E",
-        lineHeight: 1.35, marginBottom: 16,
-        animation: "slideUp 0.45s ease 0.05s both",
-      }}>
+      <h1
+        style={{
+          fontSize: "clamp(20px, 2.4vw, 32px)",
+          fontWeight: 800,
+          color: "#0D1B3E",
+          lineHeight: 1.35,
+          marginBottom: 16,
+          animation: "slideUp 0.45s ease 0.05s both",
+        }}
+      >
         {slide.title}
       </h1>
 
-      <p style={{
-        fontSize: "clamp(13px, 1.1vw, 16px)",
-        color: "#555", lineHeight: 1.75, maxWidth: 480,
-        animation: "slideUp 0.45s ease 0.1s both",
-      }}>
+      <p
+        style={{
+          fontSize: "clamp(13px, 1.1vw, 16px)",
+          color: "#555",
+          lineHeight: 1.75,
+          maxWidth: 480,
+          animation: "slideUp 0.45s ease 0.1s both",
+        }}
+      >
         {slide.body}
       </p>
-
     </>
   );
 }
@@ -192,15 +209,20 @@ function PresentationPage() {
     link.href =
       "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css";
     document.head.appendChild(link);
-    return () => { document.head.removeChild(link); };
+    return () => {
+      document.head.removeChild(link);
+    };
   }, []);
 
   // Pre-load audio for slide 0 in background while on start screen
   useEffect(() => {
     generateAudio(SLIDES[0].narration)
-      .then(url => { audioCacheRef.current.set(0, url); setAudioReady(true); })
+      .then((url) => {
+        audioCacheRef.current.set(0, url);
+        setAudioReady(true);
+      })
       .catch(() => {});
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const stopAudio = useCallback(() => {
     audioGenIdRef.current += 1; // 진행 중인 모든 async 요청 무효화
@@ -214,41 +236,48 @@ function PresentationPage() {
     setIsAudioLoading(false);
   }, []);
 
-  const playAudio = useCallback(async (index: number) => {
-    stopAudio();
-    const genId = ++audioGenIdRef.current; // 이 호출만의 고유 ID
+  const playAudio = useCallback(
+    async (index: number) => {
+      stopAudio();
+      const genId = ++audioGenIdRef.current; // 이 호출만의 고유 ID
 
-    const narration = SLIDES[index].narration;
-    if (!narration) return;
-    setSubtitle(narration);
+      const narration = SLIDES[index].narration;
+      if (!narration) return;
+      setSubtitle(narration);
 
-    if (audioCacheRef.current.has(index)) {
-      if (genId !== audioGenIdRef.current) return; // 이미 다른 요청이 왔음
-      const url = audioCacheRef.current.get(index)!;
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      audio.play().catch(() => {});
-      audio.addEventListener("ended", () => { if (genId === audioGenIdRef.current) setSubtitle(""); });
-      return;
-    }
+      if (audioCacheRef.current.has(index)) {
+        if (genId !== audioGenIdRef.current) return; // 이미 다른 요청이 왔음
+        const url = audioCacheRef.current.get(index)!;
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.play().catch(() => {});
+        audio.addEventListener("ended", () => {
+          if (genId === audioGenIdRef.current) setSubtitle("");
+        });
+        return;
+      }
 
-    setIsAudioLoading(true);
-    try {
-      const url = await generateAudio(narration);
-      if (genId !== audioGenIdRef.current) return; // 완료됐지만 이미 다른 슬라이드로 이동
-      audioCacheRef.current.set(index, url);
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      audio.play().catch(() => {});
-      audio.addEventListener("ended", () => { if (genId === audioGenIdRef.current) setSubtitle(""); });
-    } catch (err) {
-      if (genId !== audioGenIdRef.current) return;
-      console.error("Audio generation failed:", err);
-      subtitleTimerRef.current = setTimeout(() => setSubtitle(""), 8000);
-    } finally {
-      if (genId === audioGenIdRef.current) setIsAudioLoading(false);
-    }
-  }, [stopAudio]);
+      setIsAudioLoading(true);
+      try {
+        const url = await generateAudio(narration);
+        if (genId !== audioGenIdRef.current) return; // 완료됐지만 이미 다른 슬라이드로 이동
+        audioCacheRef.current.set(index, url);
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.play().catch(() => {});
+        audio.addEventListener("ended", () => {
+          if (genId === audioGenIdRef.current) setSubtitle("");
+        });
+      } catch (err) {
+        if (genId !== audioGenIdRef.current) return;
+        console.error("Audio generation failed:", err);
+        subtitleTimerRef.current = setTimeout(() => setSubtitle(""), 8000);
+      } finally {
+        if (genId === audioGenIdRef.current) setIsAudioLoading(false);
+      }
+    },
+    [stopAudio],
+  );
 
   // 시작하기 클릭: 슬라이드 0 시작 + 음성 즉시 재생 + 인트로 애니메이션
   const introTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -269,7 +298,7 @@ function PresentationPage() {
   useEffect(() => {
     if (!started) return;
     // 현재 슬라이드 visitCount 증가 → iframe key 변경 → 리로드
-    setVisitCounts(prev => ({ ...prev, [current]: (prev[current] ?? 0) + 1 }));
+    setVisitCounts((prev) => ({ ...prev, [current]: (prev[current] ?? 0) + 1 }));
 
     if (prevCurrentRef.current !== null && prevCurrentRef.current !== current) {
       // 슬라이드 0으로 돌아오면 인트로 애니메이션 재시작
@@ -281,7 +310,10 @@ function PresentationPage() {
   }, [current, started]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const goNext = useCallback(() => {
-    if (!started) { handleStart(); return; }
+    if (!started) {
+      handleStart();
+      return;
+    }
     setCurrent((c) => Math.min(c + 1, SLIDES.length - 1));
   }, [started, handleStart]);
   const goPrev = useCallback(() => {
@@ -309,20 +341,49 @@ function PresentationPage() {
         style={{ fontFamily: "'Pretendard', 'Inter', -apple-system, sans-serif" }}
       >
         {/* header */}
-        <div className="shrink-0 flex items-center gap-3 px-6" style={{ height: 52, background: "#4B82F5" }}>
-          <img src={logoSvg} alt="안다미로"
-            style={{ width: 100, height: 35, filter: "brightness(0) invert(1)", objectFit: "contain", flexShrink: 0 }} />
-          <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, marginLeft: 4 }}>Interactive Demo</span>
+        <div
+          className="shrink-0 flex items-center gap-3 px-6"
+          style={{ height: 52, background: "#4B82F5" }}
+        >
+          <img
+            src={logoSvg}
+            alt="안다미로"
+            style={{
+              width: 100,
+              height: 35,
+              filter: "brightness(0) invert(1)",
+              objectFit: "contain",
+              flexShrink: 0,
+            }}
+          />
+          <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, marginLeft: 4 }}>
+            Interactive Demo
+          </span>
         </div>
         {/* start body */}
         <div
           className="flex-1 flex flex-col items-center justify-center"
           style={{ background: "linear-gradient(160deg, #f0f6ff 0%, #fff 60%)" }}
         >
-          <div className="flex flex-col items-center gap-7 text-center px-10" style={{ maxWidth: 560 }}>
-            <img src={`${import.meta.env.BASE_URL}favicon.png`} alt="안다미로" style={{ width: 120, height: 120, objectFit: "contain" }} />
+          <div
+            className="flex flex-col items-center gap-7 text-center px-10"
+            style={{ maxWidth: 560 }}
+          >
+            <img
+              src={`${import.meta.env.BASE_URL}favicon.png`}
+              alt="안다미로"
+              style={{ width: 120, height: 120, objectFit: "contain" }}
+            />
             <div>
-              <h1 style={{ fontSize: 34, fontWeight: 800, color: "#111", letterSpacing: "-0.03em", lineHeight: 1.15 }}>
+              <h1
+                style={{
+                  fontSize: 34,
+                  fontWeight: 800,
+                  color: "#111",
+                  letterSpacing: "-0.03em",
+                  lineHeight: 1.15,
+                }}
+              >
                 AI 감정일기, 안다미로
               </h1>
               <p style={{ marginTop: 10, fontSize: 15, color: "#888", letterSpacing: "-0.01em" }}>
@@ -345,8 +406,12 @@ function PresentationPage() {
                 boxShadow: "0 10px 32px rgba(75,130,245,0.38)",
                 transition: "transform 0.15s, box-shadow 0.15s",
               }}
-              onMouseEnter={e => { (e.target as HTMLElement).style.transform = "scale(1.04)"; }}
-              onMouseLeave={e => { (e.target as HTMLElement).style.transform = "scale(1)"; }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLElement).style.transform = "scale(1.04)";
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLElement).style.transform = "scale(1)";
+              }}
             >
               시작하기 →
             </button>
@@ -374,7 +439,13 @@ function PresentationPage() {
         <img
           src={logoSvg}
           alt="안다미로"
-          style={{ width: 100, height: 35, filter: "brightness(0) invert(1)", objectFit: "contain", flexShrink: 0 }}
+          style={{
+            width: 100,
+            height: 35,
+            filter: "brightness(0) invert(1)",
+            objectFit: "contain",
+            flexShrink: 0,
+          }}
         />
         <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, marginLeft: 4 }}>
           Interactive Demo
@@ -395,7 +466,8 @@ function PresentationPage() {
           style={{
             background: current === 0 ? "#f5f5f5" : "#eef4ff",
             color: current === 0 ? "#ccc" : "#4B82F5",
-            fontWeight: 600, fontSize: 13,
+            fontWeight: 600,
+            fontSize: 13,
             cursor: current === 0 ? "not-allowed" : "pointer",
           }}
         >
@@ -433,14 +505,19 @@ function PresentationPage() {
             disabled={isAudioLoading}
             className="flex items-center justify-center rounded-xl transition-all"
             style={{
-              width: 36, height: 36,
+              width: 36,
+              height: 36,
               background: "#eef4ff",
               color: "#4B82F5",
               cursor: isAudioLoading ? "wait" : "pointer",
             }}
             title="나레이션 재생"
           >
-            {isAudioLoading ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
+            {isAudioLoading ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Volume2 size={16} />
+            )}
           </button>
           <button
             type="button"
@@ -450,7 +527,8 @@ function PresentationPage() {
             style={{
               background: current === SLIDES.length - 1 ? "#f5f5f5" : "#4B82F5",
               color: current === SLIDES.length - 1 ? "#ccc" : "white",
-              fontWeight: 600, fontSize: 13,
+              fontWeight: 600,
+              fontSize: 13,
               cursor: current === SLIDES.length - 1 ? "not-allowed" : "pointer",
             }}
           >
@@ -463,27 +541,52 @@ function PresentationPage() {
       {/* ── Main content ── */}
       {isOutro ? (
         /* ── Outro slide: clean white, no phone ── */
-        <div className="flex-1 flex items-center justify-center min-h-0" style={{ background: "#fff" }}>
-          <div className="flex flex-col items-center gap-6 px-16 text-center" style={{ maxWidth: 700 }}>
-            <div style={{
-              width: 48, height: 4, borderRadius: 2,
-              background: "linear-gradient(90deg, #4B82F5, #11A858)",
-            }} />
+        <div
+          className="flex-1 flex items-center justify-center min-h-0"
+          style={{ background: "#fff" }}
+        >
+          <div
+            className="flex flex-col items-center gap-6 px-16 text-center"
+            style={{ maxWidth: 700 }}
+          >
+            <div
+              style={{
+                width: 48,
+                height: 4,
+                borderRadius: 2,
+                background: "linear-gradient(90deg, #4B82F5, #11A858)",
+              }}
+            />
             <span
               className="inline-flex items-center gap-2 rounded-full px-4 py-1.5"
               style={{
-                background: "#eef4ff", color: "#4B82F5",
-                fontSize: 12, fontWeight: 700,
-                letterSpacing: "0.08em", textTransform: "uppercase",
+                background: "#eef4ff",
+                color: "#4B82F5",
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
               }}
             >
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4B82F5", display: "inline-block" }} />
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: "#4B82F5",
+                  display: "inline-block",
+                }}
+              />
               {slide.category}
             </span>
-            <h1 style={{
-              fontSize: "clamp(36px, 5vw, 64px)",
-              fontWeight: 800, color: "#0D1B3E", lineHeight: 1.2,
-            }}>
+            <h1
+              style={{
+                fontSize: "clamp(36px, 5vw, 64px)",
+                fontWeight: 800,
+                color: "#0D1B3E",
+                lineHeight: 1.2,
+              }}
+            >
               {slide.title}
             </h1>
             <p style={{ fontSize: "clamp(16px, 1.4vw, 22px)", color: "#666", lineHeight: 1.7 }}>
@@ -501,9 +604,14 @@ function PresentationPage() {
         <div className="flex-1 relative min-h-0 overflow-hidden" style={{ background: "#f8f9ff" }}>
           <div
             style={{
-              position: "absolute", top: 0, bottom: 0, left: 0,
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              left: 0,
               width: introPhase === "layout" ? "50%" : "100%",
-              display: "flex", alignItems: "center", justifyContent: "center",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               padding: "8px 20px",
               transition: "width 1s cubic-bezier(0.4, 0, 0.2, 1)",
               zIndex: 1,
@@ -514,14 +622,27 @@ function PresentationPage() {
                 key={`0-${visitCounts[0] ?? 0}`}
                 src={`${appOrigin}/intro`}
                 title="안다미로 앱"
-                style={{ position: "absolute", top: 0, left: 0, width: 390, height: 844, border: "none" }}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: 390,
+                  height: 844,
+                  border: "none",
+                }}
               />
             </PhoneMockup>
           </div>
           <div
             style={{
-              position: "absolute", top: 0, bottom: 0, right: 0, width: "50%",
-              display: "flex", flexDirection: "column", justifyContent: "center",
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              right: 0,
+              width: "50%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
               padding: "32px 48px 32px 40px",
               opacity: introPhase === "layout" ? 1 : 0,
               transform: introPhase === "layout" ? "translateX(0)" : "translateX(48px)",
@@ -556,8 +677,10 @@ function PresentationPage() {
                     title={s.title}
                     style={{
                       position: "absolute",
-                      top: 0, left: 0,
-                      width: 390, height: 844,
+                      top: 0,
+                      left: 0,
+                      width: 390,
+                      height: 844,
                       border: "none",
                     }}
                   />
