@@ -13,7 +13,7 @@ export interface ExchangeDiary {
   inviteCode: string;
   imageDataUrl?: string;
   keywords: string[];
-  viewerIds: string[];   // 초대받아 열람한 사람 ID 목록
+  viewerIds: string[]; // 초대받아 열람한 사람 ID 목록
   createdAt: string;
 }
 
@@ -28,11 +28,14 @@ export interface ExchangeComment {
 }
 
 // ── localStorage 키 ──────────────────────────────────────────────────────────
-const KEY_DIARIES  = "andamiro_exchange_diaries";
+const KEY_DIARIES = "andamiro_exchange_diaries";
 const KEY_COMMENTS = "andamiro_exchange_comments";
-const KEY_MY_ID    = "andamiro_my_id";
-const KEY_MY_NAME  = "andamiro_my_name";
-const KEY_AUTH     = "andamiro_authorized_diaries"; // 비번 인증한 일기 ID[]
+const KEY_MY_ID = "andamiro_my_id";
+const KEY_MY_NAME = "andamiro_my_name";
+const KEY_AUTH = "andamiro_authorized_diaries"; // 비번 인증한 일기 ID[]
+
+const NICKNAME_PREFIXES = ["구름", "햇살", "달빛", "바람", "별빛", "새벽", "노을", "마음"];
+const NICKNAME_SUFFIXES = ["친구", "기록자", "산책자", "작가", "수집가", "동행", "여행자", "지기"];
 
 // ── 내부 헬퍼 ───────────────────────────────────────────────────────────────
 function uid(): string {
@@ -62,6 +65,26 @@ function save<T>(key: string, value: T): void {
   }
 }
 
+function hashText(text: string): number {
+  let hash = 0;
+  for (let i = 0; i < text.length; i += 1) {
+    hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+}
+
+function createNickname(id: string): string {
+  const hash = hashText(id);
+  const prefix = NICKNAME_PREFIXES[hash % NICKNAME_PREFIXES.length];
+  const suffix =
+    NICKNAME_SUFFIXES[Math.floor(hash / NICKNAME_PREFIXES.length) % NICKNAME_SUFFIXES.length];
+  const code = id
+    .replace(/[^a-z0-9]/gi, "")
+    .slice(-4)
+    .toUpperCase();
+  return `${prefix}${suffix}${code}`;
+}
+
 // ── 사용자 ID / 이름 ─────────────────────────────────────────────────────────
 export function getMyId(): string {
   if (!isBrowser()) return "server";
@@ -75,7 +98,12 @@ export function getMyId(): string {
 
 export function getMyName(): string {
   if (!isBrowser()) return "";
-  return localStorage.getItem(KEY_MY_NAME) ?? "";
+  const savedName = localStorage.getItem(KEY_MY_NAME)?.trim();
+  if (savedName) return savedName;
+
+  const nickname = createNickname(getMyId());
+  localStorage.setItem(KEY_MY_NAME, nickname);
+  return nickname;
 }
 
 export function setMyName(name: string): void {
@@ -116,7 +144,7 @@ export interface CreateDiaryParams {
 
 export function createDiary(params: CreateDiaryParams): ExchangeDiary {
   const myId = getMyId();
-  const myName = getMyName() || "익명";
+  const myName = getMyName();
   const diary: ExchangeDiary = {
     id: uid(),
     authorId: myId,
@@ -139,14 +167,12 @@ export function deleteDiary(id: string): void {
   const myId = getMyId();
   save(
     KEY_DIARIES,
-    load<ExchangeDiary[]>(KEY_DIARIES, []).filter(
-      (d) => !(d.id === id && d.authorId === myId)
-    )
+    load<ExchangeDiary[]>(KEY_DIARIES, []).filter((d) => !(d.id === id && d.authorId === myId)),
   );
   // 관련 댓글도 삭제
   save(
     KEY_COMMENTS,
-    load<ExchangeComment[]>(KEY_COMMENTS, []).filter((c) => c.diaryId !== id)
+    load<ExchangeComment[]>(KEY_COMMENTS, []).filter((c) => c.diaryId !== id),
   );
 }
 
@@ -170,9 +196,7 @@ export function addViewer(id: string): void {
   const myId = getMyId();
   const list = load<ExchangeDiary[]>(KEY_DIARIES, []);
   const updated = list.map((d) =>
-    d.id === id && !d.viewerIds.includes(myId)
-      ? { ...d, viewerIds: [...d.viewerIds, myId] }
-      : d
+    d.id === id && !d.viewerIds.includes(myId) ? { ...d, viewerIds: [...d.viewerIds, myId] } : d,
   );
   save(KEY_DIARIES, updated);
 }
@@ -184,16 +208,12 @@ export function getComments(diaryId: string): ExchangeComment[] {
     .sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
 }
 
-export function createComment(
-  diaryId: string,
-  body: string,
-  parentId?: string
-): ExchangeComment {
+export function createComment(diaryId: string, body: string, parentId?: string): ExchangeComment {
   const comment: ExchangeComment = {
     id: uid(),
     diaryId,
     authorId: getMyId(),
-    authorName: getMyName() || "익명",
+    authorName: getMyName(),
     body,
     parentId,
     createdAt: new Date().toISOString(),
@@ -206,8 +226,13 @@ export function deleteComment(id: string): void {
   // 댓글 + 그 답글도 함께 삭제
   const all = load<ExchangeComment[]>(KEY_COMMENTS, []);
   const toDelete = new Set<string>([id]);
-  all.forEach((c) => { if (c.parentId && toDelete.has(c.parentId)) toDelete.add(c.id); });
-  save(KEY_COMMENTS, all.filter((c) => !toDelete.has(c.id)));
+  all.forEach((c) => {
+    if (c.parentId && toDelete.has(c.parentId)) toDelete.add(c.id);
+  });
+  save(
+    KEY_COMMENTS,
+    all.filter((c) => !toDelete.has(c.id)),
+  );
 }
 
 // ── 시간 포맷 ─────────────────────────────────────────────────────────────────
@@ -226,8 +251,14 @@ export function relativeTime(iso: string): string {
 
 // ── 커버 컬러 (ID 기반 결정론적 색상) ───────────────────────────────────────
 const COVER_COLORS = [
-  "#7c6ef5", "#f5866e", "#6ec7f5", "#f5c96e", "#6ef5b4",
-  "#f56ebd", "#6e9df5", "#b4f56e",
+  "#7c6ef5",
+  "#f5866e",
+  "#6ec7f5",
+  "#f5c96e",
+  "#6ef5b4",
+  "#f56ebd",
+  "#6e9df5",
+  "#b4f56e",
 ];
 
 export function coverColorForId(id: string): string {
