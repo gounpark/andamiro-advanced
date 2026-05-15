@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, Lock, X, ImagePlus, Share2, Check } from "lucide-react";
 import { createDiary, getMyName, setMyName, type ExchangeDiary } from "@/lib/exchangeStore";
+import { getAppOrigin } from "@/lib/navigate";
 
 export const Route = createFileRoute("/exchange/create")({
   head: () => ({
@@ -120,7 +121,7 @@ function ExchangeCreatePage() {
   // ── 공유 ─────────────────────────────────────────────────────────────────
   const handleShare = async () => {
     if (!createdDiary) return;
-    const url = `${window.location.origin}/exchange?invite=${createdDiary.inviteCode}`;
+    const url = `${getAppOrigin()}/exchange?invite=${createdDiary.inviteCode}`;
     if (navigator.share) {
       try {
         await navigator.share({ title: createdDiary.title, url });
@@ -310,7 +311,7 @@ function ExchangeCreatePage() {
         </div>
 
         {/* 하단 고정 버튼 */}
-        <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-[#f0f0f0] px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+        <div className="absolute bottom-0 left-0 right-0 z-20 bg-white border-t border-[#f0f0f0] px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={handleSubmitAttempt}
