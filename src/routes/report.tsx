@@ -364,6 +364,7 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
             <header className="relative flex items-center justify-center pb-5">
               <Link
                 to="/"
+                search={{} as any}
                 aria-label="뒤로"
                 className="absolute left-0 grid h-9 w-9 place-items-center rounded-full text-white/90"
               >
@@ -477,6 +478,7 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
           >
             <Link
               to="/fortune"
+              search={{}}
               className="flex items-center gap-4 px-5 py-4"
               style={{ background: "linear-gradient(135deg, #FFF8EC 0%, #FFF3D6 100%)" }}
             >

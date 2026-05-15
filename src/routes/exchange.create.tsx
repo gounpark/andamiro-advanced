@@ -115,7 +115,7 @@ function ExchangeCreatePage() {
           <header className="sticky top-0 z-10 bg-white flex items-center gap-2 px-4 pt-[52px] pb-3 border-b border-[#f0f0f0]">
             <button
               type="button"
-              onClick={() => navigate({ to: "/exchange", search: {} })}
+              onClick={() => navigate({ to: "/exchange", search: { invite: undefined } })}
               className="p-1 -ml-1"
             >
               <ChevronLeft className="h-5 w-5 text-foreground" />
@@ -252,7 +252,7 @@ function ExchangeCreatePage() {
 
               <button
                 type="button"
-                onClick={() => navigate({ to: "/exchange/$roomId", params: { roomId: createdDiary.id } })}
+                onClick={() => navigate({ to: "/exchange/$roomId", params: { roomId: createdDiary.id }, search: { invite: undefined } })}
                 className="w-full rounded-2xl py-3.5 font-bold text-white text-[15px] tracking-tight active:scale-[0.99] transition"
                 style={{ background: "var(--primary)" }}
               >

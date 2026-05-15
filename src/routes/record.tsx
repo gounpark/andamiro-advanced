@@ -244,6 +244,7 @@ function RecordPage() {
           <header className="flex items-center justify-between px-5 pt-[52px] pb-1">
             <Link
               to="/"
+              search={{} as any}
               aria-label="뒤로 가기"
               className="grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground"
             >

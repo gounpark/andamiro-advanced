@@ -46,9 +46,7 @@ function ExchangePage() {
   const isChildRoute = matches.some(
     (m) =>
       m.routeId === "/exchange/$roomId" ||
-      m.routeId === "/exchange/create" ||
-      m.routeId === "/$roomId" ||
-      m.routeId === "/create",
+      m.routeId === "/exchange/create",
   );
 
   // 로그인 가드: 미로그인 시 로그인 페이지로 안내
@@ -128,7 +126,7 @@ function ExchangeListPage() {
       // 작성자 본인이거나 이미 인증한 경우 바로 진입
       if (diary.authorId === myId || isDiaryAuthorized(diary.id)) {
         await addViewer(diary.id);
-        navigate({ to: "/exchange/$roomId", params: { roomId: diary.id } });
+        navigate({ to: "/exchange/$roomId", params: { roomId: diary.id }, search: { invite: undefined } });
       } else {
         setInviteDiary(diary);
       }
@@ -146,7 +144,7 @@ function ExchangeListPage() {
     authorizeDiary(inviteDiary.id);
     await addViewer(inviteDiary.id);
     await refresh();
-    navigate({ to: "/exchange/$roomId", params: { roomId: inviteDiary.id } });
+    navigate({ to: "/exchange/$roomId", params: { roomId: inviteDiary.id }, search: { invite: undefined } });
   };
 
   if (inviteLoading) {
@@ -173,6 +171,7 @@ function ExchangeListPage() {
             </h1>
             <Link
               to="/exchange/create"
+              search={{ invite: undefined }}
               className="flex items-center gap-1.5 rounded-full bg-[var(--primary)] px-3.5 py-1.5 active:scale-[0.97] transition"
             >
               <Plus className="h-4 w-4 text-white" strokeWidth={2.5} />
@@ -297,6 +296,7 @@ function EmptyMy() {
       </p>
       <Link
         to="/exchange/create"
+        search={{ invite: undefined }}
         className="flex items-center gap-2 rounded-2xl px-6 py-3.5 font-bold text-white text-[15px] tracking-tight active:scale-[0.98] transition shadow-md"
         style={{ background: "var(--primary)" }}
       >
@@ -347,6 +347,7 @@ function DiaryCard({ diary, showAuthor, commentCount }: { diary: ExchangeDiary; 
     <Link
       to="/exchange/$roomId"
       params={{ roomId: diary.id }}
+      search={{ invite: undefined }}
       className="flex items-center gap-3 rounded-2xl bg-white border border-[#f0f0f0] px-4 py-4 shadow-sm active:bg-[#f8f8f8] transition"
     >
       {/* 썸네일 */}

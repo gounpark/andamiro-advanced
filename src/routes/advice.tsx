@@ -125,6 +125,7 @@ function AdviceWithData() {
         <header className="relative shrink-0 flex items-center justify-center px-4 pt-[52px] pb-4">
           <Link
             to="/"
+            search={{} as any}
             aria-label="뒤로"
             className="absolute left-3 top-[50px] grid h-9 w-9 place-items-center rounded-full text-foreground/70"
           >

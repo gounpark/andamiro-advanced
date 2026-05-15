@@ -18,6 +18,7 @@ export function EmptyDiaryState({ title, activeTab }: Props) {
         <header className="relative flex items-center justify-center px-4 pt-6 pb-3">
           <Link
             to="/"
+            search={{} as any}
             aria-label="뒤로"
             className="absolute left-3 top-5 grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground"
           >
@@ -49,6 +50,7 @@ export function EmptyDiaryState({ title, activeTab }: Props) {
           </p>
           <Link
             to="/record"
+            search={{} as any}
             className="mt-7 inline-flex items-center justify-center rounded-xl bg-[#ececef] px-5 py-3 font-semibold text-foreground text-[14px] tracking-tight hover:bg-[#e2e2e6] transition"
           >
             일기쓰러 가기

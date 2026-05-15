@@ -61,7 +61,6 @@ function MyPage() {
   const entries = getDiaryEntries();
   const totalCount = entries.length;
   const thisMonth = countThisMonth(entries);
-  const exchangeCount = getMyDiaries().length + getSharedDiaries().length;
 
   // ── 로그인 상태 ───────────────────────────────────────────────────────────
   const [user, setUser] = useState(getCachedUser());
@@ -450,6 +449,7 @@ function ExchangeLink() {
       <p className="px-1 mb-2 text-[12px] text-[#999] tracking-tight">교환 일기</p>
       <Link
         to="/exchange"
+        search={{ invite: undefined }}
         className="flex items-center gap-3 rounded-2xl bg-white border border-[#f0f0f0] px-4 py-3.5 shadow-sm active:bg-[#f8f8f8] transition"
       >
         <div className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--primary)]/10">

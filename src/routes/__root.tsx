@@ -17,6 +17,7 @@ function NotFoundComponent() {
         <div className="mt-6">
           <Link
             to="/"
+            search={{} as any}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Go home
@@ -60,7 +61,7 @@ function RootComponent() {
         const redirectTo = params.get("redirect") ?? "/my";
         // 현재 경로가 /login이면 복귀
         if (window.location.pathname.endsWith("/login")) {
-          router.navigate({ to: redirectTo as "/" });
+          router.navigate({ to: redirectTo as "/", search: {} as any });
         }
       }
     });

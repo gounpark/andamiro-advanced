@@ -549,6 +549,7 @@ function AnalysisPage() {
         <header className="relative shrink-0 flex items-center justify-center px-4 pt-[52px] pb-3 bg-white">
           <Link
             to="/"
+            search={{} as any}
             aria-label="뒤로"
             className="absolute left-3 top-[50px] grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground"
           >
@@ -662,7 +663,7 @@ function AnalysisPage() {
                 } catch {
                   /* 무시 */
                 }
-                navigate({ to: "/exchange/create" });
+                navigate({ to: "/exchange/create", search: { invite: undefined } });
               }}
               className="flex w-full items-center justify-center gap-2 bg-white py-3.5 font-semibold text-[var(--primary)] text-[15px] tracking-tight border border-[var(--primary)]/20 active:scale-[0.99] transition rounded-2xl shadow-none"
             >
@@ -671,6 +672,7 @@ function AnalysisPage() {
             </button>
             <Link
               to="/"
+              search={{} as any}
               className="flex w-full items-center justify-center rounded-2xl bg-[var(--primary)] py-3.5 font-semibold text-white text-[15px] tracking-tight shadow-md active:scale-[0.99] transition"
             >
               완료
@@ -1005,7 +1007,7 @@ function EmotionReportPage({
   };
   const goPrev = () => {
     if (step === 0) {
-      navigate({ to: "/" });
+      navigate({ to: "/", search: {} as any });
       return;
     }
     setStep((s) => Math.max(s - 1, 0));
@@ -1066,7 +1068,7 @@ function EmotionReportPage({
           </div>
           <button
             type="button"
-            onClick={() => navigate({ to: "/record" })}
+            onClick={() => navigate({ to: "/record", search: {} as any })}
             className="absolute right-3 top-[50px] grid h-9 w-9 place-items-center rounded-full text-foreground/40"
           >
             <Trash2 className="h-4.5 w-4.5" />

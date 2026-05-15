@@ -47,7 +47,7 @@ function ExchangeDiaryPage() {
       const d = await getDiaryById(diaryId);
       setLoading(false);
       if (!d) {
-        navigate({ to: "/exchange", search: {} });
+        navigate({ to: "/exchange", search: { invite: undefined } });
         return;
       }
       setDiary(d);
@@ -145,7 +145,7 @@ function ExchangeDiaryPage() {
             </button>
             <button
               type="button"
-              onClick={() => navigate({ to: "/exchange", search: {} })}
+              onClick={() => navigate({ to: "/exchange", search: { invite: undefined } })}
               className="mt-2 w-full py-2.5 text-[14px] text-[#999] tracking-tight"
             >
               돌아가기
@@ -170,7 +170,7 @@ function ExchangeDiaryPage() {
           <header className="sticky top-0 z-10 bg-white flex items-center gap-2 px-4 pt-[52px] pb-3 border-b border-[#f0f0f0]">
             <button
               type="button"
-              onClick={() => navigate({ to: "/exchange", search: {} })}
+              onClick={() => navigate({ to: "/exchange", search: { invite: undefined } })}
               className="p-1 -ml-1"
             >
               <ChevronLeft className="h-5 w-5 text-foreground" />
@@ -395,7 +395,7 @@ function ExchangeDiaryPage() {
                   onClick={async () => {
                     if (!confirm("이 일기를 삭제하면 댓글도 모두 사라져요. 삭제할까요?")) return;
                     await deleteDiary(diaryId);
-                    navigate({ to: "/exchange", search: {} });
+                    navigate({ to: "/exchange", search: { invite: undefined } });
                   }}
                   className="w-full flex items-center justify-center gap-2 rounded-2xl border border-red-100 bg-red-50 py-3 text-red-400 font-semibold text-[14px] tracking-tight active:scale-[0.99] transition"
                 >
