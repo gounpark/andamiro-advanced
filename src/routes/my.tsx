@@ -17,7 +17,7 @@ import cloverActiveSvg from "@/assets/icons/clover-active.svg";
 import bgShapeLargeSvg from "@/assets/icons/bg-shape-large.svg";
 import { BottomNav } from "@/components/BottomNav";
 import bgShapeSmallSvg from "@/assets/icons/bg-shape-small.svg";
-import { getDiaryEntries, calcStreak, countThisMonth } from "@/lib/diaryStore";
+import { getDiaryEntries, countThisMonth } from "@/lib/diaryStore";
 import { getMyDiaries, getSharedDiaries } from "@/lib/exchangeStore";
 
 export const Route = createFileRoute("/my")({
@@ -56,8 +56,8 @@ function sendTestNotif() {
 function MyPage() {
   const entries = getDiaryEntries();
   const totalCount = entries.length;
-  const streak = calcStreak(entries);
   const thisMonth = countThisMonth(entries);
+  const exchangeCount = getMyDiaries().length + getSharedDiaries().length;
 
   // 설정 상태 — localStorage에서 초기값 읽기
   const [notif, setNotif] = useState(() => localStorage.getItem(NOTIF_ON_KEY) !== "0");
@@ -179,7 +179,7 @@ function MyPage() {
             <p className="px-1 mb-2 text-[12px] text-[#999] tracking-tight">나의 기록 요약</p>
             <div className="rounded-2xl bg-white p-3 shadow-sm grid grid-cols-3">
               <Stat value={String(totalCount)} label="전체 기록" />
-              <Stat value={`${streak}일`} label="연속 기록" divided />
+              <Stat value={String(exchangeCount)} label="교환일기" divided />
               <Stat value={String(thisMonth)} label="이번 달" divided />
             </div>
           </section>
