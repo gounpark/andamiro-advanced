@@ -3,7 +3,7 @@
 // localStorage는 익명 사용자 ID / 비밀번호 인증 캐시에만 사용
 
 import { supabase } from "./supabase";
-import { getAuthUserId, getAuthDisplayName } from "./auth";
+import { getAuthUserId, getAuthDisplayName, getAuthAvatarUrl } from "./auth";
 
 export interface ExchangeDiary {
   id: string;
@@ -17,6 +17,7 @@ export interface ExchangeDiary {
   keywords: string[];
   viewerIds: string[];
   viewerNames: string[];
+  viewerAvatars: string[];
   createdAt: string;
 }
 
@@ -27,6 +28,7 @@ export interface ExchangeComment {
   authorName: string;
   body: string;
   parentId?: string;
+  authorAvatar?: string;
   createdAt: string;
 }
 
@@ -44,6 +46,7 @@ function rowToDiary(row: Record<string, unknown>): ExchangeDiary {
     keywords: (row.keywords as string[]) ?? [],
     viewerIds: (row.viewer_ids as string[]) ?? [],
     viewerNames: (row.viewer_names as string[]) ?? [],
+    viewerAvatars: (row.viewer_avatars as string[]) ?? [],
     createdAt: row.created_at as string,
   };
 }
@@ -56,6 +59,7 @@ function rowToComment(row: Record<string, unknown>): ExchangeComment {
     authorName: row.author_name as string,
     body: row.body as string,
     parentId: (row.parent_id as string | null) ?? undefined,
+    authorAvatar: (row.author_avatar as string | null) ?? undefined,
     createdAt: row.created_at as string,
   };
 }
@@ -219,6 +223,7 @@ export async function createDiary(params: CreateDiaryParams): Promise<ExchangeDi
     keywords: params.keywords ?? [],
     viewerIds: [],
     viewerNames: [],
+    viewerAvatars: [],
     createdAt: new Date().toISOString(),
   };
 
@@ -234,6 +239,7 @@ export async function createDiary(params: CreateDiaryParams): Promise<ExchangeDi
     keywords: diary.keywords,
     viewer_ids: diary.viewerIds,
     viewer_names: diary.viewerNames,
+    viewer_avatars: diary.viewerAvatars,
     created_at: diary.createdAt,
   });
 
@@ -272,9 +278,10 @@ export function authorizeDiary(id: string): void {
 export async function addViewer(id: string): Promise<void> {
   const myId = getMyId();
   const myName = getMyName();
+  const myAvatar = getAuthAvatarUrl() ?? "";
   const { data } = await supabase
     .from("exchange_diaries")
-    .select("viewer_ids, viewer_names")
+    .select("viewer_ids, viewer_names, viewer_avatars")
     .eq("id", id)
     .maybeSingle();
 
@@ -283,12 +290,14 @@ export async function addViewer(id: string): Promise<void> {
   if (currentIds.includes(myId)) return;
 
   const currentNames: string[] = (data as { viewer_names: string[] }).viewer_names ?? [];
+  const currentAvatars: string[] = (data as { viewer_avatars: string[] }).viewer_avatars ?? [];
 
   await supabase
     .from("exchange_diaries")
     .update({
       viewer_ids: [...currentIds, myId],
       viewer_names: [...currentNames, myName],
+      viewer_avatars: [...currentAvatars, myAvatar],
     })
     .eq("id", id);
 }
@@ -327,6 +336,7 @@ export async function createComment(
     diaryId,
     authorId: getMyId(),
     authorName: getMyName(),
+    authorAvatar: getAuthAvatarUrl() ?? undefined,
     body,
     parentId,
     createdAt: new Date().toISOString(),
@@ -337,6 +347,7 @@ export async function createComment(
     diary_id: comment.diaryId,
     author_id: comment.authorId,
     author_name: comment.authorName,
+    author_avatar: comment.authorAvatar ?? null,
     body: comment.body,
     parent_id: comment.parentId ?? null,
     created_at: comment.createdAt,

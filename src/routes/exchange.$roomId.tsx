@@ -252,7 +252,16 @@ function ExchangeDiaryPage() {
                 <div className="flex -space-x-1.5 mb-2">
                   {diary.viewerIds.slice(0, 8).map((vid, i) => {
                     const name = diary.viewerNames[i] ?? vid;
-                    return (
+                    const avatar = diary.viewerAvatars[i];
+                    return avatar ? (
+                      <img
+                        key={vid}
+                        src={avatar}
+                        alt={name}
+                        className="h-7 w-7 rounded-full border-2 border-white object-cover"
+                        style={{ zIndex: 10 - i }}
+                      />
+                    ) : (
                       <div
                         key={vid}
                         className="grid h-7 w-7 place-items-center rounded-full text-white text-[11px] font-bold border-2 border-white"
@@ -437,12 +446,20 @@ function CommentItem({
 }) {
   return (
     <div className="flex gap-2.5">
-      <div
-        className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-white text-[12px] font-bold mt-0.5"
-        style={{ background: isReply ? "#b0b0b0" : "var(--primary)" }}
-      >
-        {comment.authorName.charAt(0)}
-      </div>
+      {comment.authorAvatar ? (
+        <img
+          src={comment.authorAvatar}
+          alt={comment.authorName}
+          className="h-7 w-7 shrink-0 rounded-full object-cover mt-0.5 border border-[#f0f0f0]"
+        />
+      ) : (
+        <div
+          className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-white text-[12px] font-bold mt-0.5"
+          style={{ background: isReply ? "#b0b0b0" : "var(--primary)" }}
+        >
+          {comment.authorName.charAt(0)}
+        </div>
+      )}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 mb-0.5">
           <span className="text-[13px] font-semibold text-foreground tracking-tight">
