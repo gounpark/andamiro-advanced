@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
-import { ChevronLeft, X, ImagePlus } from "lucide-react";
+import { ChevronLeft, X, ImagePlus, Share2, Copy, Check } from "lucide-react";
 import { createDiary, type ExchangeDiary } from "@/lib/exchangeStore";
-import { InviteLinkButton } from "./exchange";
+import { getAppOrigin } from "@/lib/navigate";
 
 export const Route = createFileRoute("/exchange/create")({
   head: () => ({
@@ -27,6 +27,30 @@ function ExchangeCreatePage() {
   const [imageDataUrl, setImageDataUrl] = useState<string | undefined>();
   const [error, setError] = useState("");
   const [createdDiary, setCreatedDiary] = useState<ExchangeDiary | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const buildShareText = (diary: ExchangeDiary) => {
+    const url = `${getAppOrigin()}/exchange?invite=${diary.inviteCode}`;
+    return { url, text: `내 일기 보러올래? 🌱\n비밀번호: ${diary.password}\n${url}` };
+  };
+
+  const handleShare = async (diary: ExchangeDiary) => {
+    const { text } = buildShareText(diary);
+    if (navigator.share) {
+      try { await navigator.share({ text }); } catch { /* dismissed */ }
+    } else {
+      await handleCopy(diary);
+    }
+  };
+
+  const handleCopy = async (diary: ExchangeDiary) => {
+    const { text } = buildShareText(diary);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* 무시 */ }
+  };
 
   const focusField = (field: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>) => {
     field.current?.focus();
@@ -222,45 +246,85 @@ function ExchangeCreatePage() {
         </div>
 
         {/* 초대 링크 바텀시트 */}
-        {createdDiary && (
-          <div className="absolute inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.45)" }}>
-            <div className="w-full rounded-t-[24px] bg-white px-5 pt-6 pb-10">
-              <div className="flex items-center justify-center mb-4">
-                <div className="grid h-14 w-14 place-items-center rounded-2xl text-white font-bold text-[26px]" style={{ background: "var(--primary)" }}>
-                  🎉
-                </div>
-              </div>
-              <h3 className="font-bold text-foreground text-[18px] tracking-tight mb-1 text-center">
-                일기가 만들어졌어요!
-              </h3>
-              <p className="text-[13px] text-[#aaa] tracking-tight text-center mb-5">
-                초대 링크를 복사해서 친구에게 공유해 보세요.
-              </p>
-
-              <div className="rounded-2xl bg-[#f4f6fa] px-4 py-3 mb-4">
-                <p className="text-[12px] text-[#999] tracking-tight mb-2">초대 링크</p>
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-[12px] text-[#555] font-mono truncate flex-1">
-                    /exchange?invite={createdDiary.inviteCode}
-                  </p>
-                  <InviteLinkButton diary={createdDiary} />
-                </div>
-                <p className="text-[11px] text-[#bbb] mt-2 tracking-tight">
-                  비밀번호: <span className="font-semibold text-[#888]">{createdDiary.password}</span>
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => navigate({ to: "/exchange/$roomId", params: { roomId: createdDiary.id }, search: { invite: undefined } })}
-                className="w-full rounded-2xl py-3.5 font-bold text-white text-[15px] tracking-tight active:scale-[0.99] transition"
-                style={{ background: "var(--primary)" }}
+        {createdDiary && (() => {
+          const { url } = buildShareText(createdDiary);
+          return (
+            <div className="absolute inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.5)" }}>
+              <div
+                className="w-full rounded-t-[28px] bg-white px-5 pt-3"
+                style={{ paddingBottom: "calc(28px + env(safe-area-inset-bottom))" }}
               >
-                일기 보러가기
-              </button>
+                {/* 핸들 */}
+                <div className="mx-auto mb-5 h-[5px] w-10 rounded-full bg-[#e2e4ea]" />
+
+                {/* 이모지 */}
+                <div className="flex justify-center mb-3">
+                  <span className="text-[54px] leading-none select-none">🎉</span>
+                </div>
+
+                {/* 타이틀 */}
+                <h3 className="font-bold text-[22px] text-center tracking-tight leading-snug mb-1">
+                  일기가 만들어졌어요!
+                </h3>
+                <p className="text-[14px] text-[#8a8d96] text-center tracking-tight mb-5">
+                  <span className="text-[var(--primary)] font-semibold">친구에게 한 번에</span> 공유해 보세요.
+                </p>
+
+                {/* 공유 메시지 미리보기 */}
+                <div className="rounded-2xl bg-[#f4f6fa] p-4 mb-5">
+                  <p className="text-[11px] font-bold text-[var(--primary)] tracking-widest uppercase mb-2.5">
+                    📨 공유될 메시지
+                  </p>
+                  <div className="rounded-xl bg-white px-4 py-3 shadow-sm">
+                    <p className="text-[13px] text-[#333] leading-relaxed">
+                      내 일기 보러올래? 🌱<br />
+                      비밀번호{" "}
+                      <span className="font-bold text-[var(--primary)]">{createdDiary.password}</span>
+                    </p>
+                    <p className="text-[11px] text-[var(--primary)] mt-1.5 break-all leading-relaxed">
+                      {url}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 주 CTA */}
+                <button
+                  type="button"
+                  onClick={() => handleShare(createdDiary)}
+                  className="w-full flex items-center justify-center gap-2 rounded-[16px] py-4 font-bold text-white text-[16px] tracking-tight active:scale-[0.99] transition mb-2.5"
+                  style={{ background: "var(--primary)" }}
+                >
+                  <Share2 className="h-4 w-4" />
+                  친구에게 공유하기
+                </button>
+
+                {/* 보조 CTA */}
+                <button
+                  type="button"
+                  onClick={() => handleCopy(createdDiary)}
+                  className="w-full flex items-center justify-center gap-2 rounded-[16px] py-3.5 font-semibold text-[15px] tracking-tight border active:scale-[0.99] transition mb-1"
+                  style={{
+                    background: "white",
+                    color: copied ? "#22c55e" : "var(--primary)",
+                    borderColor: copied ? "#22c55e" : "color-mix(in srgb, var(--primary) 20%, transparent)",
+                  }}
+                >
+                  {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  {copied ? "복사됐어요!" : "메시지 복사"}
+                </button>
+
+                {/* 텍스트 링크 */}
+                <button
+                  type="button"
+                  onClick={() => navigate({ to: "/exchange/$roomId", params: { roomId: createdDiary.id }, search: { invite: undefined } })}
+                  className="w-full py-3 text-[13px] text-[#aaa] tracking-tight text-center"
+                >
+                  일기 보러가기
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
       </div>
     </div>
   );
