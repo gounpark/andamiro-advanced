@@ -29,9 +29,7 @@ CREATE TABLE IF NOT EXISTS exchange_comments (
 
 -- RLS
 ALTER TABLE exchange_diaries ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "public access" ON exchange_diaries;
 CREATE POLICY "public access" ON exchange_diaries FOR ALL USING (true) WITH CHECK (true);
 
 ALTER TABLE exchange_comments ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "public access" ON exchange_comments;
 CREATE POLICY "public access" ON exchange_comments FOR ALL USING (true) WITH CHECK (true);
