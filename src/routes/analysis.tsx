@@ -229,6 +229,180 @@ const DAILY_DATA: Record<number, DailyData> = {
 
 const DEFAULT_DATA = DAILY_DATA[21];
 
+// ─── 채팅 세션 타입 ───────────────────────────────────────────────────────────
+interface ChatSession {
+  mood: MoodKey;
+  messages: Array<{ role: string; text: string; id: string }>;
+  timestamp: number;
+}
+
+const CHIP_EMOJI_PREFIXES = ["⚡", "😊", "✨", "💪", "😌", "🤔", "🌤", "💭", "😞", "😣", "😔", "😤", "😢", "😩", "😡", "💔"];
+const isChipMessage = (text: string) => CHIP_EMOJI_PREFIXES.some((e) => text.startsWith(e));
+
+const KEYWORD_TOPICS: { keywords: string[]; topic: string }[] = [
+  { keywords: ["일", "회사", "업무", "출근", "야근", "미팅", "프로젝트", "회의"], topic: "업무" },
+  { keywords: ["친구", "가족", "엄마", "아빠", "동료", "연인", "남친", "여친"], topic: "관계" },
+  { keywords: ["산책", "운동", "요가", "달리기", "헬스", "걷기"], topic: "활동" },
+  { keywords: ["커피", "차", "음식", "밥", "먹", "맛있"], topic: "일상" },
+  { keywords: ["피곤", "지치", "힘들", "쉬고", "쉼"], topic: "휴식" },
+  { keywords: ["행복", "기쁘", "신나", "재밌", "즐거", "설레"], topic: "즐거움" },
+  { keywords: ["걱정", "불안", "두려", "긴장", "초조"], topic: "불안" },
+  { keywords: ["슬프", "우울", "외로", "눈물", "허전"], topic: "슬픔" },
+];
+
+function extractTopics(messages: Array<{ role: string; text: string }>): string[] {
+  const combined = messages
+    .filter((m) => m.role === "user")
+    .map((m) => m.text.toLowerCase())
+    .join(" ");
+  return KEYWORD_TOPICS.filter((t) => t.keywords.some((k) => combined.includes(k)))
+    .map((t) => t.topic)
+    .slice(0, 3);
+}
+
+// ─── 채팅 대화 → 분석 결과 계산 ─────────────────────────────────────────────
+function computeAnalysisFromChat(session: ChatSession): DailyData {
+  const { mood, messages } = session;
+  const userMessages = messages.filter((m) => m.role === "user");
+  const userTexts = userMessages.map((m) => m.text);
+  const combined = userTexts.join(" ").toLowerCase();
+
+  const BASE: Record<MoodKey, number> = { best: 90, good: 78, okay: 65, bad: 53, worst: 40 };
+  const base = BASE[mood] ?? 65;
+  const msgBonus = Math.min(6, userMessages.length);
+  const score = Math.round(Math.min(99, Math.max(30, base + msgBonus - 2)));
+
+  const METRIC_BASE: Record<MoodKey, [number, number, number, number]> = {
+    best:  [88, 72, 76, 92],
+    good:  [78, 70, 72, 82],
+    okay:  [65, 78, 68, 70],
+    bad:   [52, 58, 60, 52],
+    worst: [40, 45, 48, 40],
+  };
+  const [eB, sB, fB, pB] = METRIC_BASE[mood] ?? METRIC_BASE.okay;
+  const hasKw = (kws: string[]) => kws.some((k) => combined.includes(k));
+  const clamp = (v: number) => Math.round(Math.min(100, Math.max(30, v)));
+
+  const metrics: Metric[] = [
+    { label: "에너지", value: clamp(eB + (hasKw(["운동", "산책", "활기", "에너지", "신나"]) ? 8 : 0)) },
+    { label: "안정감", value: clamp(sB + (hasKw(["차분", "안정", "평온", "감사", "여유"]) ? 8 : 0)) },
+    { label: "집중력", value: clamp(fB + (hasKw(["일", "업무", "프로젝트", "집중", "공부"]) ? 7 : 0)) },
+    { label: "긍정성", value: clamp(pB + (hasKw(["행복", "기쁘", "좋", "만족", "즐거", "설레"]) ? 8 : 0)) },
+  ];
+
+  const topics = extractTopics(messages);
+  const topicStr = topics.length > 0 ? topics.slice(0, 2).join("과 ") : "오늘 하루";
+
+  const TITLES: Record<MoodKey, string[]> = {
+    best:  ["정말 빛났던 하루예요!", "최고의 하루를 보내셨군요!", "오늘 하루 정말 행복해 보여요!"],
+    good:  ["좋은 기운이 가득했던 하루네요!", "오늘 하루 잘 보내셨군요!", "작은 행복이 모인 하루였어요!"],
+    okay:  ["평온하게 흘러간 하루였어요", "차분하고 안정적인 하루였네요", "그럭저럭 괜찮은 하루였어요"],
+    bad:   ["조금 힘드셨던 하루였군요", "오늘 마음이 무거웠겠어요", "쉽지 않은 하루를 보내셨네요"],
+    worst: ["정말 힘든 하루를 보내셨어요", "많이 지치셨겠어요", "오늘 수고 많으셨어요"],
+  };
+  const titleArr = TITLES[mood] ?? TITLES.okay;
+  const summaryTitle = titleArr[userTexts.length % titleArr.length];
+
+  const BODIES: Record<MoodKey, (t: string) => string> = {
+    best:  (t) => `${t}에 대한 이야기에서 밝은 에너지가 넘쳤어요. 오늘처럼 기분 좋은 날의 감정을 잘 기억해두세요. 이런 순간들이 힘든 날의 버팀목이 됩니다. 내일도 오늘의 긍정적인 에너지가 이어지길 바라요!`,
+    good:  (t) => `${t}에 대한 이야기를 나누며 오늘 하루의 좋은 순간들이 잘 느껴졌어요. 작은 것들이 모여 좋은 하루를 만들어주었네요. 이 흐름을 내일도 자연스럽게 이어가 보세요.`,
+    okay:  (t) => `${t}에 대한 이야기로 오늘을 차분히 돌아봤어요. 평온한 하루도 그 자체로 충분히 가치 있어요. 잔잔한 일상 속에서도 소중한 것들을 찾아보세요.`,
+    bad:   (t) => `${t}에서 힘든 감정을 솔직하게 꺼내주셨어요. 힘든 날도 있는 거예요. 오늘의 감정을 그대로 인정하고, 내일은 조금 더 가벼운 마음으로 시작해 보세요.`,
+    worst: (t) => `오늘 정말 힘드셨겠어요. ${t}에서 느낀 무거운 감정을 말로 꺼내주신 것만으로도 대단해요. 지금 이 감정도 괜찮아요. 내일은 조금 더 나아질 거예요. 스스로에게 따뜻하게 대해 주세요.`,
+  };
+  const summaryBody = (BODIES[mood] ?? BODIES.okay)(topicStr);
+
+  const substantive = userTexts.filter((t) => t.length > 5 && !isChipMessage(t));
+  let chatRecap: string;
+  if (substantive.length > 0) {
+    chatRecap =
+      substantive.length === 1
+        ? `"${substantive[0]}"`
+        : `"${substantive[0]}" 등 ${topicStr}에 관한 이야기를 나눴어요.`;
+  } else {
+    chatRecap = `${topicStr}에 관한 감정을 나눈 하루였어요.`;
+  }
+
+  const TOMORROW: Record<MoodKey, { num: number; title: string; body: string }[]> = {
+    best:  [
+      { num: 1, title: "오늘의 기쁨 기록하기", body: "행복했던 순간을 짧게 적어두면 오래 기억돼요." },
+      { num: 2, title: "에너지 나눠주기", body: "오늘의 좋은 기운을 소중한 사람에게 전해보세요." },
+    ],
+    good:  [
+      { num: 1, title: "좋았던 순간 돌아보기", body: "오늘의 작은 행복을 내일로 이어가 봐요." },
+      { num: 2, title: "가벼운 활동 이어가기", body: "좋은 에너지를 몸으로도 표현해봐요." },
+    ],
+    okay:  [
+      { num: 1, title: "작은 즐거움 계획하기", body: "내일에 기대할 것 하나를 만들어봐요." },
+      { num: 2, title: "충분한 수면 취하기", body: "평온한 하루의 마무리는 충분한 휴식이에요." },
+    ],
+    bad:   [
+      { num: 1, title: "충분히 쉬기", body: "힘든 날 이후엔 회복 시간이 꼭 필요해요." },
+      { num: 2, title: "좋아하는 것 하나 하기", body: "기분 전환이 되는 작은 활동을 해보세요." },
+    ],
+    worst: [
+      { num: 1, title: "자신에게 친절하기", body: "오늘 수고한 자신을 따뜻하게 토닥여 주세요." },
+      { num: 2, title: "가벼운 산책", body: "신선한 공기가 기분 전환에 도움이 돼요." },
+    ],
+  };
+
+  const moodLabels: Record<MoodKey, string> = {
+    best: "최고예요!", good: "좋아요!", okay: "보통이에요", bad: "별로예요", worst: "힘들었어요",
+  };
+
+  return {
+    score,
+    mood: moodLabels[mood],
+    metrics,
+    summaryTitle,
+    summaryBody,
+    chatRecap,
+    tomorrow: TOMORROW[mood] ?? TOMORROW.okay,
+  };
+}
+
+// ─── 채팅 메시지 → 교환일기 본문 생성 ────────────────────────────────────────
+function generateDiaryBodyForExchange(
+  messages: Array<{ role: string; text: string }>,
+  mood: MoodKey,
+): string {
+  const userTexts = messages.filter((m) => m.role === "user").map((m) => m.text);
+  const chips = userTexts.filter(isChipMessage);
+  const substantive = userTexts.filter((t) => !isChipMessage(t) && t.trim().length > 0);
+
+  const openings: Record<MoodKey, string> = {
+    best:  "오늘은 정말 기분이 최고인 하루였어요.",
+    good:  "오늘 하루가 꽤 좋았어요.",
+    okay:  "오늘은 평범하지만 나름 괜찮은 하루였어요.",
+    bad:   "오늘은 좀 힘든 하루를 보냈어요.",
+    worst: "오늘은 정말 힘든 하루였어요.",
+  };
+  const closings: Record<MoodKey, string> = {
+    best:  "이런 날이 자주 오면 좋겠어요. 오늘도 수고했어요!",
+    good:  "작은 것들이 모여 좋은 하루가 됐던 것 같아요. 내일도 좋은 하루가 되길!",
+    okay:  "평범한 하루지만 그 속에도 소중한 것들이 있었어요.",
+    bad:   "힘든 날도 있는 거잖아요. 내일은 조금 더 나아지길 바라며.",
+    worst: "오늘 정말 수고 많았어요. 내일은 조금 더 가벼워질 거예요.",
+  };
+
+  const lines: string[] = [openings[mood]];
+  if (chips.length > 0) {
+    lines.push(`오늘의 감정은 한마디로 "${chips[0]}" 이었어요.`);
+  }
+  if (substantive.length > 0) {
+    lines.push("");
+    for (const text of substantive) {
+      const sentence = text.trim();
+      const ended = /[.!?요다]$/.test(sentence) ? sentence : sentence + ".";
+      lines.push(ended);
+    }
+  }
+  lines.push("");
+  lines.push(closings[mood]);
+
+  return lines.join("\n");
+}
+
 // ─── 영상 데이터 → 분석 결과 계산 ───────────────────────────────────────────
 function computeAnalysisFromRecord(record: VideoRecord): DailyData {
   const timeline = record.emotionTimeline ?? [];
@@ -478,7 +652,22 @@ function AnalysisPage() {
   // 영상 기록 완료 후 계산된 분석 데이터 (onDone 콜백으로 직접 주입)
   const [computedData, setComputedData] = useState<DailyData | null>(null);
 
-  const data: DailyData = computedData || (day && DAILY_DATA[day]) || DEFAULT_DATA;
+  // 채팅 세션 기반 분석 데이터
+  const [chatSession] = useState<ChatSession | null>(() => {
+    try {
+      const raw = sessionStorage.getItem("chat_session");
+      return raw ? (JSON.parse(raw) as ChatSession) : null;
+    } catch { return null; }
+  });
+  const [chatAnalysis] = useState<DailyData | null>(() => {
+    try {
+      const raw = sessionStorage.getItem("chat_session");
+      if (!raw) return null;
+      return computeAnalysisFromChat(JSON.parse(raw) as ChatSession);
+    } catch { return null; }
+  });
+
+  const data: DailyData = computedData || chatAnalysis || (day && DAILY_DATA[day]) || DEFAULT_DATA;
   const { score, mood, metrics, summaryTitle, summaryBody, chatRecap, tomorrow } = data;
   const scrollRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLElement>(null);
@@ -652,11 +841,14 @@ function AnalysisPage() {
               type="button"
               onClick={() => {
                 try {
+                  const diaryBody = chatSession
+                    ? generateDiaryBodyForExchange(chatSession.messages, chatSession.mood)
+                    : summaryBody;
                   sessionStorage.setItem(
                     "exchange_draft",
                     JSON.stringify({
                       title: summaryTitle,
-                      body: summaryBody,
+                      body: diaryBody,
                       keywords: metrics.map((m) => m.label),
                     }),
                   );

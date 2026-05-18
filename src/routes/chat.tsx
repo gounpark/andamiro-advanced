@@ -352,6 +352,16 @@ function ChatPage() {
   };
 
   const endConversation = () => {
+    try {
+      sessionStorage.setItem(
+        "chat_session",
+        JSON.stringify({
+          mood,
+          messages: messages.map((m) => ({ role: m.role, text: m.text, id: m.id })),
+          timestamp: Date.now(),
+        }),
+      );
+    } catch { /* ignore */ }
     navigate({ to: "/analysis", search: { day: undefined } });
   };
 
