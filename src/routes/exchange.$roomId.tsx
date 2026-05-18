@@ -271,11 +271,6 @@ function ExchangeDiaryPage() {
               </div>
             )}
 
-            {isAuthor && (
-              <div className="mx-4 mt-3 mb-2 flex justify-end">
-                <InviteLinkButton diary={diary} />
-              </div>
-            )}
           </article>
 
           <div className="mx-4 mt-2 mb-4 border-t border-[#f0f0f0]" />
