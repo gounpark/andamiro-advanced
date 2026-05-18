@@ -152,6 +152,11 @@
     overflow-x: hidden;
     overscroll-behavior-x: none;
   }
+
+  /* iOS Safari 인풋 포커스 시 자동 줌인 방지 */
+  input, textarea, select {
+    font-size: max(16px, 1em);
+  }
 }
 
 @layer utilities {
