@@ -326,6 +326,22 @@ export async function getComments(diaryId: string): Promise<ExchangeComment[]> {
   return (data ?? []).map(rowToComment);
 }
 
+export async function getCommentsAfter(
+  diaryIds: string[],
+  afterIso: string,
+): Promise<ExchangeComment[]> {
+  if (diaryIds.length === 0) return [];
+  const { data, error } = await supabase
+    .from("exchange_comments")
+    .select("*")
+    .in("diary_id", diaryIds)
+    .gt("created_at", afterIso)
+    .order("created_at", { ascending: true })
+    .limit(20);
+  if (error) return [];
+  return (data ?? []).map(rowToComment);
+}
+
 export async function createComment(
   diaryId: string,
   body: string,
@@ -354,6 +370,9 @@ export async function createComment(
   });
 
   if (error) throw new Error(`댓글 생성 실패: ${error.message}`);
+  supabase.functions
+    .invoke("send-exchange-notification", { body: { commentId: comment.id } })
+    .catch(() => undefined);
   return comment;
 }
 
