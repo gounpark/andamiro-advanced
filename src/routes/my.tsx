@@ -238,7 +238,7 @@ function MyPage() {
           {/* 기타 */}
           <section className="px-4 mt-5">
             <div className="rounded-2xl bg-white border border-[#f0f0f0] overflow-hidden">
-              <Row icon={<Database className="h-4 w-4" />} label="데이터 백업" />
+              <Row icon={<Database className="h-4 w-4" />} label="데이터 백업" onClick={() => navigate({ to: "/backup" })} />
               <Row icon={<Megaphone className="h-4 w-4" />} label="공지사항" />
               <Row icon={<HelpCircle className="h-4 w-4" />} label="도움말 / FAQ" />
               <Row icon={<FileText className="h-4 w-4" />} label="약관 및 개인정보 처리방침" />
@@ -394,17 +394,19 @@ function Stat({ value, label, divided }: { value: string; label: string; divided
 }
 
 function Row({
-  icon, label, trailing, hideChevron, last,
+  icon, label, trailing, hideChevron, last, onClick,
 }: {
   icon: React.ReactNode;
   label: string;
   trailing?: string;
   hideChevron?: boolean;
   last?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <button
       type="button"
+      onClick={onClick}
       className={`w-full flex items-center gap-3 px-4 py-3.5 text-left active:bg-[#fafbfc] transition ${last ? "" : "border-b border-[#f5f5f5]"}`}
     >
       <span className="grid h-7 w-7 place-items-center rounded-full bg-[#f4f6fa] text-[var(--primary)] shrink-0">{icon}</span>

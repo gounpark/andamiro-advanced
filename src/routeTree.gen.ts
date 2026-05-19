@@ -9,28 +9,24 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as VideoRecordRouteImport } from './routes/video-record'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as RecordRouteImport } from './routes/record'
 import { Route as PresentationRouteImport } from './routes/presentation'
 import { Route as MyRouteImport } from './routes/my'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as IntroRouteImport } from './routes/intro'
 import { Route as FortuneRouteImport } from './routes/fortune'
 import { Route as ExchangeRouteImport } from './routes/exchange'
 import { Route as DiaryRouteImport } from './routes/diary'
 import { Route as ChatRouteImport } from './routes/chat'
+import { Route as BackupRouteImport } from './routes/backup'
 import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as AdviceRouteImport } from './routes/advice'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ExchangeCreateRouteImport } from './routes/exchange.create'
 import { Route as ExchangeRoomIdRouteImport } from './routes/exchange.$roomId'
 
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const VideoRecordRoute = VideoRecordRouteImport.update({
   id: '/video-record',
   path: '/video-record',
@@ -56,6 +52,11 @@ const MyRoute = MyRouteImport.update({
   path: '/my',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IntroRoute = IntroRouteImport.update({
   id: '/intro',
   path: '/intro',
@@ -79,6 +80,11 @@ const DiaryRoute = DiaryRouteImport.update({
 const ChatRoute = ChatRouteImport.update({
   id: '/chat',
   path: '/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BackupRoute = BackupRouteImport.update({
+  id: '/backup',
+  path: '/backup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnalysisRoute = AnalysisRouteImport.update({
@@ -110,13 +116,14 @@ const ExchangeRoomIdRoute = ExchangeRoomIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/advice': typeof AdviceRoute
-  '/login': typeof LoginRoute
   '/analysis': typeof AnalysisRoute
+  '/backup': typeof BackupRoute
   '/chat': typeof ChatRoute
   '/diary': typeof DiaryRoute
   '/exchange': typeof ExchangeRouteWithChildren
   '/fortune': typeof FortuneRoute
   '/intro': typeof IntroRoute
+  '/login': typeof LoginRoute
   '/my': typeof MyRoute
   '/presentation': typeof PresentationRoute
   '/record': typeof RecordRoute
@@ -128,13 +135,14 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/advice': typeof AdviceRoute
-  '/login': typeof LoginRoute
   '/analysis': typeof AnalysisRoute
+  '/backup': typeof BackupRoute
   '/chat': typeof ChatRoute
   '/diary': typeof DiaryRoute
   '/exchange': typeof ExchangeRouteWithChildren
   '/fortune': typeof FortuneRoute
   '/intro': typeof IntroRoute
+  '/login': typeof LoginRoute
   '/my': typeof MyRoute
   '/presentation': typeof PresentationRoute
   '/record': typeof RecordRoute
@@ -147,13 +155,14 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/advice': typeof AdviceRoute
-  '/login': typeof LoginRoute
   '/analysis': typeof AnalysisRoute
+  '/backup': typeof BackupRoute
   '/chat': typeof ChatRoute
   '/diary': typeof DiaryRoute
   '/exchange': typeof ExchangeRouteWithChildren
   '/fortune': typeof FortuneRoute
   '/intro': typeof IntroRoute
+  '/login': typeof LoginRoute
   '/my': typeof MyRoute
   '/presentation': typeof PresentationRoute
   '/record': typeof RecordRoute
@@ -167,13 +176,14 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/advice'
-    | '/login'
     | '/analysis'
+    | '/backup'
     | '/chat'
     | '/diary'
     | '/exchange'
     | '/fortune'
     | '/intro'
+    | '/login'
     | '/my'
     | '/presentation'
     | '/record'
@@ -185,13 +195,14 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/advice'
-    | '/login'
     | '/analysis'
+    | '/backup'
     | '/chat'
     | '/diary'
     | '/exchange'
     | '/fortune'
     | '/intro'
+    | '/login'
     | '/my'
     | '/presentation'
     | '/record'
@@ -203,13 +214,14 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/advice'
-    | '/login'
     | '/analysis'
+    | '/backup'
     | '/chat'
     | '/diary'
     | '/exchange'
     | '/fortune'
     | '/intro'
+    | '/login'
     | '/my'
     | '/presentation'
     | '/record'
@@ -222,13 +234,14 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdviceRoute: typeof AdviceRoute
-  LoginRoute: typeof LoginRoute
   AnalysisRoute: typeof AnalysisRoute
+  BackupRoute: typeof BackupRoute
   ChatRoute: typeof ChatRoute
   DiaryRoute: typeof DiaryRoute
   ExchangeRoute: typeof ExchangeRouteWithChildren
   FortuneRoute: typeof FortuneRoute
   IntroRoute: typeof IntroRoute
+  LoginRoute: typeof LoginRoute
   MyRoute: typeof MyRoute
   PresentationRoute: typeof PresentationRoute
   RecordRoute: typeof RecordRoute
@@ -273,6 +286,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/intro': {
       id: '/intro'
       path: '/intro'
@@ -308,6 +328,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/backup': {
+      id: '/backup'
+      path: '/backup'
+      fullPath: '/backup'
+      preLoaderRoute: typeof BackupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/analysis': {
       id: '/analysis'
       path: '/analysis'
@@ -320,13 +347,6 @@ declare module '@tanstack/react-router' {
       path: '/advice'
       fullPath: '/advice'
       preLoaderRoute: typeof AdviceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -370,13 +390,14 @@ const ExchangeRouteWithChildren = ExchangeRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdviceRoute: AdviceRoute,
-  LoginRoute: LoginRoute,
   AnalysisRoute: AnalysisRoute,
+  BackupRoute: BackupRoute,
   ChatRoute: ChatRoute,
   DiaryRoute: DiaryRoute,
   ExchangeRoute: ExchangeRouteWithChildren,
   FortuneRoute: FortuneRoute,
   IntroRoute: IntroRoute,
+  LoginRoute: LoginRoute,
   MyRoute: MyRoute,
   PresentationRoute: PresentationRoute,
   RecordRoute: RecordRoute,
@@ -386,12 +407,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
