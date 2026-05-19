@@ -443,17 +443,19 @@ function ExchangeDiaryPage() {
         {/* 일기 생성 완료 바텀시트 */}
         {showCreatedSheet && diary && (
           <div className="absolute inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.6)" }}>
-            <div className="relative w-full rounded-t-[20px] bg-white px-6 pt-[38px] pb-[calc(2rem+env(safe-area-inset-bottom))]" style={{ height: 396 }}>
-              <h3 className="text-center text-[22px] font-bold leading-[26px] tracking-[-0.45px] text-[#111]">
-                공유 일기가 만들어졌어요!
-              </h3>
-              <p className="mt-[6px] text-center text-[14px] leading-[19.5px] tracking-[-0.13px] text-[#999]">
-                초대 링크를 보내서 친구에게 공유해 보세요.
-              </p>
-              <div className="mt-5 flex h-[162px] items-end justify-center overflow-hidden">
-                <img src={exchangeCharacters} alt="" className="w-[280px] object-contain" />
+            <div className="relative w-full rounded-t-[20px] bg-white flex flex-col" style={{ height: 396 }}>
+              <div className="px-6 pt-[38px] shrink-0">
+                <h3 className="text-center text-[22px] font-bold leading-[26px] tracking-[-0.45px] text-[#111]">
+                  공유 일기가 만들어졌어요!
+                </h3>
+                <p className="mt-[6px] text-center text-[14px] leading-[19.5px] tracking-[-0.13px] text-[#999]">
+                  초대 링크를 보내서 친구에게 공유해 보세요.
+                </p>
               </div>
-              <div className="absolute bottom-[calc(2rem+env(safe-area-inset-bottom))] left-6 right-6 flex gap-[10px]">
+              <div className="flex-1 flex items-end justify-center overflow-hidden">
+                <img src={exchangeCharacters} alt="" className="w-[260px] object-contain object-bottom" />
+              </div>
+              <div className="px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3 shrink-0 flex gap-[10px]">
                 <button
                   type="button"
                   onClick={() => handleCopyLink(diary)}
