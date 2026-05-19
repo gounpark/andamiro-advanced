@@ -146,7 +146,8 @@ function MyPage() {
         <div className="absolute inset-0 overflow-y-auto pb-[126px]">
           {/* 그라디언트 헤더 */}
           <div
-            className="relative overflow-hidden pt-6 pb-20 px-6"
+            className="relative overflow-hidden pb-20 px-6"
+            style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 24px)" }}
             style={{ background: "var(--gradient-sky)" }}
           >
             <img src={bgShapeLargeSvg} alt="" aria-hidden className="pointer-events-none absolute -top-2 -right-4 w-[260px] h-[275px] z-0" />
