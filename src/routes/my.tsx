@@ -304,31 +304,31 @@ function MyPage() {
         )}
 
         <BottomNav active="my" />
-      </div>
 
-      {/* 알림 허용 성공 모달 */}
-      {showNotifSuccess && (
-        <div
-          className="absolute inset-0 z-50 flex items-end justify-center bg-black/30"
-          onClick={() => setShowNotifSuccess(false)}
-        >
+        {/* 알림 허용 성공 모달 — app-frame 안에 위치해야 PC에서 프레임 안에 표시됨 */}
+        {showNotifSuccess && (
           <div
-            className="w-full bg-white rounded-t-[20px] px-6 pt-8 pb-[calc(2rem+env(safe-area-inset-bottom))] flex flex-col items-center gap-3"
-            onClick={(e) => e.stopPropagation()}
+            className="absolute inset-0 z-50 flex items-end justify-center bg-black/30"
+            onClick={() => setShowNotifSuccess(false)}
           >
-            <span className="text-[48px] leading-none">🔔</span>
-            <p className="text-[18px] font-bold text-foreground tracking-tight">알림이 허용되었어요</p>
-            <p className="text-[14px] text-[#999] tracking-tight">새 알림이 오면 알려드릴게요.</p>
-            <button
-              type="button"
-              onClick={() => setShowNotifSuccess(false)}
-              className="mt-2 w-full h-[52px] rounded-[12px] bg-[#4B82F5] text-white text-[16px] font-semibold tracking-tight"
+            <div
+              className="w-full bg-white rounded-t-[20px] px-6 pt-8 pb-[calc(2rem+env(safe-area-inset-bottom))] flex flex-col items-center gap-3"
+              onClick={(e) => e.stopPropagation()}
             >
-              확인
-            </button>
+              <span className="text-[48px] leading-none">🔔</span>
+              <p className="text-[18px] font-bold text-foreground tracking-tight">알림이 허용되었어요</p>
+              <p className="text-[14px] text-[#999] tracking-tight">새 알림이 오면 알려드릴게요.</p>
+              <button
+                type="button"
+                onClick={() => setShowNotifSuccess(false)}
+                className="mt-2 w-full h-[52px] rounded-[12px] bg-[#4B82F5] text-white text-[16px] font-semibold tracking-tight"
+              >
+                확인
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
