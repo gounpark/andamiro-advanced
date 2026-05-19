@@ -4,6 +4,19 @@ import appCss from "../styles.css?url";
 import { Splash } from "@/components/Splash";
 import { initAuth, getCachedUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import {
+  getCommentsAfter,
+  getMyDiaries,
+  getMyId,
+  getSharedDiaries,
+  type ExchangeComment,
+  type ExchangeDiary,
+} from "@/lib/exchangeStore";
+import {
+  areExchangeNotificationsOn,
+  canShowNotifications,
+  showAppNotification,
+} from "@/lib/notifications";
 
 function NotFoundComponent() {
   return (
@@ -78,7 +91,77 @@ function RootComponent() {
   return (
     <>
       <Splash />
+      <ExchangeNotificationWatcher />
       <Outlet />
     </>
   );
+}
+
+const EXCHANGE_LAST_COMMENT_KEY = "andamiro_exchange_last_comment_at";
+const EXCHANGE_POLL_MS = 30000;
+
+function ExchangeNotificationWatcher() {
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    let cancelled = false;
+    let checking = false;
+
+    const runCheck = async () => {
+      if (cancelled || checking || !canShowNotifications() || !areExchangeNotificationsOn()) return;
+      checking = true;
+
+      try {
+        const lastSeen = localStorage.getItem(EXCHANGE_LAST_COMMENT_KEY);
+        if (!lastSeen) {
+          localStorage.setItem(EXCHANGE_LAST_COMMENT_KEY, new Date().toISOString());
+          return;
+        }
+
+        const [myDiaries, sharedDiaries] = await Promise.all([getMyDiaries(), getSharedDiaries()]);
+        const diaries = [...myDiaries, ...sharedDiaries];
+        const diaryIds = diaries.map((diary) => diary.id);
+        const comments = await getCommentsAfter(diaryIds, lastSeen);
+        if (comments.length === 0) return;
+
+        const myId = getMyId();
+        const newest = comments[comments.length - 1];
+        localStorage.setItem(EXCHANGE_LAST_COMMENT_KEY, newest.createdAt);
+
+        const notifyTarget = comments.find((comment) => comment.authorId !== myId);
+        if (notifyTarget) notifyComment(notifyTarget, diaries);
+      } finally {
+        checking = false;
+      }
+    };
+
+    runCheck();
+    const timer = window.setInterval(runCheck, EXCHANGE_POLL_MS);
+    window.addEventListener("focus", runCheck);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+      window.removeEventListener("focus", runCheck);
+    };
+  }, []);
+
+  return null;
+}
+
+function notifyComment(comment: ExchangeComment, diaries: ExchangeDiary[]) {
+  const diary = diaries.find((item) => item.id === comment.diaryId);
+  const bodyPrefix = comment.parentId ? "답글" : "댓글";
+  const title = diary ? `"${diary.title}"에 새 ${bodyPrefix}` : `교환일기에 새 ${bodyPrefix}`;
+  const notification = showAppNotification(title, {
+    body: `${comment.authorName}: ${comment.body}`,
+    tag: `exchange-comment-${comment.diaryId}`,
+  });
+
+  if (!notification || !diary) return;
+  notification.onclick = () => {
+    window.focus();
+    const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+    window.location.href = `${base}/exchange/${diary.id}`;
+  };
 }

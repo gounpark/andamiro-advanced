@@ -24,6 +24,18 @@ import { getDiaryEntries, countThisMonth } from "@/lib/diaryStore";
 import { getMyDiaries, getSharedDiaries } from "@/lib/exchangeStore";
 import { getCachedUser, getAuthDisplayName, setDisplayName, signOut } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import {
+  EXCHANGE_NOTIF_ON_KEY,
+  NOTIF_ON_KEY,
+  NOTIF_TIME_KEY,
+  getNotificationPermission,
+  enableExchangePushNotifications,
+  disableExchangePushNotifications,
+  isWebPushSupported,
+  requestNotificationPermission,
+  sendDailyDiaryNotification,
+  sendExchangeTestNotification,
+} from "@/lib/notifications";
 
 export const Route = createFileRoute("/my")({
   head: () => ({
@@ -35,26 +47,6 @@ export const Route = createFileRoute("/my")({
   }),
   component: MyPage,
 });
-
-const NOTIF_TIME_KEY = "andamiro_notif_time";
-const NOTIF_ON_KEY = "andamiro_notif_on";
-
-async function requestNotifPermission(): Promise<boolean> {
-  if (!("Notification" in window)) return false;
-  if (Notification.permission === "granted") return true;
-  if (Notification.permission === "denied") return false;
-  const result = await Notification.requestPermission();
-  return result === "granted";
-}
-
-function sendTestNotif() {
-  if (Notification.permission === "granted") {
-    new Notification("안다미로 알림 🍀", {
-      body: "오늘의 감정을 기록할 시간이에요!",
-      icon: "/favicon.png",
-    });
-  }
-}
 
 function MyPage() {
   const navigate = useNavigate();
@@ -117,28 +109,51 @@ function MyPage() {
   // ── 알림 설정 ─────────────────────────────────────────────────────────────
   const [notif, setNotif] = useState(() => localStorage.getItem(NOTIF_ON_KEY) !== "0");
   const [notifTime, setNotifTime] = useState(() => localStorage.getItem(NOTIF_TIME_KEY) ?? "21:00");
-  const [notifPerm, setNotifPerm] = useState<NotificationPermission | "unsupported">(() => {
-    if (typeof window === "undefined" || !("Notification" in window)) return "unsupported";
-    return Notification.permission;
-  });
+  const [exchangeNotif, setExchangeNotif] = useState(
+    () => localStorage.getItem(EXCHANGE_NOTIF_ON_KEY) !== "0",
+  );
+  const [notifPerm, setNotifPerm] = useState<NotificationPermission | "unsupported">(
+    getNotificationPermission,
+  );
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [timeSaved, setTimeSaved] = useState(false);
   const timeInputRef = useRef<HTMLInputElement>(null);
 
   const handleNotifToggle = async (v: boolean) => {
     if (v) {
-      const granted = await requestNotifPermission();
-      setNotifPerm("Notification" in window ? Notification.permission : "unsupported");
+      const granted = await requestNotificationPermission();
+      setNotifPerm(getNotificationPermission());
       if (!granted) {
         alert("브라우저 설정에서 알림 권한을 허용해 주세요.");
         return;
       }
       setNotif(true);
       localStorage.setItem(NOTIF_ON_KEY, "1");
-      sendTestNotif();
+      sendDailyDiaryNotification();
     } else {
       setNotif(false);
       localStorage.setItem(NOTIF_ON_KEY, "0");
+    }
+  };
+
+  const handleExchangeNotifToggle = async (v: boolean) => {
+    if (v) {
+      const granted = await enableExchangePushNotifications();
+      setNotifPerm(getNotificationPermission());
+      if (!granted) {
+        alert(
+          isWebPushSupported()
+            ? "푸시 알림 설정에 실패했어요. VAPID 공개키와 브라우저 권한을 확인해 주세요."
+            : "이 브라우저는 푸시 알림을 지원하지 않아요.",
+        );
+        return;
+      }
+      setNotif(true);
+      setExchangeNotif(true);
+      sendExchangeTestNotification();
+    } else {
+      await disableExchangePushNotifications();
+      setExchangeNotif(false);
     }
   };
 
@@ -163,7 +178,7 @@ function MyPage() {
       const lastNotif = localStorage.getItem("andamiro_last_notif");
       const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
       if (lastNotif !== today) {
-        sendTestNotif();
+        sendDailyDiaryNotification();
         localStorage.setItem("andamiro_last_notif", today);
       }
     }
@@ -268,6 +283,30 @@ function MyPage() {
 
           {/* 교환 일기 바로가기 */}
           <ExchangeLink />
+
+          {/* 교환일기 푸시알림 */}
+          <section className="px-4 mt-3">
+            <div className="rounded-2xl bg-white border border-[#f0f0f0] px-4 py-3.5 shadow-sm flex items-center gap-3">
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] shrink-0">
+                <Bell className="h-4.5 w-4.5" />
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-foreground text-[14px] tracking-tight">푸시 알림</p>
+                <p className="text-[11px] text-[#999] mt-0.5 tracking-tight">
+                  {notifDenied
+                    ? "브라우저에서 알림 권한이 꺼져 있어요"
+                    : exchangeNotif && notif && notifGranted
+                      ? "교환일기 댓글과 답글을 알려드려요"
+                      : "댓글이 달리면 바로 알려드릴게요"}
+                </p>
+              </div>
+              <Switch
+                checked={exchangeNotif && notif && notifGranted}
+                onCheckedChange={handleExchangeNotifToggle}
+                disabled={notifDenied || notifPerm === "unsupported" || !isWebPushSupported()}
+              />
+            </div>
+          </section>
 
           {/* 설정 */}
           <section className="px-4 mt-5">
