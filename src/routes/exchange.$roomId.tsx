@@ -180,7 +180,7 @@ function ExchangeDiaryPage() {
           }
         />
 
-        <div className="flex-1 overflow-y-auto scrollbar-hide pb-24">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide pb-24">
           <article>
             {diary.imageDataUrl ? (
               <img
@@ -474,7 +474,7 @@ function CommentItem({
           </span>
           <span className="text-[11px] text-[#bbb]">{relativeTime(comment.createdAt)}</span>
         </div>
-        <p className="text-[13px] text-[#444] leading-[19.5px] tracking-tight">{comment.body}</p>
+        <p className="text-[13px] text-[#444] leading-[19.5px] tracking-tight break-words overflow-hidden">{comment.body}</p>
         <div className="flex items-center gap-3 mt-1">
           {!isReply && onReply && (
             <button
