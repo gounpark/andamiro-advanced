@@ -1,10 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
-import { Folder, Share2, Copy, Check, X } from "lucide-react";
-import { createDiary, type ExchangeDiary } from "@/lib/exchangeStore";
-import { getAppOrigin } from "@/lib/navigate";
+import { Folder, X } from "lucide-react";
+import { createDiary } from "@/lib/exchangeStore";
 import { AppHeader } from "@/components/AppHeader";
-import exchangeCharacters from "@/assets/exchange-created-characters.webp";
 
 export const Route = createFileRoute("/exchange/create")({
   head: () => ({
@@ -19,6 +17,7 @@ interface DraftData {
 }
 
 function ExchangeCreatePage() {
+  const navigate = useNavigate();
   const titleRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
@@ -26,32 +25,7 @@ function ExchangeCreatePage() {
 
   const [imageDataUrl, setImageDataUrl] = useState<string | undefined>();
   const [error, setError] = useState("");
-  const [createdDiary, setCreatedDiary] = useState<ExchangeDiary | null>(null);
-  const [copied, setCopied] = useState(false);
   const [hasAiDraft, setHasAiDraft] = useState(false);
-
-  const buildShareText = (diary: ExchangeDiary) => {
-    const url = `${getAppOrigin()}/exchange?invite=${diary.inviteCode}`;
-    return { url, text: `내 일기 보러올래? 🌱\n비밀번호: ${diary.password}\n${url}` };
-  };
-
-  const handleShare = async (diary: ExchangeDiary) => {
-    const { text } = buildShareText(diary);
-    if (navigator.share) {
-      try { await navigator.share({ text }); } catch { /* dismissed */ }
-    } else {
-      await handleCopy(diary);
-    }
-  };
-
-  const handleCopy = async (diary: ExchangeDiary) => {
-    const { text } = buildShareText(diary);
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch { /* 무시 */ }
-  };
 
   const focusField = (field: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>) => {
     field.current?.focus();
@@ -127,7 +101,8 @@ function ExchangeCreatePage() {
         keywords: [],
         imageDataUrl,
       });
-      setCreatedDiary(diary);
+      sessionStorage.setItem("exchange_just_created", diary.id);
+      navigate({ to: "/exchange/$roomId", params: { roomId: diary.id }, search: { invite: undefined } });
     } catch {
       setError("일기 저장에 실패했어요. 잠시 후 다시 시도해 주세요.");
     }
@@ -239,47 +214,6 @@ function ExchangeCreatePage() {
           </button>
         </div>
 
-        {/* 초대 링크 바텀시트 */}
-        {createdDiary && (() => {
-          return (
-            <div className="absolute inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.45)" }}>
-              <div className="relative h-[396px] w-full rounded-t-[20px] bg-white px-6 pt-[38px] pb-[calc(2rem+env(safe-area-inset-bottom))]">
-                <h3 className="text-center text-[22px] font-bold leading-[26px] tracking-tight text-[#222]">
-                  공유 일기가 만들어졌어요!
-                </h3>
-                <p className="mt-2 text-center text-[14px] leading-[21px] tracking-tight text-[#999]">
-                  초대 링크를 보내서 친구에게 공유해 보세요.
-                </p>
-
-                <div className="mt-5 flex h-[162px] items-end justify-center overflow-hidden">
-                  <img
-                    src={exchangeCharacters}
-                    alt=""
-                    className="w-[280px] object-contain"
-                  />
-                </div>
-
-                <div className="absolute bottom-[calc(2rem+env(safe-area-inset-bottom))] left-6 right-6 flex gap-[10px]">
-                  <button
-                    type="button"
-                    onClick={() => handleCopy(createdDiary)}
-                    className="flex h-[52px] flex-1 items-center justify-center gap-1.5 rounded-[12px] border border-[#4283f3] bg-white text-[16px] font-medium tracking-[-0.48px] text-[#4283f3] active:scale-[0.99] transition"
-                  >
-                    {copied ? <Check className="h-4 w-4" /> : null}
-                    {copied ? "복사됨" : "링크 복사"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleShare(createdDiary)}
-                    className="flex h-[52px] w-[198px] shrink-0 items-center justify-center rounded-[12px] bg-[#4283f3] text-[16px] font-medium tracking-[-0.48px] text-white active:scale-[0.99] transition"
-                  >
-                    친구에게 공유
-                  </button>
-                </div>
-              </div>
-            </div>
-          );
-        })()}
       </div>
     </div>
   );

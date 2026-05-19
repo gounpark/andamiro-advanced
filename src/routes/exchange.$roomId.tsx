@@ -18,6 +18,7 @@ import {
 } from "@/lib/exchangeStore";
 import { getAppOrigin } from "@/lib/navigate";
 import { AppHeader } from "@/components/AppHeader";
+import exchangeCharacters from "@/assets/exchange-created-characters.webp";
 
 export const Route = createFileRoute("/exchange/$roomId")({
   head: () => ({
@@ -36,11 +37,39 @@ function ExchangeDiaryPage() {
   const [comments, setComments] = useState<ExchangeComment[]>([]);
   const [authorized, setAuthorized] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showCreatedSheet, setShowCreatedSheet] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [replyTo, setReplyTo] = useState<ExchangeComment | null>(null);
   const commentInputRef = useRef<HTMLInputElement>(null);
 
   const pwInputRef = useRef<HTMLInputElement>(null);
   const [pwError, setPwError] = useState("");
+
+  const buildShareText = (d: ExchangeDiary) => {
+    const url = `${getAppOrigin()}/exchange?invite=${d.inviteCode}`;
+    return { url, text: `내 일기 보러올래? 🌱\n비밀번호: ${d.password}\n${url}` };
+  };
+
+  const handleCopyLink = async (d: ExchangeDiary) => {
+    const { text } = buildShareText(d);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* 무시 */ }
+  };
+
+  const handleShareDiary = async (d: ExchangeDiary) => {
+    setShowCreatedSheet(false);
+    const { text } = buildShareText(d);
+    await new Promise((r) => setTimeout(r, 200)); // 시트 닫힘 대기
+    if (navigator.share) {
+      try { await navigator.share({ text }); } catch { /* dismissed */ }
+    } else {
+      const { text: t } = buildShareText(d);
+      await navigator.clipboard.writeText(t).catch(() => undefined);
+    }
+  };
 
   useEffect(() => {
     const init = async () => {
@@ -52,6 +81,12 @@ function ExchangeDiaryPage() {
         return;
       }
       setDiary(d);
+      // 방금 생성한 일기인지 확인
+      const justCreated = sessionStorage.getItem("exchange_just_created");
+      if (justCreated === diaryId) {
+        sessionStorage.removeItem("exchange_just_created");
+        setShowCreatedSheet(true);
+      }
       // 작성자 본인이거나 이미 비밀번호 인증한 경우 바로 열람
       const isAuthor = d.authorId === myId;
       const auth = isAuthor || isDiaryAuthorized(diaryId);
@@ -401,6 +436,40 @@ function ExchangeDiaryPage() {
                   일기 삭제
                 </button>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* 일기 생성 완료 바텀시트 */}
+        {showCreatedSheet && diary && (
+          <div className="absolute inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.6)" }}>
+            <div className="relative w-full rounded-t-[20px] bg-white px-6 pt-[38px] pb-[calc(2rem+env(safe-area-inset-bottom))]" style={{ height: 396 }}>
+              <h3 className="text-center text-[22px] font-bold leading-[26px] tracking-[-0.45px] text-[#111]">
+                공유 일기가 만들어졌어요!
+              </h3>
+              <p className="mt-[6px] text-center text-[14px] leading-[19.5px] tracking-[-0.13px] text-[#999]">
+                초대 링크를 보내서 친구에게 공유해 보세요.
+              </p>
+              <div className="mt-5 flex h-[162px] items-end justify-center overflow-hidden">
+                <img src={exchangeCharacters} alt="" className="w-[280px] object-contain" />
+              </div>
+              <div className="absolute bottom-[calc(2rem+env(safe-area-inset-bottom))] left-6 right-6 flex gap-[10px]">
+                <button
+                  type="button"
+                  onClick={() => handleCopyLink(diary)}
+                  className="flex h-[52px] flex-1 items-center justify-center gap-1.5 rounded-[12px] border border-[#4283f3] bg-white text-[16px] font-medium tracking-[-0.48px] text-[#4283f3] active:scale-[0.99] transition"
+                >
+                  {copied ? <Check className="h-4 w-4" /> : null}
+                  {copied ? "복사됨" : "링크 복사"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleShareDiary(diary)}
+                  className="flex h-[52px] w-[198px] shrink-0 items-center justify-center rounded-[12px] bg-[#4283f3] text-[16px] font-medium tracking-[-0.48px] text-white active:scale-[0.99] transition"
+                >
+                  친구에게 공유
+                </button>
+              </div>
             </div>
           </div>
         )}
