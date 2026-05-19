@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import React, { useEffect, useRef, useState } from "react";
 import { ChevronLeft } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { EmptyDiaryState } from "@/components/EmptyDiaryState";
 import { BottomNav } from "@/components/BottomNav";
 import { getDiaryEntries, type DiaryEntry } from "@/lib/diaryStore";
@@ -360,18 +361,16 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
         <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide pb-32">
           {/* 상단 블루 헤더 */}
-          <div className="relative bg-[#3d78f3] text-white px-6 pb-8" style={{ ...fadeIn(1), paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}>
-            <header className="relative flex items-center justify-center h-[68px]">
-              <Link
-                to="/"
-                search={{} as any}
-                aria-label="뒤로"
-                className="absolute left-0 grid h-9 w-9 place-items-center rounded-full text-white/90"
-              >
-                <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
-              </Link>
-              <h1 className="font-semibold text-[18px] tracking-[-0.45px]">리포트</h1>
-            </header>
+          <div className="relative bg-[#3d78f3] text-white px-6 pb-8" style={fadeIn(1)}>
+            <PageHeader
+              className="bg-transparent"
+              title={<span className="font-semibold text-white text-[18px] tracking-[-0.45px]">리포트</span>}
+              left={
+                <Link to="/" search={{} as any} aria-label="뒤로" className="grid h-9 w-9 place-items-center rounded-full text-white/90">
+                  <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
+                </Link>
+              }
+            />
             <p className="text-[#f8f8f8] text-[20px] tracking-[-0.6px] leading-[1.5]">
               {headerSub}
             </p>

@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { DemoCursor } from "@/components/DemoCursor";
+import { PageHeader } from "@/components/PageHeader";
 
 import moodBest from "@/assets/moods/mood-best.webp";
 import moodGood from "@/assets/moods/mood-good.webp";
@@ -241,16 +242,14 @@ function RecordPage() {
         {/* 콘텐츠 */}
         <div className="relative z-10 flex h-full flex-col">
           {/* 헤더 (뒤로가기 버튼) */}
-          <header className="flex items-center px-5 pb-1" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}>
-            <Link
-              to="/"
-              search={{} as any}
-              aria-label="뒤로 가기"
-              className="grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground"
-            >
-              <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
-            </Link>
-          </header>
+          <PageHeader
+            className=""
+            left={
+              <Link to="/" search={{} as any} aria-label="뒤로 가기" className="grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground">
+                <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
+              </Link>
+            }
+          />
 
           {/* 타이틀 */}
           <section className="px-6 pt-3">

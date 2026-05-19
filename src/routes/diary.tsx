@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ChevronLeft, Trash2, Video, Mic } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { getDiaryEntries, deleteDiaryEntry, type DiaryEntry } from "@/lib/diaryStore";
 import type { MoodKey } from "@/lib/videoStore";
 
@@ -62,20 +63,15 @@ function DiaryPage() {
     <div className="app-shell">
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
         {/* 헤더 */}
-        <header className="relative shrink-0 bg-white border-b border-[#f0f0f0]" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}>
-          <div className="relative flex h-[68px] items-center justify-center px-4">
-            <Link
-              to="/my"
-              aria-label="뒤로"
-              className="absolute left-3 grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground"
-            >
+        <PageHeader
+          title="영상 일기 기록"
+          className="bg-white border-b border-[#f0f0f0]"
+          left={
+            <Link to="/my" aria-label="뒤로" className="grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground">
               <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
             </Link>
-            <h1 className="font-semibold text-foreground text-[16px] tracking-tight">
-              영상 일기 기록
-            </h1>
-          </div>
-        </header>
+          }
+        />
 
         <div className="flex-1 overflow-y-auto scrollbar-hide pb-10">
           {grouped.length === 0 ? (
