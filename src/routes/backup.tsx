@@ -6,6 +6,7 @@ import {
   getSharedDiaries,
   getComments,
   relativeTime,
+  coverColorForId,
   type ExchangeDiary,
   type ExchangeComment,
 } from "@/lib/exchangeStore";
@@ -96,24 +97,29 @@ function BackupPage() {
     <div className="app-shell">
       <div className="app-frame flex flex-col bg-white">
         {/* 헤더 */}
-        <div className="flex items-center justify-between px-4 pt-[56px] pb-3">
-          <button
-            type="button"
-            onClick={() => navigate({ to: "/my" })}
-            className="flex items-center justify-center w-8 h-8 -ml-1"
-          >
-            <ChevronLeft className="w-6 h-6 text-foreground" />
-          </button>
-          <span className="text-[17px] font-semibold text-foreground tracking-tight">데이터 백업</span>
-          <button
-            type="button"
-            onClick={toggleAll}
-            className="text-[14px] font-medium text-[#4B82F5] tracking-tight min-w-[40px] text-right"
-            disabled={diaries.length === 0}
-          >
-            {allSelected ? "해제" : "전체선택"}
-          </button>
-        </div>
+        <header className="relative shrink-0 bg-white" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
+          <div className="relative flex h-[68px] items-center px-[10px]">
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/my" })}
+              className="grid h-11 w-11 place-items-center active:opacity-60 transition"
+              aria-label="뒤로가기"
+            >
+              <ChevronLeft className="h-7 w-7 text-[#222]" strokeWidth={2.2} />
+            </button>
+            <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[18px] font-semibold text-[#222] tracking-tight">
+              데이터 백업
+            </h1>
+            <button
+              type="button"
+              onClick={toggleAll}
+              disabled={diaries.length === 0}
+              className="absolute right-[16px] top-1/2 -translate-y-1/2 text-[14px] font-medium text-[#4B82F5] tracking-tight"
+            >
+              {allSelected ? "해제" : "전체선택"}
+            </button>
+          </div>
+        </header>
 
         {/* 목록 */}
         <div className="flex-1 overflow-y-auto">
@@ -136,18 +142,21 @@ function BackupPage() {
                     isSelected ? "bg-[#F0F5FF]" : "bg-white"
                   } ${!isLast ? "border-b border-[#f0f0f0]" : ""}`}
                 >
-                  {/* 썸네일 */}
-                  <div className="w-[60px] h-[60px] rounded-[12px] overflow-hidden flex-shrink-0 bg-[#f0f0f0]">
-                    {diary.imageDataUrl ? (
-                      <img
-                        src={diary.imageDataUrl}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-[#c8d8ff] to-[#a0b8ff]" />
-                    )}
-                  </div>
+                  {/* 썸네일 — 공유일기 목록과 동일한 방식 */}
+                  {diary.imageDataUrl ? (
+                    <img
+                      src={diary.imageDataUrl}
+                      alt=""
+                      className="h-14 w-14 shrink-0 rounded-xl object-cover"
+                    />
+                  ) : (
+                    <div
+                      className="grid h-14 w-14 shrink-0 place-items-center rounded-xl text-white font-bold text-[22px]"
+                      style={{ background: coverColorForId(diary.id) }}
+                    >
+                      {diary.title.charAt(0)}
+                    </div>
+                  )}
 
                   {/* 텍스트 */}
                   <div className="flex-1 min-w-0">
