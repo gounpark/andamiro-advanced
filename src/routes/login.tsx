@@ -14,8 +14,8 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
-// GIF 1루프 = 89프레임 × 평균 4.56cs ≈ 4050ms
-const GIF_DURATION_MS = 4050;
+// GIF 1루프 ≈ 2000ms
+const GIF_DURATION_MS = 2000;
 
 function LoginPage() {
   const { redirect } = Route.useSearch();
