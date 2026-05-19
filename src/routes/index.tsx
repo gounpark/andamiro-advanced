@@ -441,7 +441,7 @@ function Index() {
 
             <PageHeader
               className="bg-transparent"
-              title={
+              left={
                 <img
                   src={logoSvg}
                   alt="안다미로"
