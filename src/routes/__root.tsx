@@ -2,7 +2,7 @@ import { Outlet, Link, createRootRoute, useNavigate, useRouter } from "@tanstack
 import { useEffect, useState } from "react";
 import appCss from "../styles.css?url";
 import { Splash } from "@/components/Splash";
-import { initAuth, getCachedUser } from "@/lib/auth";
+import { initAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import {
   getCommentsAfter,
@@ -83,11 +83,15 @@ function RootComponent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Splash를 항상 같은 트리 위치에 렌더링 (리마운트 방지)
+  if (!authReady) {
+    // auth 초기화 전엔 Splash만 표시
+    return <Splash />;
+  }
+
   return (
     <>
-      <Splash authReady={authReady} />
-      {authReady && <ExchangeNotificationWatcher />}
+      <Splash />
+      <ExchangeNotificationWatcher />
       <Outlet />
     </>
   );
