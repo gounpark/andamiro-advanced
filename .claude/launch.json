@@ -5,7 +5,14 @@
       "name": "andamiro-dev",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "port": 5173
+      "port": 5174,
+      "autoPort": true
+    },
+    {
+      "name": "mockup-static",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8765", "--directory", "public"],
+      "port": 8765
     }
   ]
 }
