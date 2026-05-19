@@ -4,7 +4,7 @@ import { Folder, Share2, Copy, Check, X } from "lucide-react";
 import { createDiary, type ExchangeDiary } from "@/lib/exchangeStore";
 import { getAppOrigin } from "@/lib/navigate";
 import { AppHeader } from "@/components/AppHeader";
-import emptyCloud from "@/assets/empty-cloud.webp";
+import exchangeCharacters from "@/assets/exchange-created-characters.webp";
 
 export const Route = createFileRoute("/exchange/create")({
   head: () => ({
@@ -251,29 +251,28 @@ function ExchangeCreatePage() {
                   초대 링크를 보내서 친구에게 공유해 보세요.
                 </p>
 
-                <div className="mt-6 flex h-[154px] items-center justify-center">
+                <div className="mt-5 flex h-[162px] items-end justify-center overflow-hidden">
                   <img
-                    src={emptyCloud}
+                    src={exchangeCharacters}
                     alt=""
-                    className="h-[132px] w-[206px] object-contain"
+                    className="w-[280px] object-contain"
                   />
                 </div>
 
-                <div className="absolute bottom-[calc(2rem+env(safe-area-inset-bottom))] left-6 right-6 flex gap-2.5">
+                <div className="absolute bottom-[calc(2rem+env(safe-area-inset-bottom))] left-6 right-6 flex gap-[10px]">
                   <button
                     type="button"
                     onClick={() => handleCopy(createdDiary)}
-                    className="flex h-[52px] w-[119px] shrink-0 items-center justify-center gap-1.5 rounded-[12px] border border-[#4283f3] bg-white text-[16px] font-semibold tracking-tight text-[#4283f3] active:scale-[0.99] transition"
+                    className="flex h-[52px] flex-1 items-center justify-center gap-1.5 rounded-[12px] border border-[#4283f3] bg-white text-[16px] font-medium tracking-[-0.48px] text-[#4283f3] active:scale-[0.99] transition"
                   >
-                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                    {copied ? <Check className="h-4 w-4" /> : null}
                     {copied ? "복사됨" : "링크 복사"}
                   </button>
                   <button
                     type="button"
                     onClick={() => handleShare(createdDiary)}
-                    className="flex h-[52px] flex-1 items-center justify-center gap-1.5 rounded-[12px] bg-[#4283f3] text-[16px] font-semibold tracking-tight text-white shadow-[0_4px_2px_rgba(221,221,221,0.2)] active:scale-[0.99] transition"
+                    className="flex h-[52px] w-[198px] shrink-0 items-center justify-center rounded-[12px] bg-[#4283f3] text-[16px] font-medium tracking-[-0.48px] text-white active:scale-[0.99] transition"
                   >
-                    <Share2 className="h-4 w-4" />
                     친구에게 공유
                   </button>
                 </div>
