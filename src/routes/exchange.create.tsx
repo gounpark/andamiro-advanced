@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
-import { ChevronLeft, X, ImagePlus, Share2, Copy, Check } from "lucide-react";
+import { Folder, Share2, Copy, Check, X } from "lucide-react";
 import { createDiary, type ExchangeDiary } from "@/lib/exchangeStore";
 import { getAppOrigin } from "@/lib/navigate";
+import { AppHeader } from "@/components/AppHeader";
 
 export const Route = createFileRoute("/exchange/create")({
   head: () => ({
@@ -28,6 +29,7 @@ function ExchangeCreatePage() {
   const [error, setError] = useState("");
   const [createdDiary, setCreatedDiary] = useState<ExchangeDiary | null>(null);
   const [copied, setCopied] = useState(false);
+  const [hasAiDraft, setHasAiDraft] = useState(false);
 
   const buildShareText = (diary: ExchangeDiary) => {
     const url = `${getAppOrigin()}/exchange?invite=${diary.inviteCode}`;
@@ -65,6 +67,7 @@ function ExchangeCreatePage() {
         const draft: DraftData = JSON.parse(raw);
         if (draft.title && titleRef.current) titleRef.current.value = draft.title;
         if (draft.body && bodyRef.current) bodyRef.current.value = draft.body;
+        if (draft.title || draft.body) setHasAiDraft(true);
         sessionStorage.removeItem("exchange_draft");
       }
     } catch {
@@ -133,54 +136,46 @@ function ExchangeCreatePage() {
 
   return (
     <div className="app-shell">
-      <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
-        <div className="absolute inset-0 overflow-y-auto scrollbar-hide">
-          {/* 헤더 */}
-          <header className="sticky top-0 z-10 bg-white flex items-center gap-2 px-4 pt-[52px] pb-3 border-b border-[#f0f0f0]">
-            <button
-              type="button"
-              onClick={() => navigate({ to: "/exchange", search: { invite: undefined } })}
-              className="p-1 -ml-1"
-            >
-              <ChevronLeft className="h-5 w-5 text-foreground" />
-            </button>
-            <h1 className="flex-1 font-bold text-foreground text-[18px] tracking-tight">
-              교환일기 만들기
-            </h1>
-          </header>
+      <div className="app-frame flex flex-col bg-white">
+        <AppHeader title="공유일기 만들기" backTo="/exchange" />
 
-          <div className="px-6 pb-32 pt-5 flex flex-col gap-7">
+        <div className="flex-1 overflow-y-auto scrollbar-hide">
+          <div className="px-6 pb-32 pt-[7px] flex flex-col gap-6">
+            {hasAiDraft && (
+              <div className="w-fit rounded-full bg-[#ecf1fe] px-2 py-1.5 text-center text-[12px] font-medium text-[#4a75f7] tracking-[-0.36px]">
+                ✦ AI가 오늘의 일기를 작성했어요
+              </div>
+            )}
+
             {/* 이미지 첨부 */}
             <div>
               <p className="text-[15px] font-bold text-[#222] tracking-tight mb-2">이미지</p>
-              {imageDataUrl ? (
-                <div
-                  className="relative w-full rounded-2xl overflow-hidden"
-                  style={{ aspectRatio: "16/9" }}
-                >
-                  <img
-                    src={imageDataUrl}
-                    alt="첨부 이미지"
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setImageDataUrl(undefined)}
-                    className="absolute top-2 right-2 bg-black/50 rounded-full p-1"
-                  >
-                    <X className="h-4 w-4 text-white" />
-                  </button>
-                </div>
-              ) : (
+              <div className="flex items-center gap-3">
+                {imageDataUrl && (
+                  <div className="relative h-[98px] w-[98px] shrink-0 overflow-hidden rounded-[12px]">
+                    <img
+                      src={imageDataUrl}
+                      alt="첨부 이미지"
+                      className="h-full w-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setImageDataUrl(undefined)}
+                      className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-full bg-black/45"
+                    >
+                      <X className="h-3.5 w-3.5 text-white" />
+                    </button>
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center justify-center gap-2 w-full h-[120px] rounded-2xl bg-[#f4f6fa] border-2 border-dashed border-[#ddd] text-[#bbb] active:bg-[#eef0f5] transition"
+                  className="flex h-[98px] w-[98px] shrink-0 flex-col items-center justify-center rounded-[12px] border border-dashed border-[#ddd] bg-[#fafafa] text-[#999] active:bg-[#f4f4f4] transition"
                 >
-                  <ImagePlus className="h-6 w-6" />
-                  <span className="text-[14px] tracking-tight">사진 추가</span>
+                  <Folder className="h-5 w-5" strokeWidth={1.7} />
+                  <span className="text-[15px] font-light leading-3 tracking-[-0.375px]">+</span>
                 </button>
-              )}
+              </div>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -234,7 +229,7 @@ function ExchangeCreatePage() {
         </div>
 
         {/* 하단 고정 버튼 */}
-        <div className="absolute bottom-0 left-0 right-0 z-20 bg-white border-t border-[#f0f0f0] px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+        <div className="absolute bottom-0 left-0 right-0 z-20 bg-white px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3">
           <button
             type="button"
             onClick={handleSubmitAttempt}
