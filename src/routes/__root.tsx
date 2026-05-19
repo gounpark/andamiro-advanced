@@ -83,15 +83,11 @@ function RootComponent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!authReady) {
-    // auth 초기화 전엔 Splash만 표시
-    return <Splash />;
-  }
-
+  // Splash를 항상 같은 트리 위치에 렌더링 (리마운트 방지)
   return (
     <>
-      <Splash />
-      <ExchangeNotificationWatcher />
+      <Splash authReady={authReady} />
+      {authReady && <ExchangeNotificationWatcher />}
       <Outlet />
     </>
   );

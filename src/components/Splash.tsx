@@ -8,20 +8,20 @@ const GIF_DURATION_MS = 2000;
 const FADE_MS = 300;
 const SESSION_KEY = "splash_shown";
 
-export function Splash() {
+type Phase = "gif" | "freeze" | "login" | "fading";
+
+export function Splash({ authReady }: { authReady: boolean }) {
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(true);
-  // gif → freeze → login(버튼 표시) 또는 fading(로그인 상태면 바로 페이드아웃)
-  const [phase, setPhase] = useState<"gif" | "freeze" | "login" | "fading">("gif");
+  const [phase, setPhase] = useState<Phase>("gif");
   const [loginLoading, setLoginLoading] = useState(false);
 
+  // ── 마운트 시 1회: skip 조건 확인 + GIF 타이머 ───────────────────────────
   useEffect(() => {
     if (typeof window === "undefined") return;
-    // iframe·presentation·nosplash 스킵
     if (window !== window.top) { setVisible(false); return; }
     if (new URLSearchParams(window.location.search).get("nosplash") === "1") { setVisible(false); return; }
     if (window.location.pathname.includes("presentation")) { setVisible(false); return; }
-    // 세션당 1회만
     try {
       if (window.sessionStorage.getItem(SESSION_KEY)) { setVisible(false); return; }
       window.sessionStorage.setItem(SESSION_KEY, "1");
@@ -30,31 +30,35 @@ export function Splash() {
     setMounted(true);
 
     // GIF 1루프 후 freeze
-    const t1 = window.setTimeout(() => setPhase("freeze"), GIF_DURATION_MS);
-
-    // freeze 직후 로그인 상태 분기
-    const t2 = window.setTimeout(() => {
-      if (getCachedUser()) {
-        // 로그인됨 → 그냥 페이드아웃
-        setPhase("fading");
-        window.setTimeout(() => setVisible(false), FADE_MS);
-      } else {
-        // 미로그인 → 로그인 버튼 슬라이드업
-        setPhase("login");
-      }
-    }, GIF_DURATION_MS + 80);
-
-    return () => {
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-    };
+    const t = window.setTimeout(() => setPhase("freeze"), GIF_DURATION_MS);
+    return () => window.clearTimeout(t);
   }, []);
+
+  // ── GIF 끝(freeze) + authReady 둘 다 만족하면 분기 ───────────────────────
+  // authReady가 먼저 오거나 나중에 와도 둘 다 준비됐을 때만 실행
+  useEffect(() => {
+    if (phase !== "freeze" || !authReady) return;
+
+    if (getCachedUser()) {
+      // 로그인 상태 → 페이드아웃
+      setPhase("fading");
+      const t = window.setTimeout(() => setVisible(false), FADE_MS);
+      return () => window.clearTimeout(t);
+    } else {
+      // 미로그인 → 버튼 슬라이드업
+      setPhase("login");
+    }
+  }, [phase, authReady]);
+
+  const dismiss = () => {
+    setPhase("fading");
+    window.setTimeout(() => setVisible(false), FADE_MS);
+  };
 
   const handleLogin = async () => {
     setLoginLoading(true);
     try {
       await signInWithGoogle();
-      // OAuth redirect → 페이지 리로드 → SESSION_KEY 있어서 Splash 스킵
     } catch {
       setLoginLoading(false);
     }
@@ -62,25 +66,24 @@ export function Splash() {
 
   if (!mounted || !visible) return null;
 
-  const fading = phase === "fading";
-
   return (
     <div
       aria-hidden={phase !== "login"}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-white md:bg-black/40 transition-opacity"
-      style={{ opacity: fading ? 0 : 1, transitionDuration: `${FADE_MS}ms` }}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-white md:bg-black/40"
+      style={{
+        opacity: phase === "fading" ? 0 : 1,
+        transition: `opacity ${FADE_MS}ms ease`,
+        pointerEvents: phase === "login" ? "auto" : "none",
+      }}
     >
-      {/* 앱 프레임 */}
       <div className="relative bg-white overflow-hidden w-full h-[100dvh] md:w-[375px] md:h-[812px] md:rounded-[28px] md:shadow-2xl">
 
-        {/* 건너뛰기 — 로그인 상태가 아닐 때만(=로그인 버튼 전 단계) */}
-        {phase === "gif" && (
+        {/* 건너뛰기 */}
+        {(phase === "gif" || phase === "freeze") && (
           <button
             type="button"
-            onClick={() => {
-              setPhase("fading");
-              window.setTimeout(() => setVisible(false), FADE_MS);
-            }}
+            onClick={dismiss}
+            style={{ pointerEvents: "auto" }}
             className="absolute right-4 top-4 z-10 rounded-full bg-black/5 px-3 py-1.5 text-[12px] font-medium text-foreground/70"
           >
             건너뛰기
@@ -109,13 +112,12 @@ export function Splash() {
           />
         </div>
 
-        {/* 로그인 버튼 — 슬라이드업 */}
+        {/* 로그인 버튼 슬라이드업 */}
         <div
           className="absolute left-[24px] right-[24px] flex flex-col gap-[16px] transition-transform duration-500 ease-out"
           style={{
             bottom: "calc(2rem + env(safe-area-inset-bottom))",
             transform: phase === "login" ? "translateY(0)" : "translateY(160%)",
-            pointerEvents: phase === "login" ? "auto" : "none",
           }}
         >
           <button
