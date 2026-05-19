@@ -147,9 +147,9 @@ export function getCachedDiaries(): DiaryCache | null {
 }
 
 // ── 일기 조회 ─────────────────────────────────────────────────────────────────
-// 목록 조회용 컬럼 — image_data_url 제외 (수백KB 절약)
+// 목록 조회용 컬럼 — 압축 후 20~40KB 이므로 포함해도 부담 없음
 const LIST_COLUMNS =
-  "id, author_id, author_name, title, body, password, invite_code, keywords, viewer_ids, viewer_names, viewer_avatars, created_at";
+  "id, author_id, author_name, title, body, password, invite_code, image_data_url, keywords, viewer_ids, viewer_names, viewer_avatars, created_at";
 
 export async function getMyDiaries(): Promise<ExchangeDiary[]> {
   const myId = getMyId();

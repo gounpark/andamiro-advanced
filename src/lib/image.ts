@@ -6,9 +6,10 @@ export interface CompressOptions {
   maxBytes?: number;
 }
 
-const DEFAULT_MAX_EDGE = 1280;
-const DEFAULT_QUALITY = 0.8;
-const DEFAULT_MAX_BYTES = 1_500_000;
+// 400px: 썸네일 + 상세 모두 쾌적, JPEG 약 20~40KB
+const DEFAULT_MAX_EDGE = 400;
+const DEFAULT_QUALITY = 0.75;
+const DEFAULT_MAX_BYTES = 300_000;
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -54,11 +55,14 @@ export async function compressImageToDataUrl(
   canvas.height = targetH;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas 2D 컨텍스트 생성 실패");
+  // PNG 투명 배경 → 흰색으로 채워야 JPEG 변환 시 색 왜곡 없음
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, targetW, targetH);
   ctx.drawImage(img, 0, 0, targetW, targetH);
 
   let out = canvas.toDataURL("image/jpeg", quality);
   if (approxBytesOfDataUrl(out) > maxBytes) {
-    out = canvas.toDataURL("image/jpeg", 0.6);
+    out = canvas.toDataURL("image/jpeg", 0.55);
   }
   if (approxBytesOfDataUrl(out) > maxBytes) {
     throw new Error("이미지가 너무 커요. 더 작은 이미지를 선택해 주세요.");
