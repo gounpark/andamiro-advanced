@@ -147,11 +147,15 @@ export function getCachedDiaries(): DiaryCache | null {
 }
 
 // ── 일기 조회 ─────────────────────────────────────────────────────────────────
+// 목록 조회용 컬럼 — image_data_url 제외 (수백KB 절약)
+const LIST_COLUMNS =
+  "id, author_id, author_name, title, body, password, invite_code, keywords, viewer_ids, viewer_names, viewer_avatars, created_at";
+
 export async function getMyDiaries(): Promise<ExchangeDiary[]> {
   const myId = getMyId();
   const { data, error } = await supabase
     .from("exchange_diaries")
-    .select("*")
+    .select(LIST_COLUMNS)
     .eq("author_id", myId)
     .order("created_at", { ascending: false });
   if (error) return [];
@@ -162,7 +166,7 @@ export async function getSharedDiaries(): Promise<ExchangeDiary[]> {
   const myId = getMyId();
   const { data, error } = await supabase
     .from("exchange_diaries")
-    .select("*")
+    .select(LIST_COLUMNS)
     .contains("viewer_ids", [myId])
     .neq("author_id", myId)
     .order("created_at", { ascending: false });
