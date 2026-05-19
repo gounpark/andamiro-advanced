@@ -61,7 +61,9 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   const [authReady, setAuthReady] = useState(false);
-  const [splashDone, setSplashDone] = useState(() => {
+
+  // 이번 세션에서 이미 스플래시를 봤는지 (초기값 — 이후엔 변경하지 않음)
+  const [alreadyShown] = useState(() => {
     if (typeof window === "undefined") return false;
     try {
       return window.sessionStorage.getItem(SPLASH_COMPLETE_KEY) === "1";
@@ -69,6 +71,9 @@ function RootComponent() {
       return false;
     }
   });
+
+  // GIF 재생이 이번 렌더에서 완료됐는지
+  const [gifDone, setGifDone] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
   const router = useRouter();
 
@@ -90,7 +95,8 @@ function RootComponent() {
   }, []);
 
   const handleSplashComplete = useCallback(() => {
-    setSplashDone(true);
+    try { window.sessionStorage.setItem(SPLASH_COMPLETE_KEY, "1"); } catch { /* ignore */ }
+    setGifDone(true);
   }, []);
 
   const handleSplashLogin = useCallback(async () => {
@@ -113,26 +119,39 @@ function RootComponent() {
     );
   }
 
-  const user = authReady ? getCachedUser() : null;
-  const shouldKeepSplash = !splashDone || !authReady || !user;
-
-  if (shouldKeepSplash) {
+  // 이미 이번 세션에서 스플래시를 봤으면 절대 다시 렌더하지 않음
+  if (alreadyShown) {
+    if (!authReady) return null;
     return (
-      <Splash
-        play={!splashDone}
-        showLogin={splashDone && authReady && !user}
-        loginLoading={loginLoading}
-        onComplete={handleSplashComplete}
-        onLogin={handleSplashLogin}
-      />
+      <>
+        <ExchangeNotificationWatcher />
+        <Outlet />
+      </>
+    );
+  }
+
+  // 최초 방문 — GIF 재생 → (비로그인이면 로그인 버튼) → 앱 진입
+  const user = authReady ? getCachedUser() : null;
+  const showLogin = gifDone && authReady && !user;
+  const splashFinished = gifDone && authReady && !!user;
+
+  if (splashFinished) {
+    return (
+      <>
+        <ExchangeNotificationWatcher />
+        <Outlet />
+      </>
     );
   }
 
   return (
-    <>
-      <ExchangeNotificationWatcher />
-      <Outlet />
-    </>
+    <Splash
+      play={!gifDone}
+      showLogin={showLogin}
+      loginLoading={loginLoading}
+      onComplete={handleSplashComplete}
+      onLogin={handleSplashLogin}
+    />
   );
 }
 

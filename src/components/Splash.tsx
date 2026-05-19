@@ -48,12 +48,6 @@ export function Splash({
     }
 
     const timer = window.setTimeout(() => {
-      try {
-        window.sessionStorage.setItem(SPLASH_COMPLETE_KEY, "1");
-      } catch {
-        // sessionStorage 사용 불가 시 현재 화면 상태만 유지
-      }
-
       setComplete(true);
       onComplete?.();
     }, ANIMATION_MS);
