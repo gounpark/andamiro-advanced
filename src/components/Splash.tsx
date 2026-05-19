@@ -1,76 +1,154 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import splashGif from "@/assets/splash.gif";
 
-const FADE_MS = 350;
 const ANIMATION_MS = 4850; // 1회 루프 길이 (97 frames × 50ms)
-const SESSION_KEY = "splash_shown";
+const FRAME_DELAY_MS = 50;
+const CAPTURE_MS = ANIMATION_MS - FRAME_DELAY_MS / 2;
+export const SPLASH_COMPLETE_KEY = "andamiro_splash_complete";
+const SPLASH_FRAME_KEY = "andamiro_splash_last_frame";
 
-export function Splash() {
-  // 세션당 한 번만 — SSR에서는 일단 true로 시작했다가 마운트 후 결정
+type SplashProps = {
+  play?: boolean;
+  showLogin?: boolean;
+  loginLoading?: boolean;
+  onComplete?: () => void;
+  onLogin?: () => void;
+};
+
+export function Splash({
+  play = true,
+  showLogin = false,
+  loginLoading = false,
+  onComplete,
+  onLogin,
+}: SplashProps) {
   const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(true);
-  const [fading, setFading] = useState(false);
-
-  const dismiss = () => {
-    setFading(true);
-    window.setTimeout(() => setVisible(false), FADE_MS);
-  };
+  const [complete, setComplete] = useState(!play);
+  const [lastFrameUrl, setLastFrameUrl] = useState<string | null>(null);
+  const [canvasFallback, setCanvasFallback] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     // iframe 내부면 스킵 (프레젠테이션 데모 중 스플래시가 데모를 가리는 문제 방지)
     if (window !== window.top) {
-      setVisible(false);
+      onComplete?.();
       return;
     }
     // nosplash=1 파라미터 또는 /presentation 경로면 스킵
     if (new URLSearchParams(window.location.search).get("nosplash") === "1") {
-      setVisible(false);
+      onComplete?.();
       return;
     }
     if (window.location.pathname.includes("presentation")) {
-      setVisible(false);
+      onComplete?.();
       return;
     }
-    // 세션당 1회만 표시 (탭 전환 시 재표시 방지)
+
     try {
-      if (window.sessionStorage.getItem(SESSION_KEY)) {
-        setVisible(false);
-        return;
-      }
-      window.sessionStorage.setItem(SESSION_KEY, "1");
+      setLastFrameUrl(window.sessionStorage.getItem(SPLASH_FRAME_KEY));
     } catch {
       // sessionStorage 사용 불가 시 그대로 진행
     }
+
     setMounted(true);
-    const t1 = window.setTimeout(() => setFading(true), ANIMATION_MS);
-    const t2 = window.setTimeout(() => setVisible(false), ANIMATION_MS + FADE_MS);
+    if (!play) {
+      setComplete(true);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const img = imgRef.current;
+      const canvas = canvasRef.current;
+
+      if (img && canvas) {
+        const width = img.naturalWidth || 800;
+        const height = img.naturalHeight || 800;
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          try {
+            const dataUrl = canvas.toDataURL("image/png");
+            setLastFrameUrl(dataUrl);
+            window.sessionStorage.setItem(SPLASH_FRAME_KEY, dataUrl);
+          } catch {
+            setCanvasFallback(true);
+          }
+        }
+      }
+
+      try {
+        window.sessionStorage.setItem(SPLASH_COMPLETE_KEY, "1");
+      } catch {
+        // sessionStorage 사용 불가 시 현재 화면 상태만 유지
+      }
+
+      setComplete(true);
+      onComplete?.();
+    }, CAPTURE_MS);
+
     return () => {
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
+      window.clearTimeout(timer);
     };
-  }, []);
+  }, [onComplete, play]);
 
   // SSR / 마운트 전에는 렌더하지 않음 → hydration mismatch 방지
-  if (!mounted || !visible) return null;
+  if (!mounted) return null;
 
   return (
     <div
-      aria-hidden
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 md:bg-black/40 transition-opacity"
-      style={{ opacity: fading ? 0 : 1, transitionDuration: `${FADE_MS}ms`, pointerEvents: "none" }}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 md:bg-black/40"
+      style={{ pointerEvents: showLogin ? "auto" : "none" }}
     >
       {/* 모바일 앱 프레임과 동일한 사이즈로 스플래시 표시 */}
       <div className="relative bg-white overflow-hidden w-full h-[100dvh] md:w-[375px] md:h-[812px] md:rounded-[28px] md:shadow-2xl flex items-center justify-center">
-        <button
-          type="button"
-          onClick={dismiss}
-          style={{ pointerEvents: "auto" }}
-          className="absolute right-4 top-4 z-10 rounded-full bg-black/5 px-3 py-1.5 text-[12px] font-medium text-foreground/70"
+        {complete && lastFrameUrl ? (
+          <img src={lastFrameUrl} alt="" className="max-h-full max-w-full object-contain" />
+        ) : (
+          <img
+            ref={imgRef}
+            src={splashGif}
+            alt=""
+            className={`max-h-full max-w-full object-contain ${complete && canvasFallback ? "hidden" : ""}`}
+          />
+        )}
+        <canvas
+          ref={canvasRef}
+          aria-hidden
+          className={`${complete && canvasFallback ? "block max-h-full max-w-full object-contain" : "hidden"}`}
+        />
+
+        <div
+          className={`absolute bottom-0 left-0 right-0 z-10 px-6 pb-[calc(2rem+env(safe-area-inset-bottom))] transition-all duration-500 ease-out ${
+            showLogin ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+          }`}
+          style={{ pointerEvents: showLogin ? "auto" : "none" }}
         >
-          건너뛰기
-        </button>
-        <img src={splashGif} alt="" className="max-h-full max-w-full object-contain" />
+          <button
+            type="button"
+            onClick={onLogin}
+            disabled={loginLoading}
+            className="flex h-[52px] w-full items-center justify-center gap-[12px] rounded-[12px] border border-[#e2e2e2] bg-white shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition active:scale-[0.99] disabled:opacity-60"
+          >
+            {loginLoading ? (
+              <div className="h-5 w-5 rounded-full border-2 border-[#ddd] border-t-[var(--primary)] animate-spin" />
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden>
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+              </svg>
+            )}
+            <span className="text-[16px] font-semibold text-[#454545] tracking-[-0.48px]">
+              {loginLoading ? "로그인 중..." : "Google 로 로그인"}
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   );
