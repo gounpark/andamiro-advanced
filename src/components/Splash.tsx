@@ -3,8 +3,7 @@ import splashGif from "@/assets/splash.gif";
 import splashWebp from "@/assets/splash.webp";
 import { getCachedUser, signInWithGoogle } from "@/lib/auth";
 
-// GIF 1루프 ≈ 2000ms
-const GIF_DURATION_MS = 2000;
+const GIF_DURATION_MS = 2000; // GIF 1루프
 const FADE_MS = 300;
 const SESSION_KEY = "splash_shown";
 
@@ -14,9 +13,10 @@ export function Splash({ authReady }: { authReady: boolean }) {
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(true);
   const [phase, setPhase] = useState<Phase>("gif");
+  const [showSkip, setShowSkip] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
 
-  // ── 마운트 시 1회: skip 조건 확인 + GIF 타이머 ───────────────────────────
+  // ── 마운트 시 1회 ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (window !== window.top) { setVisible(false); return; }
@@ -27,25 +27,27 @@ export function Splash({ authReady }: { authReady: boolean }) {
       window.sessionStorage.setItem(SESSION_KEY, "1");
     } catch { /* ignore */ }
 
+    // 초대 링크 진입 시 건너뛰기 숨김
+    const hasInvite = new URLSearchParams(window.location.search).has("invite");
+    setShowSkip(!hasInvite);
     setMounted(true);
 
-    // GIF 1루프 후 freeze
+    // GIF 1루프 후 다음 단계로
     const t = window.setTimeout(() => setPhase("freeze"), GIF_DURATION_MS);
     return () => window.clearTimeout(t);
   }, []);
 
-  // ── GIF 끝(freeze) + authReady 둘 다 만족하면 분기 ───────────────────────
-  // authReady가 먼저 오거나 나중에 와도 둘 다 준비됐을 때만 실행
+  // ── GIF 끝 + authReady 둘 다 됐을 때 분기 ───────────────────────────────
   useEffect(() => {
     if (phase !== "freeze" || !authReady) return;
 
     if (getCachedUser()) {
-      // 로그인 상태 → 페이드아웃
+      // 로그인 상태 → 원래대로 페이드아웃
       setPhase("fading");
       const t = window.setTimeout(() => setVisible(false), FADE_MS);
       return () => window.clearTimeout(t);
     } else {
-      // 미로그인 → 버튼 슬라이드업
+      // 비로그인 → 마지막 프레임 freeze 후 버튼 슬라이드업
       setPhase("login");
     }
   }, [phase, authReady]);
@@ -78,8 +80,8 @@ export function Splash({ authReady }: { authReady: boolean }) {
     >
       <div className="relative bg-white overflow-hidden w-full h-[100dvh] md:w-[375px] md:h-[812px] md:rounded-[28px] md:shadow-2xl">
 
-        {/* 건너뛰기 */}
-        {(phase === "gif" || phase === "freeze") && (
+        {/* 건너뛰기 — 비로그인 + 비초대링크 진입 시에만 */}
+        {showSkip && (phase === "gif" || phase === "freeze") && (
           <button
             type="button"
             onClick={dismiss}
@@ -95,6 +97,7 @@ export function Splash({ authReady }: { authReady: boolean }) {
           className="absolute left-1/2 -translate-x-1/2"
           style={{ top: 276, width: 280, height: 280 }}
         >
+          {/* GIF */}
           <img
             src={splashGif}
             alt="안다미로"
@@ -102,6 +105,7 @@ export function Splash({ authReady }: { authReady: boolean }) {
               phase === "gif" ? "opacity-100" : "opacity-0"
             }`}
           />
+          {/* 마지막 프레임 freeze용 정적 이미지 */}
           <img
             src={splashWebp}
             alt=""
@@ -112,7 +116,7 @@ export function Splash({ authReady }: { authReady: boolean }) {
           />
         </div>
 
-        {/* 로그인 버튼 슬라이드업 */}
+        {/* 로그인 버튼 슬라이드업 (비로그인 시만) */}
         <div
           className="absolute left-[24px] right-[24px] flex flex-col gap-[16px] transition-transform duration-500 ease-out"
           style={{
