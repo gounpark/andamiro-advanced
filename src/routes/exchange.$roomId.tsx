@@ -346,7 +346,7 @@ function ExchangeDiaryPage() {
                 e.preventDefault();
                 handleSendComment();
               }}
-              className="h-[39px] flex-1 rounded-full bg-[#f4f6fa] px-4 text-[14px] text-foreground placeholder:text-[#bbb] outline-none"
+              className="h-[39px] flex-1 rounded-full bg-[#f4f6fa] px-4 text-[16px] text-foreground placeholder:text-[#bbb] outline-none"
             />
             <button
               type="button"
