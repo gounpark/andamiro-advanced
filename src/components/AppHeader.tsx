@@ -10,7 +10,7 @@ type AppHeaderProps = {
 
 export function AppHeader({ title, backTo, rightAction }: AppHeaderProps) {
   return (
-    <header className="relative shrink-0 bg-white pt-[54px]">
+    <header className="relative shrink-0 bg-white" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
       <div className="relative flex h-[68px] items-center px-[10px]">
         <Link
           to={backTo}

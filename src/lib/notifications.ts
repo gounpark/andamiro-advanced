@@ -90,7 +90,7 @@ export async function enableExchangePushNotifications(): Promise<boolean> {
     existing ??
     (await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(publicKey),
+      applicationServerKey: urlBase64ToUint8Array(publicKey).buffer as ArrayBuffer,
     }));
 
   const json = subscription.toJSON();
