@@ -35,6 +35,10 @@ export function getAuthUserId(): string | null {
   return _session?.user?.id ?? null;
 }
 
+export function getAuthAvatarUrl(): string | null {
+  return (_session?.user?.user_metadata?.avatar_url as string | undefined) ?? null;
+}
+
 export function getAuthDisplayName(): string | null {
   const user = _session?.user;
   if (!user) return null;
