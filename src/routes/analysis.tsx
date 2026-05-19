@@ -546,18 +546,20 @@ function AnalysisPage() {
     <div className="app-shell">
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
         {/* 헤더 */}
-        <header className="relative shrink-0 flex items-center justify-center px-4 pt-[52px] pb-3 bg-white">
+        <header className="relative shrink-0 bg-white" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
+          <div className="relative flex h-[52px] items-center justify-center px-4">
           <Link
             to="/"
             search={{} as any}
             aria-label="뒤로"
-            className="absolute left-3 top-[50px] grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground"
+            className="absolute left-3 grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground"
           >
             <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
           </Link>
           <h1 className="font-semibold text-foreground text-[16px] tracking-tight">
             오늘의 일기분석
           </h1>
+          </div>
         </header>
 
         <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide pb-10">
@@ -1052,27 +1054,29 @@ function EmotionReportPage({
     <div className="app-shell">
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
         {/* 헤더 */}
-        <header className="relative shrink-0 flex items-center justify-center px-4 pt-[52px] pb-3 bg-white border-b border-[#f0f0f0]">
-          <button
-            type="button"
-            onClick={goPrev}
-            className="absolute left-3 top-[50px] grid h-9 w-9 place-items-center rounded-full text-foreground/70"
-          >
-            <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
-          </button>
-          <div className="flex flex-col items-center gap-1">
-            <h1 className="font-semibold text-foreground text-[16px] tracking-tight">
-              {stepTitles[step]}
-            </h1>
-            <StepDots current={step} />
+        <header className="relative shrink-0 bg-white border-b border-[#f0f0f0]" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
+          <div className="relative flex h-[52px] items-center justify-center px-4">
+            <button
+              type="button"
+              onClick={goPrev}
+              className="absolute left-3 grid h-9 w-9 place-items-center rounded-full text-foreground/70"
+            >
+              <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
+            </button>
+            <div className="flex flex-col items-center gap-1">
+              <h1 className="font-semibold text-foreground text-[16px] tracking-tight">
+                {stepTitles[step]}
+              </h1>
+              <StepDots current={step} />
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/record", search: {} as any })}
+              className="absolute right-3 grid h-9 w-9 place-items-center rounded-full text-foreground/40"
+            >
+              <Trash2 className="h-4.5 w-4.5" />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate({ to: "/record", search: {} as any })}
-            className="absolute right-3 top-[50px] grid h-9 w-9 place-items-center rounded-full text-foreground/40"
-          >
-            <Trash2 className="h-4.5 w-4.5" />
-          </button>
         </header>
 
         {/* 콘텐츠 */}
@@ -1432,15 +1436,17 @@ function MoodSelectionStep({
         {/* 콘텐츠 */}
         <div className="relative z-10 flex h-full flex-col">
           {/* 헤더: 뒤로가기 + 스텝 도트 */}
-          <header className="relative flex items-center justify-center px-5 pt-[52px] pb-1">
-            <button
-              type="button"
-              onClick={onBack}
-              className="absolute left-3 grid h-9 w-9 place-items-center rounded-full text-foreground/70"
-            >
-              <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
-            </button>
-            <StepDots current={3} />
+          <header className="relative shrink-0" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
+            <div className="relative flex h-[52px] items-center justify-center px-5">
+              <button
+                type="button"
+                onClick={onBack}
+                className="absolute left-3 grid h-9 w-9 place-items-center rounded-full text-foreground/70"
+              >
+                <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
+              </button>
+              <StepDots current={3} />
+            </div>
           </header>
 
           {/* 타이틀 */}

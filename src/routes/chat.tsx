@@ -360,15 +360,17 @@ function ChatPage() {
       <div ref={frameRef} className="app-frame flex flex-col" style={{ position: "relative" }}>
         {(demo1 || demo2) && <DemoCursor {...cursor} />}
         {/* 헤더 */}
-        <header className="relative flex shrink-0 items-center justify-center px-4 pt-[52px] pb-3 border-b border-black/5">
-          <Link
-            to="/record"
-            aria-label="뒤로"
-            className="absolute left-3 top-[50px] grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground"
-          >
-            <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
-          </Link>
-          <h1 className="font-semibold text-foreground text-[16px] tracking-tight">오늘의 일기</h1>
+        <header className="relative shrink-0 border-b border-black/5" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
+          <div className="relative flex h-[52px] items-center justify-center px-4">
+            <Link
+              to="/record"
+              aria-label="뒤로"
+              className="absolute left-3 grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground"
+            >
+              <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
+            </Link>
+            <h1 className="font-semibold text-foreground text-[16px] tracking-tight">오늘의 일기</h1>
+          </div>
         </header>
 
         {/* 대화 영역 */}

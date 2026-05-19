@@ -7,7 +7,6 @@ import {
   Megaphone,
   HelpCircle,
   FileText,
-  BookOpen,
   BookMarked,
   X,
   LogIn,
@@ -219,7 +218,6 @@ function MyPage() {
           {/* 바로가기 */}
           <section className="px-4 mt-5">
             <div className="rounded-2xl bg-white border border-[#f0f0f0] overflow-hidden shadow-sm">
-              <MenuLinkRow to="/diary" icon={<BookOpen className="h-4 w-4" />} label="영상 일기 기록" />
               <MenuLinkRow to="/exchange" icon={<BookMarked className="h-4 w-4" />} label="공유 일기" />
               <div className="w-full flex items-center gap-3 px-4 py-3.5 border-t border-[#f5f5f5]">
                 <span className="grid h-7 w-7 place-items-center rounded-full bg-[#f4f6fa] text-[var(--primary)] shrink-0">

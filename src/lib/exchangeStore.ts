@@ -243,7 +243,10 @@ export async function createDiary(params: CreateDiaryParams): Promise<ExchangeDi
     created_at: diary.createdAt,
   });
 
-  if (error) throw new Error(`일기 생성 실패: ${error.message}`);
+  if (error) {
+    console.error("[createDiary] supabase insert error", error);
+    throw new Error(`일기 생성 실패: ${error.message}`);
+  }
   return diary;
 }
 
