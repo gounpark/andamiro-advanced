@@ -123,7 +123,7 @@ function AdviceWithData() {
         {demo && <DemoCursor {...cursor} />}
         {/* 헤더 */}
         <header className="relative shrink-0" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
-          <div className="relative flex h-[52px] items-center justify-center px-4">
+          <div className="relative flex h-[68px] items-center justify-center px-4">
             <Link
               to="/"
               search={{} as any}

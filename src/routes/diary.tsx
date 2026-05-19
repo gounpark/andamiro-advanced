@@ -63,7 +63,7 @@ function DiaryPage() {
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
         {/* 헤더 */}
         <header className="relative shrink-0 bg-white border-b border-[#f0f0f0]" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
-          <div className="relative flex h-[52px] items-center justify-center px-4">
+          <div className="relative flex h-[68px] items-center justify-center px-4">
             <Link
               to="/my"
               aria-label="뒤로"
