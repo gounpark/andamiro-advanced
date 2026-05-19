@@ -1,9 +1,10 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { Folder, Share2, Copy, Check, X } from "lucide-react";
 import { createDiary, type ExchangeDiary } from "@/lib/exchangeStore";
 import { getAppOrigin } from "@/lib/navigate";
 import { AppHeader } from "@/components/AppHeader";
+import emptyCloud from "@/assets/empty-cloud.webp";
 
 export const Route = createFileRoute("/exchange/create")({
   head: () => ({
@@ -18,8 +19,6 @@ interface DraftData {
 }
 
 function ExchangeCreatePage() {
-  const navigate = useNavigate();
-
   const titleRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
@@ -242,58 +241,42 @@ function ExchangeCreatePage() {
 
         {/* 초대 링크 바텀시트 */}
         {createdDiary && (() => {
-          const { url } = buildShareText(createdDiary);
           return (
             <div className="absolute inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.45)" }}>
-              <div className="w-full rounded-t-[24px] bg-white px-5 pt-6 pb-10">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="grid h-14 w-14 place-items-center rounded-2xl text-white font-bold text-[26px]" style={{ background: "var(--primary)" }}>
-                    🎉
-                  </div>
-                </div>
-                <h3 className="font-bold text-foreground text-[18px] tracking-tight mb-1 text-center">
-                  일기가 만들어졌어요!
+              <div className="relative h-[396px] w-full rounded-t-[20px] bg-white px-6 pt-[38px] pb-[calc(2rem+env(safe-area-inset-bottom))]">
+                <h3 className="text-center text-[22px] font-bold leading-[26px] tracking-tight text-[#222]">
+                  공유 일기가 만들어졌어요!
                 </h3>
-                <p className="text-[13px] text-[#aaa] tracking-tight text-center mb-5">
-                  초대 링크를 복사해서 친구에게 공유해 보세요.
+                <p className="mt-2 text-center text-[14px] leading-[21px] tracking-tight text-[#999]">
+                  초대 링크를 보내서 친구에게 공유해 보세요.
                 </p>
 
-                <div className="rounded-2xl bg-[#f4f6fa] px-4 py-3 mb-4">
-                  <p className="text-[12px] text-[#999] tracking-tight mb-2">초대 링크</p>
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-[12px] text-[#555] font-mono truncate flex-1">{url}</p>
-                    <button
-                      type="button"
-                      onClick={() => handleCopy(createdDiary)}
-                      className="shrink-0 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-semibold transition active:scale-[0.97]"
-                      style={{ background: "white", color: copied ? "#22c55e" : "var(--primary)", border: `1px solid ${copied ? "#22c55e" : "rgba(66,131,243,0.2)"}` }}
-                    >
-                      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                      {copied ? "복사됨" : "복사"}
-                    </button>
-                  </div>
-                  <p className="text-[11px] text-[#bbb] mt-2 tracking-tight">
-                    비밀번호: <span className="font-semibold text-[#888]">{createdDiary.password}</span>
-                  </p>
+                <div className="mt-6 flex h-[154px] items-center justify-center">
+                  <img
+                    src={emptyCloud}
+                    alt=""
+                    className="h-[132px] w-[206px] object-contain"
+                  />
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleShare(createdDiary)}
-                  className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 font-bold text-white text-[15px] tracking-tight active:scale-[0.99] transition mb-2"
-                  style={{ background: "var(--primary)" }}
-                >
-                  <Share2 className="h-4 w-4" />
-                  친구에게 공유하기
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => navigate({ to: "/exchange/$roomId", params: { roomId: createdDiary.id }, search: { invite: undefined } })}
-                  className="w-full py-2.5 text-[14px] text-[#999] tracking-tight text-center"
-                >
-                  일기 보러가기
-                </button>
+                <div className="absolute bottom-[calc(2rem+env(safe-area-inset-bottom))] left-6 right-6 flex gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(createdDiary)}
+                    className="flex h-[52px] w-[119px] shrink-0 items-center justify-center gap-1.5 rounded-[12px] border border-[#4283f3] bg-white text-[16px] font-semibold tracking-tight text-[#4283f3] active:scale-[0.99] transition"
+                  >
+                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                    {copied ? "복사됨" : "링크 복사"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleShare(createdDiary)}
+                    className="flex h-[52px] flex-1 items-center justify-center gap-1.5 rounded-[12px] bg-[#4283f3] text-[16px] font-semibold tracking-tight text-white shadow-[0_4px_2px_rgba(221,221,221,0.2)] active:scale-[0.99] transition"
+                  >
+                    <Share2 className="h-4 w-4" />
+                    친구에게 공유
+                  </button>
+                </div>
               </div>
             </div>
           );
