@@ -1,8 +1,8 @@
-import { Outlet, Link, createRootRoute, useNavigate, useRouter } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { Outlet, Link, createRootRoute, useRouter } from "@tanstack/react-router";
+import { useCallback, useEffect, useState } from "react";
 import appCss from "../styles.css?url";
-import { Splash } from "@/components/Splash";
-import { initAuth } from "@/lib/auth";
+import { Splash, SPLASH_COMPLETE_KEY } from "@/components/Splash";
+import { getCachedUser, initAuth, signInWithGoogle } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import {
   getCommentsAfter,
@@ -61,21 +61,27 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   const [authReady, setAuthReady] = useState(false);
+  const [splashDone, setSplashDone] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return window.sessionStorage.getItem(SPLASH_COMPLETE_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+  const [loginLoading, setLoginLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    initAuth().then(() => setAuthReady(true));
+    initAuth().then(() => {
+      setAuthReady(true);
+      if (getCachedUser()) navigateAfterSignIn(router);
+    });
 
     // OAuth 리디렉션 후 세션이 생기면 이전 페이지로 복귀
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN") {
-        // login 페이지에서 redirect 파라미터로 복귀 경로 관리
-        const params = new URLSearchParams(window.location.search);
-        const redirectTo = params.get("redirect") ?? "/my";
-        // 현재 경로가 /login이면 복귀
-        if (window.location.pathname.endsWith("/login")) {
-          router.navigate({ to: redirectTo as "/", search: {} as any });
-        }
+        navigateAfterSignIn(router);
       }
     });
 
@@ -83,18 +89,107 @@ function RootComponent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!authReady) {
-    // auth 초기화 전엔 Splash만 표시
-    return <Splash />;
+  const handleSplashComplete = useCallback(() => {
+    setSplashDone(true);
+  }, []);
+
+  const handleSplashLogin = useCallback(async () => {
+    setLoginLoading(true);
+    try {
+      window.sessionStorage.setItem(AUTH_REDIRECT_KEY, getAuthRedirectTarget());
+      await signInWithGoogle();
+    } catch {
+      setLoginLoading(false);
+    }
+  }, []);
+
+  if (isSplashGateBypassed()) {
+    if (!authReady) return null;
+    return (
+      <>
+        <ExchangeNotificationWatcher />
+        <Outlet />
+      </>
+    );
+  }
+
+  const user = authReady ? getCachedUser() : null;
+  const shouldKeepSplash = !splashDone || !authReady || !user;
+
+  if (shouldKeepSplash) {
+    return (
+      <Splash
+        play={!splashDone}
+        showLogin={splashDone && authReady && !user}
+        loginLoading={loginLoading}
+        onComplete={handleSplashComplete}
+        onLogin={handleSplashLogin}
+      />
+    );
   }
 
   return (
     <>
-      <Splash />
       <ExchangeNotificationWatcher />
       <Outlet />
     </>
   );
+}
+
+const AUTH_REDIRECT_KEY = "andamiro_auth_redirect";
+
+function getCurrentAppPathWithSearch(): string {
+  if (typeof window === "undefined") return "/";
+
+  const base = (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
+  let pathname = window.location.pathname;
+  if (base && base !== "/" && pathname.startsWith(base)) {
+    pathname = pathname.slice(base.length) || "/";
+  }
+
+  return `${pathname}${window.location.search}`;
+}
+
+function getAuthRedirectTarget(): string {
+  if (typeof window === "undefined") return "/";
+  if (!window.location.pathname.endsWith("/login")) return getCurrentAppPathWithSearch();
+
+  const params = new URLSearchParams(window.location.search);
+  return params.get("redirect") ?? "/my";
+}
+
+function consumeAuthRedirect(): string | null {
+  try {
+    const stored = window.sessionStorage.getItem(AUTH_REDIRECT_KEY);
+    if (stored) {
+      window.sessionStorage.removeItem(AUTH_REDIRECT_KEY);
+      return stored;
+    }
+  } catch {
+    // sessionStorage 사용 불가 시 URL 파라미터만 사용
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  return params.get("redirect");
+}
+
+function navigateAfterSignIn(router: ReturnType<typeof useRouter>) {
+  if (typeof window === "undefined") return;
+
+  const redirectTo = consumeAuthRedirect();
+  if (!redirectTo && !window.location.pathname.endsWith("/login")) return;
+
+  const target = redirectTo || "/my";
+  const url = new URL(target, window.location.origin);
+  const search = Object.fromEntries(url.searchParams.entries());
+  router.navigate({ to: url.pathname as "/", search: search as any });
+}
+
+function isSplashGateBypassed() {
+  if (typeof window === "undefined") return false;
+  if (window !== window.top) return true;
+  if (new URLSearchParams(window.location.search).get("nosplash") === "1") return true;
+  return window.location.pathname.includes("presentation");
 }
 
 const EXCHANGE_LAST_COMMENT_KEY = "andamiro_exchange_last_comment_at";
