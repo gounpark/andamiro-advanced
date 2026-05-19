@@ -168,10 +168,10 @@ function ExchangeListPage() {
               key={t}
               type="button"
               onClick={() => setTab(t)}
-              className={`flex-1 py-3 text-[14px] font-semibold tracking-tight transition ${
+              className={`flex-1 text-[14px] font-semibold tracking-[-0.28px] transition ${
                 tab === t
-                  ? "text-[var(--primary)] border-b-2 border-[var(--primary)]"
-                  : "text-[#bbb]"
+                  ? "text-[#4283f3] border-b-2 border-[#4283f3] pt-[12px] pb-[14px]"
+                  : "text-[#bbb] py-[12px]"
               }`}
             >
               {t === "my" ? "내가 공유한" : "공유 받은"}
@@ -309,7 +309,7 @@ function DiaryListSkeleton() {
   return (
     <ul className="pt-6">
       {[0, 1, 2].map((i) => (
-        <li key={i} className="flex items-start gap-3 border-b border-[#ececec] px-6 pt-3.5 pb-[25px] animate-pulse">
+        <li key={i} className="flex items-start gap-[12px] border-b border-[#ececec] px-[24px] pt-[24px] pb-[25px] animate-pulse">
           <div className="h-14 w-14 shrink-0 rounded-xl bg-[#e8ebf1]" />
           <div className="flex-1 min-w-0 flex flex-col gap-2">
             <div className="h-3.5 w-2/3 rounded-full bg-[#f0f0f0]" />
@@ -330,7 +330,7 @@ function DiaryCard({ diary, showAuthor, commentCount }: { diary: ExchangeDiary; 
       to="/exchange/$roomId"
       params={{ roomId: diary.id }}
       search={{ invite: undefined }}
-      className="flex items-start gap-3 border-b border-[#ececec] px-6 pt-3.5 pb-[25px] active:bg-[#edf0f5] transition"
+      className="flex items-start gap-[12px] border-b border-[#ececec] px-[24px] pt-[24px] pb-[25px] active:bg-[#edf0f5] transition"
     >
       {diary.imageDataUrl ? (
         <img
@@ -348,7 +348,7 @@ function DiaryCard({ diary, showAuthor, commentCount }: { diary: ExchangeDiary; 
       )}
 
       <div className="min-w-0 flex-1">
-        <p className="max-w-[170px] truncate text-[15px] font-bold text-[#222] tracking-[-0.3px] leading-[18px]">
+        <p className="max-w-[170px] truncate text-[15px] font-bold text-[#222] tracking-[-0.3px] leading-normal">
           {diary.title}
         </p>
 
