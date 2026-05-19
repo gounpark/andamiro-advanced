@@ -12,6 +12,7 @@ import {
   LogIn,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { PageHeader } from "@/components/PageHeader";
 import cloverActiveSvg from "@/assets/icons/clover-active.svg";
 import bgShapeLargeSvg from "@/assets/icons/bg-shape-large.svg";
 import { BottomNav } from "@/components/BottomNav";
