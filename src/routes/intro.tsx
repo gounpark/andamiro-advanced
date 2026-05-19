@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import splashGif from "@/assets/splash.gif";
+import splashWebp from "@/assets/splash.webp";
 import { gotoPath } from "@/lib/navigate";
 
 // 세션스토리지 우회 전용 인트로 라우트
@@ -22,7 +22,7 @@ function IntroPage() {
   return (
     <div className="app-shell">
       <div className="app-frame flex items-center justify-center bg-white overflow-hidden">
-        <img src={splashGif} alt="" className="max-h-full max-w-full object-contain" />
+        <img src={splashWebp} alt="" className="max-h-full max-w-full object-contain" />
       </div>
     </div>
   );
