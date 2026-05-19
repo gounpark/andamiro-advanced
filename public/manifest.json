@@ -2,21 +2,20 @@
   "name": "안다미로",
   "short_name": "안다미로",
   "description": "AI 감정일기 & 교환일기",
-  "start_url": "/andamiro-advanced/",
-  "scope": "/andamiro-advanced/",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4B82F5",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/andamiro-advanced/icon-192.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/andamiro-advanced/icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
