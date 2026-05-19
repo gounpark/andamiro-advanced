@@ -8,6 +8,8 @@ import {
   Eye,
   PencilLine,
   MoreVertical,
+  Copy,
+  Trash2,
 } from "lucide-react";
 import {
   getCachedDiaries,
@@ -16,6 +18,7 @@ import {
   isDiaryAuthorized,
   authorizeDiary,
   addViewer,
+  deleteDiary,
   getMyId,
   relativeTime,
   coverColorForId,
@@ -90,6 +93,8 @@ function ExchangeListPage() {
   const myId = typeof window !== "undefined" ? getMyId() : "";
 
   const [tab, setTab] = useState<TabId>("my");
+  const [menuDiary, setMenuDiary] = useState<ExchangeDiary | null>(null);
+  const [copied, setCopied] = useState(false);
   const cached = getCachedDiaries();
   const [myDiaries, setMyDiaries] = useState<ExchangeDiary[]>(cached?.myDiaries ?? []);
   const [sharedDiaries, setSharedDiaries] = useState<ExchangeDiary[]>(cached?.sharedDiaries ?? []);
@@ -188,7 +193,7 @@ function ExchangeListPage() {
             ) : (
               <ul className="pb-24">
                 {myDiaries.map((d) => (
-                  <DiaryCard key={d.id} diary={d} showAuthor={false} commentCount={commentCounts[d.id] ?? 0} />
+                  <DiaryCard key={d.id} diary={d} showAuthor={false} commentCount={commentCounts[d.id] ?? 0} onMenuOpen={() => setMenuDiary(d)} />
                 ))}
               </ul>
             )
@@ -197,7 +202,7 @@ function ExchangeListPage() {
           ) : (
             <ul className="pb-24">
               {sharedDiaries.map((d) => (
-                <DiaryCard key={d.id} diary={d} showAuthor={true} commentCount={commentCounts[d.id] ?? 0} />
+                <DiaryCard key={d.id} diary={d} showAuthor={true} commentCount={commentCounts[d.id] ?? 0} onMenuOpen={() => setMenuDiary(d)} />
               ))}
             </ul>
           )}
@@ -264,6 +269,59 @@ function ExchangeListPage() {
             </div>
           </div>
         )}
+
+        {/* 케밥 메뉴 바텀시트 */}
+        {menuDiary && (
+          <div
+            className="absolute inset-0 z-50 flex items-end"
+            style={{ background: "rgba(0,0,0,0.45)" }}
+            onClick={() => { setMenuDiary(null); setCopied(false); }}
+          >
+            <div
+              className="w-full rounded-t-[24px] bg-white px-5 pt-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="font-bold text-[#222] text-[16px] tracking-tight mb-4 truncate px-1">
+                {menuDiary.title}
+              </h3>
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const url = `${getAppOrigin()}/exchange?invite=${menuDiary.inviteCode}`;
+                    try { await navigator.clipboard.writeText(url); } catch { prompt("링크를 복사해 주세요:", url); }
+                    setCopied(true);
+                    setTimeout(() => { setMenuDiary(null); setCopied(false); }, 1200);
+                  }}
+                  className="w-full flex items-center gap-3 rounded-2xl bg-[#f8f9fb] px-4 py-4 text-[15px] font-medium text-[#222] tracking-tight active:bg-[#f0f2f6] transition"
+                >
+                  <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#4283f3]/10">
+                    {copied ? <Check className="h-4 w-4 text-[#4283f3]" /> : <Copy className="h-4 w-4 text-[#4283f3]" />}
+                  </div>
+                  {copied ? "복사됐어요!" : "공유하기"}
+                </button>
+
+                {menuDiary.authorId === myId && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setMenuDiary(null);
+                      if (!confirm("이 일기를 삭제하면 댓글도 모두 사라져요. 삭제할까요?")) return;
+                      await deleteDiary(menuDiary.id);
+                      await refresh();
+                    }}
+                    className="w-full flex items-center gap-3 rounded-2xl bg-red-50 px-4 py-4 text-[15px] font-medium text-red-400 tracking-tight active:bg-red-100 transition"
+                  >
+                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-red-100">
+                      <Trash2 className="h-4 w-4 text-red-400" />
+                    </div>
+                    삭제하기
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -322,7 +380,7 @@ function DiaryListSkeleton() {
 }
 
 // ── 일기 카드 ─────────────────────────────────────────────────────────────────
-function DiaryCard({ diary, showAuthor, commentCount }: { diary: ExchangeDiary; showAuthor: boolean; commentCount: number }) {
+function DiaryCard({ diary, showAuthor, commentCount, onMenuOpen }: { diary: ExchangeDiary; showAuthor: boolean; commentCount: number; onMenuOpen: () => void }) {
   const color = coverColorForId(diary.id);
 
   return (
@@ -379,7 +437,14 @@ function DiaryCard({ diary, showAuthor, commentCount }: { diary: ExchangeDiary; 
         )}
       </div>
 
-      <MoreVertical className="mt-0.5 h-6 w-6 shrink-0 text-[#999]" strokeWidth={1.8} />
+      <button
+        type="button"
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onMenuOpen(); }}
+        className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full active:bg-black/5 transition"
+        aria-label="메뉴"
+      >
+        <MoreVertical className="h-5 w-5 text-[#999]" strokeWidth={1.8} />
+      </button>
     </Link>
   );
 }
