@@ -546,7 +546,7 @@ function AnalysisPage() {
     <div className="app-shell">
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
         {/* 헤더 */}
-        <header className="relative shrink-0 bg-white" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
+        <header className="relative shrink-0 bg-white" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}>
           <div className="relative flex h-[68px] items-center justify-center px-4">
           <Link
             to="/"
@@ -1054,7 +1054,7 @@ function EmotionReportPage({
     <div className="app-shell">
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
         {/* 헤더 */}
-        <header className="relative shrink-0 bg-white border-b border-[#f0f0f0]" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
+        <header className="relative shrink-0 bg-white border-b border-[#f0f0f0]" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}>
           <div className="relative flex h-[68px] items-center justify-center px-4">
             <button
               type="button"
@@ -1436,7 +1436,7 @@ function MoodSelectionStep({
         {/* 콘텐츠 */}
         <div className="relative z-10 flex h-full flex-col">
           {/* 헤더: 뒤로가기 + 스텝 도트 */}
-          <header className="relative shrink-0" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
+          <header className="relative shrink-0" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}>
             <div className="relative flex h-[68px] items-center justify-center px-5">
               <button
                 type="button"

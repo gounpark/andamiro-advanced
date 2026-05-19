@@ -438,7 +438,7 @@ function Index() {
               className="pointer-events-none absolute top-[140px] -left-8 w-[142px] h-[196px] z-0"
             />
 
-            <header className="relative z-10 flex items-center justify-start px-6 pb-2" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
+            <header className="relative z-10 flex items-center justify-start px-6 pb-2" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}>
               <h1 className="m-0 inline-flex">
                 <img
                   src={logoSvg}

@@ -360,7 +360,7 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
         <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide pb-32">
           {/* 상단 블루 헤더 */}
-          <div className="relative bg-[#3d78f3] text-white px-6 pb-8" style={{ ...fadeIn(1), paddingTop: "env(safe-area-inset-top, 0px)" }}>
+          <div className="relative bg-[#3d78f3] text-white px-6 pb-8" style={{ ...fadeIn(1), paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}>
             <header className="relative flex items-center justify-center h-[68px]">
               <Link
                 to="/"

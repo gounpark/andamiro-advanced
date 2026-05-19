@@ -241,7 +241,7 @@ function RecordPage() {
         {/* 콘텐츠 */}
         <div className="relative z-10 flex h-full flex-col">
           {/* 헤더 (뒤로가기 버튼) */}
-          <header className="flex items-center px-5 pb-1" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
+          <header className="flex items-center px-5 pb-1" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}>
             <Link
               to="/"
               search={{} as any}
