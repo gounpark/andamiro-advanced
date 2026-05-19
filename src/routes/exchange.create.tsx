@@ -1,9 +1,9 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
-import { Folder, X } from "lucide-react";
+import { Folder, X, ChevronLeft } from "lucide-react";
 import { createDiary } from "@/lib/exchangeStore";
 import { compressImageToDataUrl } from "@/lib/image";
-import { AppHeader } from "@/components/AppHeader";
+import { PageHeader } from "@/components/PageHeader";
 
 export const Route = createFileRoute("/exchange/create")({
   head: () => ({
@@ -126,7 +126,14 @@ function ExchangeCreatePage() {
   return (
     <div className="app-shell">
       <div className="app-frame flex flex-col bg-white">
-        <AppHeader title="공유일기 만들기" backTo="/exchange" />
+        <PageHeader
+          title="공유일기 만들기"
+          left={
+            <Link to="/exchange" search={{ invite: undefined }} className="grid h-11 w-11 place-items-center active:opacity-60 transition" aria-label="뒤로가기">
+              <ChevronLeft className="h-7 w-7 text-[#222]" strokeWidth={2.2} />
+            </Link>
+          }
+        />
 
         <div className="flex-1 overflow-y-auto scrollbar-hide">
           <div className="px-6 pb-32 pt-[7px] flex flex-col gap-6">

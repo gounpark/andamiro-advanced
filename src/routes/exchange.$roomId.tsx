@@ -1,6 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
-import { MoreHorizontal, Trash2, Send, CornerDownRight, X, Lock, Copy, Check } from "lucide-react";
+import { MoreHorizontal, Trash2, Send, CornerDownRight, X, Lock, Copy, Check, ChevronLeft } from "lucide-react";
 import {
   getDiaryById,
   getComments,
@@ -17,7 +17,7 @@ import {
   type ExchangeComment,
 } from "@/lib/exchangeStore";
 import { getAppOrigin } from "@/lib/navigate";
-import { AppHeader } from "@/components/AppHeader";
+import { PageHeader } from "@/components/PageHeader";
 import exchangeCharacters from "@/assets/exchange-created-characters.webp";
 
 export const Route = createFileRoute("/exchange/$roomId")({
@@ -201,16 +201,15 @@ function ExchangeDiaryPage() {
   return (
     <div className="app-shell">
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
-        <AppHeader
+        <PageHeader
           title="공유일기 상세"
-          backTo="/exchange"
-          rightAction={
-            <button
-              type="button"
-              onClick={() => setShowMenu(true)}
-              className="grid h-11 w-11 place-items-center active:opacity-60 transition"
-              aria-label="메뉴 열기"
-            >
+          left={
+            <Link to="/exchange" search={{ invite: undefined }} className="grid h-11 w-11 place-items-center active:opacity-60 transition" aria-label="뒤로가기">
+              <ChevronLeft className="h-7 w-7 text-[#222]" strokeWidth={2.2} />
+            </Link>
+          }
+          right={
+            <button type="button" onClick={() => setShowMenu(true)} className="grid h-11 w-11 place-items-center active:opacity-60 transition" aria-label="메뉴 열기">
               <MoreHorizontal className="h-7 w-7 text-[#222]" strokeWidth={2.2} />
             </button>
           }
