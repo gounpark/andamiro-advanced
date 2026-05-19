@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import splashGif from "@/assets/splash.gif";
-import logoSvgRaw from "@/assets/icons/logo.svg?raw";
 
-const ANIMATION_MS = 4850; // 1회 루프 길이 (97 frames × 50ms)
+const ANIMATION_MS = 4050; // 89 frames — GIF plays once and freezes on last frame
 export const SPLASH_COMPLETE_KEY = "andamiro_splash_complete_v4";
-const FINAL_LOGO_SVG = logoSvgRaw.replaceAll("var(--fill-0, white)", "#306be6");
 
 type SplashProps = {
   play?: boolean;
@@ -22,74 +20,39 @@ export function Splash({
   onLogin,
 }: SplashProps) {
   const [mounted, setMounted] = useState(false);
-  const [complete, setComplete] = useState(!play);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    // iframe 내부면 스킵 (프레젠테이션 데모 중 스플래시가 데모를 가리는 문제 방지)
-    if (window !== window.top) {
-      onComplete?.();
-      return;
-    }
-    // nosplash=1 파라미터 또는 /presentation 경로면 스킵
-    if (new URLSearchParams(window.location.search).get("nosplash") === "1") {
-      onComplete?.();
-      return;
-    }
-    if (window.location.pathname.includes("presentation")) {
-      onComplete?.();
-      return;
-    }
+    if (window !== window.top) { onComplete?.(); return; }
+    if (new URLSearchParams(window.location.search).get("nosplash") === "1") { onComplete?.(); return; }
+    if (window.location.pathname.includes("presentation")) { onComplete?.(); return; }
 
     setMounted(true);
-    if (!play) {
-      setComplete(true);
-      return;
-    }
+    if (!play) { onComplete?.(); return; }
 
     const timer = window.setTimeout(() => {
-      setComplete(true);
       onComplete?.();
     }, ANIMATION_MS);
 
-    return () => {
-      window.clearTimeout(timer);
-    };
+    return () => window.clearTimeout(timer);
   }, [onComplete, play]);
 
-  // SSR / 마운트 전에는 렌더하지 않음 → hydration mismatch 방지
   if (!mounted) return null;
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 md:bg-black/40"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40"
       style={{ pointerEvents: showLogin ? "auto" : "none" }}
     >
-      {/* 모바일 앱 프레임과 동일한 사이즈로 스플래시 표시 */}
       <div className="relative bg-white overflow-hidden w-full h-[100dvh] md:w-[375px] md:h-[812px] md:rounded-[28px] md:shadow-2xl flex items-center justify-center">
-        {complete ? (
-          <div
-            aria-hidden
-            className="h-[62px] w-[180px] object-contain"
-            dangerouslySetInnerHTML={{ __html: FINAL_LOGO_SVG }}
-          />
-        ) : (
-          <img
-            src={splashGif}
-            alt=""
-            className="max-h-full max-w-full object-contain"
-          />
-        )}
+        {/* GIF이 1루프 후 마지막 프레임에 자체적으로 멈춤 */}
+        <img
+          src={splashGif}
+          alt=""
+          className="max-h-full max-w-full object-contain"
+        />
 
-        {showLogin && (
-          <div
-            aria-hidden
-            className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 text-[48px] font-bold tracking-tight text-[#306be6]"
-          >
-            안다미로
-          </div>
-        )}
-
+        {/* 로그인 버튼 슬라이드업 */}
         <div
           className={`absolute bottom-0 left-0 right-0 z-20 px-6 pb-[calc(2rem+env(safe-area-inset-bottom))] transition-all duration-500 ease-out ${
             showLogin ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
