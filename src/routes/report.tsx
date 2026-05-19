@@ -364,7 +364,8 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
           <div className="relative bg-[#3d78f3] text-white px-6 pb-8" style={fadeIn(1)}>
             <PageHeader
               className="bg-transparent"
-              title={<span className="font-semibold text-white text-[18px] tracking-[-0.45px]">리포트</span>}
+              title="리포트"
+              titleColor="text-white"
               left={
                 <Link to="/" search={{} as any} aria-label="뒤로" className="grid h-9 w-9 place-items-center rounded-full text-white/90">
                   <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />

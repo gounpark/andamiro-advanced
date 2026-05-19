@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 const HEADER_STYLE = {
-  paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)",
+  paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
 } as const;
 
 type PageHeaderProps = {
@@ -13,20 +13,29 @@ type PageHeaderProps = {
   right?: ReactNode;
   /** 헤더 배경 클래스 (기본 bg-white) */
   className?: string;
+  /** 타이틀 색상 클래스 (기본 text-foreground) */
+  titleColor?: string;
 };
 
 /**
  * 앱 전체 공통 페이지 헤더
- * - 상단 여백: calc(safe-area-inset-top + 16px) — 웹/모바일 통일
+ * - 상단 여백: calc(safe-area-inset-top + 8px) — 웹/모바일 통일
  * - 콘텐츠 영역 높이: 68px 고정
+ * - 타이틀: 16px / 600 — 색만 titleColor로 변경 가능
  */
-export function PageHeader({ title, left, right, className = "bg-white" }: PageHeaderProps) {
+export function PageHeader({
+  title,
+  left,
+  right,
+  className = "bg-white",
+  titleColor = "text-foreground",
+}: PageHeaderProps) {
   return (
     <header className={`relative shrink-0 ${className}`} style={HEADER_STYLE}>
       <div className="relative flex h-[68px] items-center justify-center px-3">
         {left && <div className="absolute left-3 flex items-center">{left}</div>}
         {title && (
-          <span className="font-semibold text-foreground text-[16px] tracking-tight">
+          <span className={`font-semibold ${titleColor} text-[16px] tracking-tight`}>
             {title}
           </span>
         )}

@@ -146,18 +146,16 @@ function MyPage() {
         <div className="absolute inset-0 overflow-y-auto pb-[126px]">
           {/* 그라디언트 헤더 */}
           <div
-            className="relative overflow-hidden pb-20 px-6"
-            style={{ background: "var(--gradient-sky)", paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}
+            className="relative overflow-hidden pb-20"
+            style={{ background: "var(--gradient-sky)" }}
           >
             <img src={bgShapeLargeSvg} alt="" aria-hidden className="pointer-events-none absolute -top-2 -right-4 w-[260px] h-[275px] z-0" />
             <img src={bgShapeSmallSvg} alt="" aria-hidden className="pointer-events-none absolute top-[40px] -left-8 w-[142px] h-[196px] z-0" />
-            <header className="relative z-10 flex items-center justify-center h-[68px]">
-              <h1 className="font-semibold text-white text-[16px] tracking-tight">마이</h1>
-            </header>
-            <p className="relative z-10 mt-3 text-white/85 text-[13px] tracking-tight">
+            <PageHeader className="bg-transparent" title="마이" titleColor="text-white" />
+            <p className="relative z-10 mt-3 px-6 text-white/85 text-[13px] tracking-tight">
               {user ? "안녕하세요," : "로그인하고 더 많은 기능을 사용해보세요"}
             </p>
-            <p className="relative z-10 mt-1 font-bold text-white text-[20px] leading-tight tracking-tight">
+            <p className="relative z-10 mt-1 px-6 font-bold text-white text-[20px] leading-tight tracking-tight">
               {user ? `${displayName}님` : "안다미로"}
             </p>
           </div>
