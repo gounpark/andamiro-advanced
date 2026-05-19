@@ -1,7 +1,6 @@
 import { createFileRoute, Link, Outlet, useNavigate, useMatches } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import {
-  Plus,
   ChevronLeft,
   ChevronRight,
   BookOpen,
@@ -9,6 +8,7 @@ import {
   Check,
   MessageCircle,
   Eye,
+  PencilLine,
 } from "lucide-react";
 import {
   getCachedDiaries,
@@ -160,67 +160,57 @@ function ExchangeListPage() {
   return (
     <div className="app-shell">
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
-        <div className="absolute inset-0 overflow-y-auto scrollbar-hide">
-          {/* 헤더 */}
-          <header className="sticky top-0 z-10 bg-white flex items-center gap-2 px-4 pt-[52px] pb-3 border-b border-[#f0f0f0]">
-            <Link to="/my" className="p-1 -ml-1">
-              <ChevronLeft className="h-5 w-5 text-foreground" />
-            </Link>
-            <h1 className="flex-1 font-bold text-foreground text-[18px] tracking-tight">
-              교환 일기
-            </h1>
-            <Link
-              to="/exchange/create"
-              search={{ invite: undefined }}
-              className="flex items-center gap-1.5 rounded-full bg-[var(--primary)] px-3.5 py-1.5 active:scale-[0.97] transition"
+        <CommonHeader title="공유일기" backTo="/my" />
+
+        <div className="bg-white flex border-b border-[#f0f0f0]">
+          {(["my", "shared"] as TabId[]).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setTab(t)}
+              className={`flex-1 py-3 text-[14px] font-semibold tracking-tight transition ${
+                tab === t
+                  ? "text-[var(--primary)] border-b-2 border-[var(--primary)]"
+                  : "text-[#bbb]"
+              }`}
             >
-              <Plus className="h-4 w-4 text-white" strokeWidth={2.5} />
-              <span className="text-[13px] font-semibold text-white">새 일기</span>
-            </Link>
-          </header>
+              {t === "my" ? "내가 공유한" : "공유 받은"}
+            </button>
+          ))}
+        </div>
 
-          {/* 탭 */}
-          <div className="sticky top-[95px] z-10 bg-white flex border-b border-[#f0f0f0]">
-            {(["my", "shared"] as TabId[]).map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => setTab(t)}
-                className={`flex-1 py-3 text-[14px] font-semibold tracking-tight transition ${
-                  tab === t
-                    ? "text-[var(--primary)] border-b-2 border-[var(--primary)]"
-                    : "text-[#bbb]"
-                }`}
-              >
-                {t === "my" ? "내가 공유한" : "공유 받은"}
-              </button>
-            ))}
-          </div>
-
-          <div className="pb-8">
-            {loading ? (
-              <DiaryListSkeleton />
-            ) : tab === "my" ? (
-              myDiaries.length === 0 ? (
-                <EmptyMy />
-              ) : (
-                <ul className="px-4 pt-4 flex flex-col gap-3">
-                  {myDiaries.map((d) => (
-                    <DiaryCard key={d.id} diary={d} showAuthor={false} commentCount={commentCounts[d.id] ?? 0} />
-                  ))}
-                </ul>
-              )
-            ) : sharedDiaries.length === 0 ? (
-              <EmptyShared />
+        <div className="relative flex-1 overflow-y-auto scrollbar-hide">
+          {loading ? (
+            <DiaryListSkeleton />
+          ) : tab === "my" ? (
+            myDiaries.length === 0 ? (
+              <EmptyMy />
             ) : (
-              <ul className="px-4 pt-4 flex flex-col gap-3">
-                {sharedDiaries.map((d) => (
-                  <DiaryCard key={d.id} diary={d} showAuthor={true} commentCount={commentCounts[d.id] ?? 0} />
+              <ul className="px-4 pt-4 pb-24 flex flex-col gap-3">
+                {myDiaries.map((d) => (
+                  <DiaryCard key={d.id} diary={d} showAuthor={false} commentCount={commentCounts[d.id] ?? 0} />
                 ))}
               </ul>
-            )}
-          </div>
+            )
+          ) : sharedDiaries.length === 0 ? (
+            <EmptyShared />
+          ) : (
+            <ul className="px-4 pt-4 pb-24 flex flex-col gap-3">
+              {sharedDiaries.map((d) => (
+                <DiaryCard key={d.id} diary={d} showAuthor={true} commentCount={commentCounts[d.id] ?? 0} />
+              ))}
+            </ul>
+          )}
         </div>
+
+        <Link
+          to="/exchange/create"
+          search={{ invite: undefined }}
+          aria-label="새 공유일기 작성"
+          className="absolute right-6 bottom-9 z-20 grid h-[60px] w-[60px] place-items-center rounded-full bg-[var(--primary)] text-white shadow-lg active:scale-[0.96] transition"
+        >
+          <PencilLine className="h-7 w-7" strokeWidth={2.1} />
+        </Link>
 
         {/* 초대 비밀번호 바텀시트 */}
         {inviteDiary && (
@@ -279,12 +269,32 @@ function ExchangeListPage() {
   );
 }
 
+function CommonHeader({ title, backTo }: { title: string; backTo: "/my" | "/exchange" }) {
+  return (
+    <header className="relative shrink-0 bg-white pt-[54px]">
+      <div className="relative flex h-[68px] items-center px-[10px]">
+        <Link
+          to={backTo}
+          search={backTo === "/exchange" ? { invite: undefined } : undefined}
+          className="grid h-11 w-11 place-items-center active:opacity-60 transition"
+          aria-label="뒤로가기"
+        >
+          <ChevronLeft className="h-7 w-7 text-[#222]" strokeWidth={2.2} />
+        </Link>
+        <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[18px] font-semibold text-[#222] tracking-tight">
+          {title}
+        </h1>
+      </div>
+    </header>
+  );
+}
+
 // ── 빈 상태 ──────────────────────────────────────────────────────────────────
 function EmptyMy() {
   return (
-    <div className="flex flex-col items-center justify-center px-6 pt-20 pb-8 text-center">
+    <div className="absolute inset-0 flex flex-col items-center justify-center px-6 pb-8 text-center">
       <div className="grid h-20 w-20 place-items-center rounded-full bg-[var(--primary)]/10 mb-5">
-        <BookOpen className="h-9 w-9 text-[var(--primary)]" />
+        <BookOpen className="h-9 w-9 text-[var(--primary)]" strokeWidth={1.9} />
       </div>
       <p className="text-[17px] font-bold text-foreground tracking-tight mb-2">
         아직 공유한 일기가 없어요
@@ -294,23 +304,15 @@ function EmptyMy() {
         <br />
         초대 링크를 공유해 보세요.
       </p>
-      <Link
-        to="/exchange/create"
-        search={{ invite: undefined }}
-        className="flex items-center gap-2 rounded-2xl px-6 py-3.5 font-bold text-white text-[15px] tracking-tight active:scale-[0.98] transition shadow-md"
-        style={{ background: "var(--primary)" }}
-      >
-        <Plus className="h-5 w-5" strokeWidth={2.5} />새 일기 공유하기
-      </Link>
     </div>
   );
 }
 
 function EmptyShared() {
   return (
-    <div className="flex flex-col items-center justify-center px-6 pt-20 pb-8 text-center">
+    <div className="absolute inset-0 flex flex-col items-center justify-center px-6 pb-8 text-center">
       <div className="grid h-20 w-20 place-items-center rounded-full bg-[#f4f6fa] mb-5">
-        <BookOpen className="h-9 w-9 text-[#bbb]" />
+        <BookOpen className="h-9 w-9 text-[#bbb]" strokeWidth={1.9} />
       </div>
       <p className="text-[17px] font-bold text-foreground tracking-tight mb-2">
         아직 공유받은 일기가 없어요

@@ -6,3 +6,4 @@
 
 ## Memories
 - [Fortune flow](mem://features/fortune) — 리포트 상단 포춘쿠키 버튼 → /fortune → 탭하면 흔들 후 운세 쪽지
+- [Design sync rules](mem://features/design-sync) — Figma 공통 헤더/텍스트/순서/섹션 제목 유무를 화면 맞춤 때 반드시 반영
