@@ -2,13 +2,13 @@ import { createFileRoute, Link, Outlet, useNavigate, useMatches } from "@tanstac
 import { useState, useEffect } from "react";
 import {
   ChevronLeft,
-  ChevronRight,
   BookOpen,
   Lock,
   Check,
   MessageCircle,
   Eye,
   PencilLine,
+  MoreVertical,
 } from "lucide-react";
 import {
   getCachedDiaries,
@@ -186,7 +186,7 @@ function ExchangeListPage() {
             myDiaries.length === 0 ? (
               <EmptyMy />
             ) : (
-              <ul className="px-4 pt-4 pb-24 flex flex-col gap-3">
+              <ul className="pb-24">
                 {myDiaries.map((d) => (
                   <DiaryCard key={d.id} diary={d} showAuthor={false} commentCount={commentCounts[d.id] ?? 0} />
                 ))}
@@ -195,7 +195,7 @@ function ExchangeListPage() {
           ) : sharedDiaries.length === 0 ? (
             <EmptyShared />
           ) : (
-            <ul className="px-4 pt-4 pb-24 flex flex-col gap-3">
+            <ul className="pb-24">
               {sharedDiaries.map((d) => (
                 <DiaryCard key={d.id} diary={d} showAuthor={true} commentCount={commentCounts[d.id] ?? 0} />
               ))}
@@ -327,10 +327,10 @@ function EmptyShared() {
 // ── 스켈레톤 ─────────────────────────────────────────────────────────────────
 function DiaryListSkeleton() {
   return (
-    <ul className="px-4 pt-4 flex flex-col gap-3">
+    <ul className="pt-6">
       {[0, 1, 2].map((i) => (
-        <li key={i} className="flex items-center gap-3 rounded-2xl bg-white border border-[#f0f0f0] px-4 py-4 shadow-sm animate-pulse">
-          <div className="h-14 w-14 shrink-0 rounded-xl bg-[#f0f0f0]" />
+        <li key={i} className="flex items-start gap-3 border-b border-[#ececec] px-6 pt-3.5 pb-[25px] animate-pulse">
+          <div className="h-14 w-14 shrink-0 rounded-xl bg-[#e8ebf1]" />
           <div className="flex-1 min-w-0 flex flex-col gap-2">
             <div className="h-3.5 w-2/3 rounded-full bg-[#f0f0f0]" />
             <div className="h-3 w-1/3 rounded-full bg-[#f4f4f4]" />
@@ -350,9 +350,8 @@ function DiaryCard({ diary, showAuthor, commentCount }: { diary: ExchangeDiary; 
       to="/exchange/$roomId"
       params={{ roomId: diary.id }}
       search={{ invite: undefined }}
-      className="flex items-center gap-3 rounded-2xl bg-white border border-[#f0f0f0] px-4 py-4 shadow-sm active:bg-[#f8f8f8] transition"
+      className="flex items-start gap-3 border-b border-[#ececec] px-6 pt-3.5 pb-[25px] active:bg-[#edf0f5] transition"
     >
-      {/* 썸네일 */}
       {diary.imageDataUrl ? (
         <img
           src={diary.imageDataUrl}
@@ -368,39 +367,39 @@ function DiaryCard({ diary, showAuthor, commentCount }: { diary: ExchangeDiary; 
         </div>
       )}
 
-      <div className="flex-1 min-w-0">
-        <p className="font-semibold text-foreground text-[15px] tracking-tight truncate">
+      <div className="min-w-0 flex-1">
+        <p className="max-w-[170px] truncate text-[15px] font-bold text-[#222] tracking-[-0.3px] leading-[18px]">
           {diary.title}
         </p>
 
-        <div className="flex items-center gap-2 mt-0.5">
+        <div className="mt-1.5 flex items-center gap-1.5 text-[12px] text-[#999] tracking-[-0.12px] leading-none">
           {showAuthor ? (
-            <span className="text-[12px] text-[#999] tracking-tight truncate">
+            <span className="max-w-[88px] truncate">
               {diary.authorName}
             </span>
           ) : (
-            <div className="flex items-center gap-1">
-              <Eye className="h-3 w-3 text-[#bbb]" />
-              <span className="text-[12px] text-[#999] tracking-tight">
+            <span className="flex items-center gap-1">
+              <Eye className="h-3 w-3 text-[#999]" strokeWidth={1.8} />
+              <span>
                 {diary.viewerIds.length}명이 읽었어요
               </span>
-            </div>
+            </span>
           )}
-          <span className="text-[#ddd]">·</span>
-          <span className="text-[12px] text-[#bbb] tracking-tight">
+          <span>·</span>
+          <span>
             {relativeTime(diary.createdAt)}
           </span>
         </div>
 
         {commentCount > 0 && (
-          <div className="flex items-center gap-1 mt-1">
-            <MessageCircle className="h-3 w-3 text-[#bbb]" />
-            <span className="text-[12px] text-[#bbb] tracking-tight">댓글 {commentCount}개</span>
+          <div className="mt-1 flex items-center gap-1 text-[12px] text-[#999] leading-none">
+            <MessageCircle className="h-3 w-3" strokeWidth={1.8} />
+            <span>댓글 {commentCount}개</span>
           </div>
         )}
       </div>
 
-      <ChevronRight className="h-4 w-4 text-[#bbb] shrink-0" />
+      <MoreVertical className="mt-0.5 h-6 w-6 shrink-0 text-[#999]" strokeWidth={1.8} />
     </Link>
   );
 }
