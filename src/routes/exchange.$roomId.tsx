@@ -37,7 +37,7 @@ function ExchangeDiaryPage() {
   const [comments, setComments] = useState<ExchangeComment[]>([]);
   const [authorized, setAuthorized] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
-  const [showCreatedSheet, setShowCreatedSheet] = useState(false);
+  const [shareSheetMode, setShareSheetMode] = useState<"created" | "share" | null>(null);
   const [copied, setCopied] = useState(false);
   const [replyTo, setReplyTo] = useState<ExchangeComment | null>(null);
   const commentInputRef = useRef<HTMLInputElement>(null);
@@ -60,7 +60,7 @@ function ExchangeDiaryPage() {
   };
 
   const handleShareDiary = async (d: ExchangeDiary) => {
-    setShowCreatedSheet(false);
+    setShareSheetMode(null);
     const { text } = buildShareText(d);
     await new Promise((r) => setTimeout(r, 200)); // 시트 닫힘 대기
     if (navigator.share) {
@@ -85,7 +85,7 @@ function ExchangeDiaryPage() {
       const justCreated = sessionStorage.getItem("exchange_just_created");
       if (justCreated === diaryId) {
         sessionStorage.removeItem("exchange_just_created");
-        setShowCreatedSheet(true);
+        setShareSheetMode("created");
       }
       // 작성자 본인이거나 이미 비밀번호 인증한 경우 바로 열람
       const isAuthor = d.authorId === myId;
@@ -402,54 +402,60 @@ function ExchangeDiaryPage() {
             onClick={() => setShowMenu(false)}
           >
             <div
-              className="w-full rounded-t-[24px] bg-white px-5 pt-5 pb-10"
+              className="w-full rounded-t-[24px] bg-white px-5 pt-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="font-bold text-foreground text-[16px] tracking-tight mb-4 truncate">
+              <h3 className="font-bold text-[#222] text-[16px] tracking-tight mb-4 truncate px-1">
                 {diary.title}
               </h3>
 
-              <div className="rounded-2xl bg-[#f8f9fb] px-4 py-3 mb-4">
-                <p className="text-[12px] text-[#999] tracking-tight mb-2">초대 링크</p>
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-[12px] text-[#555] font-mono truncate flex-1">
-                    /exchange?invite={diary.inviteCode}
-                  </p>
-                  <InviteCopyPill diary={diary} />
-                </div>
-                <p className="text-[11px] text-[#bbb] mt-2 tracking-tight">
-                  비밀번호: <span className="font-semibold text-[#888]">{diary.password}</span>
-                </p>
-              </div>
-
-              {isAuthor && (
+              <div className="flex flex-col gap-2">
                 <button
                   type="button"
-                  onClick={async () => {
-                    if (!confirm("이 일기를 삭제하면 댓글도 모두 사라져요. 삭제할까요?")) return;
-                    await deleteDiary(diaryId);
-                    navigate({ to: "/exchange", search: { invite: undefined } });
+                  onClick={() => {
+                    setShowMenu(false);
+                    setShareSheetMode("share");
                   }}
-                  className="w-full flex items-center justify-center gap-2 rounded-2xl border border-red-100 bg-red-50 py-3 text-red-400 font-semibold text-[14px] tracking-tight active:scale-[0.99] transition"
+                  className="w-full flex items-center gap-3 rounded-2xl bg-[#f8f9fb] px-4 py-4 text-[15px] font-medium text-[#222] tracking-tight active:bg-[#f0f2f6] transition"
                 >
-                  <Trash2 className="h-4 w-4" />
-                  일기 삭제
+                  <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#4283f3]/10">
+                    <Copy className="h-4 w-4 text-[#4283f3]" />
+                  </div>
+                  공유하기
                 </button>
-              )}
+
+                {isAuthor && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setShowMenu(false);
+                      if (!confirm("이 일기를 삭제하면 댓글도 모두 사라져요. 삭제할까요?")) return;
+                      await deleteDiary(diaryId);
+                      navigate({ to: "/exchange", search: { invite: undefined } });
+                    }}
+                    className="w-full flex items-center gap-3 rounded-2xl bg-red-50 px-4 py-4 text-[15px] font-medium text-red-400 tracking-tight active:bg-red-100 transition"
+                  >
+                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-red-100">
+                      <Trash2 className="h-4 w-4 text-red-400" />
+                    </div>
+                    삭제하기
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}
 
-        {/* 일기 생성 완료 바텀시트 */}
-        {showCreatedSheet && diary && (
-          <div className="absolute inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.6)" }}>
-            <div className="relative w-full rounded-t-[20px] bg-white flex flex-col" style={{ height: 396 }}>
+        {/* 공유 바텀시트 (생성 완료 / 공유하기 공용) */}
+        {shareSheetMode && diary && (
+          <div className="absolute inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.6)" }} onClick={() => shareSheetMode === "share" && setShareSheetMode(null)}>
+            <div className="relative w-full rounded-t-[20px] bg-white flex flex-col" style={{ height: 396 }} onClick={(e) => e.stopPropagation()}>
               <div className="px-6 pt-[38px] shrink-0">
                 <h3 className="text-center text-[22px] font-bold leading-[26px] tracking-[-0.45px] text-[#111]">
-                  공유 일기가 만들어졌어요!
+                  {shareSheetMode === "created" ? "공유 일기가 만들어졌어요!" : "친구에게 공유하기"}
                 </h3>
                 <p className="mt-[6px] text-center text-[14px] leading-[19.5px] tracking-[-0.13px] text-[#999]">
-                  초대 링크를 보내서 친구에게 공유해 보세요.
+                  {shareSheetMode === "created" ? "초대 링크를 보내서 친구에게 공유해 보세요." : "초대 링크로 친구를 일기에 초대해 보세요."}
                 </p>
               </div>
               <div className="flex-1 flex items-end justify-center overflow-hidden">
