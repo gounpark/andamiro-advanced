@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import splashGif from "@/assets/splash.gif";
+import logoSvgRaw from "@/assets/icons/logo.svg?raw";
 
 const ANIMATION_MS = 4850; // 1회 루프 길이 (97 frames × 50ms)
-const FRAME_DELAY_MS = 50;
-const CAPTURE_MS = ANIMATION_MS - FRAME_DELAY_MS / 2;
-export const SPLASH_COMPLETE_KEY = "andamiro_splash_complete";
-const SPLASH_FRAME_KEY = "andamiro_splash_last_frame";
+export const SPLASH_COMPLETE_KEY = "andamiro_splash_complete_v4";
+const FINAL_LOGO_SVG = logoSvgRaw.replaceAll("var(--fill-0, white)", "#306be6");
 
 type SplashProps = {
   play?: boolean;
@@ -24,10 +23,6 @@ export function Splash({
 }: SplashProps) {
   const [mounted, setMounted] = useState(false);
   const [complete, setComplete] = useState(!play);
-  const [lastFrameUrl, setLastFrameUrl] = useState<string | null>(null);
-  const [canvasFallback, setCanvasFallback] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -46,12 +41,6 @@ export function Splash({
       return;
     }
 
-    try {
-      setLastFrameUrl(window.sessionStorage.getItem(SPLASH_FRAME_KEY));
-    } catch {
-      // sessionStorage 사용 불가 시 그대로 진행
-    }
-
     setMounted(true);
     if (!play) {
       setComplete(true);
@@ -59,28 +48,6 @@ export function Splash({
     }
 
     const timer = window.setTimeout(() => {
-      const img = imgRef.current;
-      const canvas = canvasRef.current;
-
-      if (img && canvas) {
-        const width = img.naturalWidth || 800;
-        const height = img.naturalHeight || 800;
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          try {
-            const dataUrl = canvas.toDataURL("image/png");
-            setLastFrameUrl(dataUrl);
-            window.sessionStorage.setItem(SPLASH_FRAME_KEY, dataUrl);
-          } catch {
-            setCanvasFallback(true);
-          }
-        }
-      }
-
       try {
         window.sessionStorage.setItem(SPLASH_COMPLETE_KEY, "1");
       } catch {
@@ -89,7 +56,7 @@ export function Splash({
 
       setComplete(true);
       onComplete?.();
-    }, CAPTURE_MS);
+    }, ANIMATION_MS);
 
     return () => {
       window.clearTimeout(timer);
@@ -106,24 +73,31 @@ export function Splash({
     >
       {/* 모바일 앱 프레임과 동일한 사이즈로 스플래시 표시 */}
       <div className="relative bg-white overflow-hidden w-full h-[100dvh] md:w-[375px] md:h-[812px] md:rounded-[28px] md:shadow-2xl flex items-center justify-center">
-        {complete && lastFrameUrl ? (
-          <img src={lastFrameUrl} alt="" className="max-h-full max-w-full object-contain" />
+        {complete ? (
+          <div
+            aria-hidden
+            className="h-[62px] w-[180px] object-contain"
+            dangerouslySetInnerHTML={{ __html: FINAL_LOGO_SVG }}
+          />
         ) : (
           <img
-            ref={imgRef}
             src={splashGif}
             alt=""
-            className={`max-h-full max-w-full object-contain ${complete && canvasFallback ? "hidden" : ""}`}
+            className="max-h-full max-w-full object-contain"
           />
         )}
-        <canvas
-          ref={canvasRef}
-          aria-hidden
-          className={`${complete && canvasFallback ? "block max-h-full max-w-full object-contain" : "hidden"}`}
-        />
+
+        {showLogin && (
+          <div
+            aria-hidden
+            className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 text-[48px] font-bold tracking-tight text-[#306be6]"
+          >
+            안다미로
+          </div>
+        )}
 
         <div
-          className={`absolute bottom-0 left-0 right-0 z-10 px-6 pb-[calc(2rem+env(safe-area-inset-bottom))] transition-all duration-500 ease-out ${
+          className={`absolute bottom-0 left-0 right-0 z-20 px-6 pb-[calc(2rem+env(safe-area-inset-bottom))] transition-all duration-500 ease-out ${
             showLogin ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
           }`}
           style={{ pointerEvents: showLogin ? "auto" : "none" }}
