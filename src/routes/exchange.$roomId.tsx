@@ -88,9 +88,13 @@ function ExchangeDiaryPage() {
         sessionStorage.removeItem("exchange_just_created");
         setShareSheetMode("created");
       }
-      // 작성자 본인이거나 이미 비밀번호 인증한 경우 바로 열람
+      // 작성자 본인 / 이미 비밀번호 인증 / 공유받은 뷰어인 경우 바로 열람
       const isAuthor = d.authorId === myId;
-      const auth = isAuthor || isDiaryAuthorized(diaryId);
+      const isViewer = d.viewerIds.includes(myId);
+      if (isViewer && !isDiaryAuthorized(diaryId)) {
+        authorizeDiary(diaryId); // 뷰어는 한 번 캐시해두면 다음에도 패스
+      }
+      const auth = isAuthor || isViewer || isDiaryAuthorized(diaryId);
       setAuthorized(auth);
       if (auth) {
         await addViewer(diaryId);
