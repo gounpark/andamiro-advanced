@@ -10,7 +10,6 @@ import {
   MoreVertical,
   Copy,
   Trash2,
-  ChevronLeft,
 } from "lucide-react";
 import {
   getCachedDiaries,
@@ -27,7 +26,7 @@ import {
 } from "@/lib/exchangeStore";
 import { getAppOrigin } from "@/lib/navigate";
 import { getCachedUser } from "@/lib/auth";
-import { PageHeader } from "@/components/PageHeader";
+import { PageShell, PageHeader, BackButton, LoadingScreen, BottomSheet, SheetItem } from "@/components";
 
 export const Route = createFileRoute("/exchange")({
   head: () => ({
@@ -63,28 +62,26 @@ function ExchangePage() {
 
 function LoginPrompt() {
   return (
-    <div className="app-shell">
-      <div className="app-frame flex flex-col items-center justify-center px-6" style={{ background: "#f5f6f8" }}>
-        <div className="grid h-20 w-20 place-items-center rounded-3xl mb-6 shadow-md" style={{ background: "var(--primary)" }}>
-          <span className="text-white text-[40px]">📖</span>
-        </div>
-        <p className="text-[18px] font-bold text-foreground tracking-tight mb-2 text-center">
-          교환일기는 로그인이 필요해요
-        </p>
-        <p className="text-[13px] text-[#aaa] tracking-tight mb-8 text-center leading-relaxed">
-          로그인하면 누가 일기를 읽었는지,<br />
-          누가 댓글을 달았는지 확인할 수 있어요.
-        </p>
-        <Link
-          to="/login"
-          search={{ redirect: "/exchange" }}
-          className="w-full flex items-center justify-center gap-2 rounded-2xl py-4 font-bold text-white text-[15px] tracking-tight active:scale-[0.99] transition"
-          style={{ background: "var(--primary)" }}
-        >
-          Google로 로그인하기
-        </Link>
+    <PageShell bg="#f5f6f8" className="items-center justify-center px-6">
+      <div className="grid h-20 w-20 place-items-center rounded-3xl mb-6 shadow-md" style={{ background: "var(--primary)" }}>
+        <span className="text-white text-[40px]">📖</span>
       </div>
-    </div>
+      <p className="text-[18px] font-bold text-foreground tracking-tight mb-2 text-center">
+        교환일기는 로그인이 필요해요
+      </p>
+      <p className="text-[13px] text-[#aaa] tracking-tight mb-8 text-center leading-relaxed">
+        로그인하면 누가 일기를 읽었는지,<br />
+        누가 댓글을 달았는지 확인할 수 있어요.
+      </p>
+      <Link
+        to="/login"
+        search={{ redirect: "/exchange" }}
+        className="w-full flex items-center justify-center gap-2 rounded-2xl py-4 font-bold text-white text-[15px] tracking-tight active:scale-[0.99] transition"
+        style={{ background: "var(--primary)" }}
+      >
+        Google로 로그인하기
+      </Link>
+    </PageShell>
   );
 }
 
@@ -154,25 +151,14 @@ function ExchangeListPage() {
   };
 
   if (inviteLoading) {
-    return (
-      <div className="app-shell">
-        <div className="app-frame flex flex-col items-center justify-center" style={{ background: "#f5f6f8" }}>
-          <p className="text-[15px] text-[#aaa] tracking-tight">초대 링크 확인 중...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="초대 링크 확인 중..." />;
   }
 
   return (
-    <div className="app-shell">
-      <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
+    <PageShell bg="#f5f6f8">
         <PageHeader
           title="공유일기"
-          left={
-            <Link to="/my" className="grid h-11 w-11 place-items-center active:opacity-60 transition" aria-label="뒤로가기">
-              <ChevronLeft className="h-7 w-7 text-[#222]" strokeWidth={2.2} />
-            </Link>
-          }
+          left={<BackButton onClick={() => navigate({ to: "/my" })} />}
         />
 
         <div className="bg-white flex border-b border-[#f0f0f0]">
@@ -226,112 +212,82 @@ function ExchangeListPage() {
         </Link>
 
         {/* 초대 비밀번호 바텀시트 */}
-        {inviteDiary && (
-          <div
-            className="absolute inset-0 z-50 flex items-end"
-            style={{ background: "rgba(0,0,0,0.45)" }}
-          >
-            <div className="w-full rounded-t-[24px] bg-white px-5 pt-6 pb-10">
-              <h3 className="font-bold text-foreground text-[18px] tracking-tight mb-1">
-                교환일기 열람하기
-              </h3>
-              <p className="text-[13px] text-[#999] mb-5 tracking-tight">
-                <span className="font-semibold text-foreground">"{inviteDiary.title}"</span>을
-                읽으려면 비밀번호를 입력해 주세요.
-              </p>
-              <div className="flex items-center gap-2 rounded-xl bg-[#f4f6fa] px-4 py-3 mb-2">
-                <Lock className="h-4 w-4 text-[#aaa] shrink-0" />
-                <input
-                  type="password"
-                  placeholder="비밀번호"
-                  value={invitePw}
-                  onChange={(e) => {
-                    setInvitePw(e.target.value);
-                    setInviteError("");
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.nativeEvent.isComposing) handleJoinConfirm();
-                  }}
-                  className="flex-1 bg-transparent text-base text-foreground placeholder:text-[#bbb] outline-none"
-                  autoFocus
-                />
-              </div>
-              {inviteError && (
-                <p className="text-[12px] text-red-400 mb-2 tracking-tight">{inviteError}</p>
-              )}
-              <button
-                type="button"
-                onClick={handleJoinConfirm}
-                className="mt-3 w-full rounded-2xl py-3.5 font-bold text-white text-[15px] tracking-tight active:scale-[0.99] transition"
-                style={{ background: "var(--primary)" }}
-              >
-                열람하기
-              </button>
-              <button
-                type="button"
-                onClick={() => setInviteDiary(null)}
-                className="mt-2 w-full rounded-2xl py-2.5 text-[14px] text-[#999] tracking-tight"
-              >
-                취소
-              </button>
-            </div>
+        <BottomSheet
+          open={!!inviteDiary}
+          onClose={() => setInviteDiary(null)}
+          title="교환일기 열람하기"
+          subtitle={inviteDiary ? `"${inviteDiary.title}"을 읽으려면 비밀번호를 입력해 주세요.` : undefined}
+        >
+          <div className="flex items-center gap-2 rounded-xl bg-[#f4f6fa] px-4 py-3 mb-1">
+            <Lock className="h-4 w-4 text-[#aaa] shrink-0" />
+            <input
+              type="password"
+              placeholder="비밀번호"
+              value={invitePw}
+              onChange={(e) => {
+                setInvitePw(e.target.value);
+                setInviteError("");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.nativeEvent.isComposing) handleJoinConfirm();
+              }}
+              className="flex-1 bg-transparent text-base text-foreground placeholder:text-[#bbb] outline-none"
+              autoFocus
+            />
           </div>
-        )}
+          {inviteError && (
+            <p className="text-[12px] text-red-400 tracking-tight px-1">{inviteError}</p>
+          )}
+          <button
+            type="button"
+            onClick={handleJoinConfirm}
+            className="mt-2 w-full rounded-2xl py-3.5 font-bold text-white text-[15px] tracking-tight active:scale-[0.99] transition"
+            style={{ background: "var(--primary)" }}
+          >
+            열람하기
+          </button>
+          <button
+            type="button"
+            onClick={() => setInviteDiary(null)}
+            className="w-full rounded-2xl py-2.5 text-[14px] text-[#999] tracking-tight"
+          >
+            취소
+          </button>
+        </BottomSheet>
 
         {/* 케밥 메뉴 바텀시트 */}
-        {menuDiary && (
-          <div
-            className="absolute inset-0 z-50 flex items-end"
-            style={{ background: "rgba(0,0,0,0.45)" }}
-            onClick={() => { setMenuDiary(null); setCopied(false); }}
-          >
-            <div
-              className="w-full rounded-t-[24px] bg-white px-5 pt-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="font-bold text-[#222] text-[16px] tracking-tight mb-4 truncate px-1">
-                {menuDiary.title}
-              </h3>
-              <div className="flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const url = `${getAppOrigin()}/exchange?invite=${menuDiary.inviteCode}`;
-                    try { await navigator.clipboard.writeText(url); } catch { prompt("링크를 복사해 주세요:", url); }
-                    setCopied(true);
-                    setTimeout(() => { setMenuDiary(null); setCopied(false); }, 1200);
-                  }}
-                  className="w-full flex items-center gap-3 rounded-2xl bg-[#f8f9fb] px-4 py-4 text-[15px] font-medium text-[#222] tracking-tight active:bg-[#f0f2f6] transition"
-                >
-                  <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#4283f3]/10">
-                    {copied ? <Check className="h-4 w-4 text-[#4283f3]" /> : <Copy className="h-4 w-4 text-[#4283f3]" />}
-                  </div>
-                  {copied ? "복사됐어요!" : "공유하기"}
-                </button>
-
-                {menuDiary.authorId === myId && (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      setMenuDiary(null);
-                      if (!confirm("이 일기를 삭제하면 댓글도 모두 사라져요. 삭제할까요?")) return;
-                      await deleteDiary(menuDiary.id);
-                      await refresh();
-                    }}
-                    className="w-full flex items-center gap-3 rounded-2xl bg-red-50 px-4 py-4 text-[15px] font-medium text-red-400 tracking-tight active:bg-red-100 transition"
-                  >
-                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-red-100">
-                      <Trash2 className="h-4 w-4 text-red-400" />
-                    </div>
-                    삭제하기
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+        <BottomSheet
+          open={!!menuDiary}
+          onClose={() => { setMenuDiary(null); setCopied(false); }}
+          title={menuDiary?.title}
+        >
+          <SheetItem
+            icon={copied ? <Check /> : <Copy />}
+            label={copied ? "복사됐어요!" : "공유하기"}
+            onClick={async () => {
+              if (!menuDiary) return;
+              const url = `${getAppOrigin()}/exchange?invite=${menuDiary.inviteCode}`;
+              try { await navigator.clipboard.writeText(url); } catch { prompt("링크를 복사해 주세요:", url); }
+              setCopied(true);
+              setTimeout(() => { setMenuDiary(null); setCopied(false); }, 1200);
+            }}
+          />
+          {menuDiary?.authorId === myId && (
+            <SheetItem
+              icon={<Trash2 />}
+              label="삭제하기"
+              danger
+              onClick={async () => {
+                if (!menuDiary) return;
+                setMenuDiary(null);
+                if (!confirm("이 일기를 삭제하면 댓글도 모두 사라져요. 삭제할까요?")) return;
+                await deleteDiary(menuDiary.id);
+                await refresh();
+              }}
+            />
+          )}
+        </BottomSheet>
+    </PageShell>
   );
 }
 

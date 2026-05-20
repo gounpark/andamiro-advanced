@@ -1,0 +1,115 @@
+import type { ReactNode } from "react";
+
+/* ── BottomSheet ─────────────────────────────────────────────────────────────
+ * app-frame 위에 렌더링되는 공통 바텀시트 컨테이너
+ *
+ * ```tsx
+ * <BottomSheet open={open} onClose={() => setOpen(false)} title="제목">
+ *   <SheetItem icon={<Share2 />} label="공유하기" onClick={handleShare} />
+ *   <SheetItem icon={<Trash2 />} label="삭제하기" danger onClick={handleDelete} />
+ * </BottomSheet>
+ * ```
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+interface BottomSheetProps {
+  open: boolean;
+  onClose: () => void;
+  /** 시트 상단 타이틀 */
+  title?: ReactNode;
+  /** 타이틀 아래 서브텍스트 */
+  subtitle?: string;
+  children: ReactNode;
+  /** 오버레이 z-index (기본 50) */
+  zIndex?: number;
+}
+
+export function BottomSheet({
+  open,
+  onClose,
+  title,
+  subtitle,
+  children,
+  zIndex = 50,
+}: BottomSheetProps) {
+  if (!open) return null;
+
+  return (
+    <div
+      className="absolute inset-0 flex items-end"
+      style={{ zIndex, background: "rgba(0,0,0,0.45)" }}
+      onClick={onClose}
+    >
+      <div
+        className="w-full rounded-t-[24px] bg-white px-5 pt-5"
+        style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {(title || subtitle) && (
+          <div className="mb-4 px-1">
+            {title && (
+              <h3 className="font-bold text-[#111] text-[16px] tracking-tight truncate">
+                {title}
+              </h3>
+            )}
+            {subtitle && (
+              <p className="mt-0.5 text-[13px] text-[#999] tracking-tight">{subtitle}</p>
+            )}
+          </div>
+        )}
+        <div className="flex flex-col gap-2">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ── SheetItem ───────────────────────────────────────────────────────────────
+ * BottomSheet 안의 개별 메뉴 아이템
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+interface SheetItemProps {
+  /** 왼쪽 아이콘 (Lucide 컴포넌트 권장, size=16) */
+  icon: ReactNode;
+  label: string;
+  description?: string;
+  /** 빨간색 위험 스타일 */
+  danger?: boolean;
+  onClick: () => void;
+  disabled?: boolean;
+}
+
+export function SheetItem({
+  icon,
+  label,
+  description,
+  danger = false,
+  onClick,
+  disabled = false,
+}: SheetItemProps) {
+  const bg = danger ? "bg-red-50 active:bg-red-100" : "bg-[#f8f9fb] active:bg-[#f0f2f6]";
+  const iconBg = danger ? "bg-red-100" : "bg-[var(--primary)]/10";
+  const iconColor = danger ? "text-red-400" : "text-[var(--primary)]";
+  const textColor = danger ? "text-red-400" : "text-[#222]";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`w-full flex items-center gap-3 rounded-2xl px-4 py-3.5 text-left transition active:scale-[0.99] disabled:opacity-40 ${bg}`}
+    >
+      <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${iconBg}`}>
+        <span className={`flex items-center justify-center [&>svg]:h-4 [&>svg]:w-4 ${iconColor}`}>
+          {icon}
+        </span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className={`text-[15px] font-medium tracking-tight ${textColor}`}>{label}</p>
+        {description && (
+          <p className={`text-[12px] mt-0.5 ${danger ? "text-red-300" : "text-[#999]"}`}>
+            {description}
+          </p>
+        )}
+      </div>
+    </button>
+  );
+}

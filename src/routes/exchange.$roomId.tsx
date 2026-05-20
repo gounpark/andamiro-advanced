@@ -1,6 +1,6 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
-import { MoreHorizontal, Trash2, Send, CornerDownRight, X, Lock, Copy, Check, ChevronLeft } from "lucide-react";
+import { MoreHorizontal, Trash2, Send, CornerDownRight, X, Lock, Copy, Check } from "lucide-react";
 import {
   getDiaryById,
   getComments,
@@ -17,7 +17,7 @@ import {
   type ExchangeComment,
 } from "@/lib/exchangeStore";
 import { getAppOrigin } from "@/lib/navigate";
-import { PageHeader } from "@/components/PageHeader";
+import { PageShell, PageHeader, BackButton, LoadingScreen, BottomSheet, SheetItem } from "@/components";
 import exchangeCharacters from "@/assets/exchange-created-characters.webp";
 
 export const Route = createFileRoute("/exchange/$roomId")({
@@ -130,23 +130,14 @@ function ExchangeDiaryPage() {
     await refreshComments();
   };
 
-  if (loading) {
-    return (
-      <div className="app-shell">
-        <div className="app-frame flex flex-col items-center justify-center" style={{ background: "#f5f6f8" }}>
-          <p className="text-[15px] text-[#aaa] tracking-tight">불러오는 중...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <LoadingScreen />;
 
   if (!diary) return null;
 
   // ── 비번 인증 오버레이 ──────────────────────────────────────────────────
   if (!authorized) {
     return (
-      <div className="app-shell">
-        <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
+      <PageShell bg="#f5f6f8">
           <div className="absolute inset-0 flex flex-col items-center justify-center px-6">
             <div className="grid h-16 w-16 place-items-center rounded-2xl bg-[var(--primary)]/10 mb-4">
               <Lock className="h-7 w-7 text-[var(--primary)]" />
@@ -192,8 +183,7 @@ function ExchangeDiaryPage() {
               돌아가기
             </button>
           </div>
-        </div>
-      </div>
+      </PageShell>
     );
   }
 
@@ -203,15 +193,10 @@ function ExchangeDiaryPage() {
   const repliesOf = (pid: string) => comments.filter((c) => c.parentId === pid);
 
   return (
-    <div className="app-shell">
-      <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
+    <PageShell bg="#f5f6f8">
         <PageHeader
           title="공유일기 상세"
-          left={
-            <Link to="/exchange" search={{ invite: undefined }} className="grid h-11 w-11 place-items-center active:opacity-60 transition" aria-label="뒤로가기">
-              <ChevronLeft className="h-7 w-7 text-[#222]" strokeWidth={2.2} />
-            </Link>
-          }
+          left={<BackButton onClick={() => navigate({ to: "/exchange", search: { invite: undefined } })} />}
           right={
             <button type="button" onClick={() => setShowMenu(true)} className="grid h-11 w-11 place-items-center active:opacity-60 transition" aria-label="메뉴 열기">
               <MoreHorizontal className="h-7 w-7 text-[#222]" strokeWidth={2.2} />
@@ -392,56 +377,26 @@ function ExchangeDiaryPage() {
         </div>
 
         {/* ⋯ 메뉴 바텀시트 */}
-        {showMenu && (
-          <div
-            className="absolute inset-0 z-50 flex items-end"
-            style={{ background: "rgba(0,0,0,0.45)" }}
-            onClick={() => setShowMenu(false)}
-          >
-            <div
-              className="w-full rounded-t-[24px] bg-white px-5 pt-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="font-bold text-[#222] text-[16px] tracking-tight mb-4 truncate px-1">
-                {diary.title}
-              </h3>
-
-              <div className="flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowMenu(false);
-                    setShareSheetMode("share");
-                  }}
-                  className="w-full flex items-center gap-3 rounded-2xl bg-[#f8f9fb] px-4 py-4 text-[15px] font-medium text-[#222] tracking-tight active:bg-[#f0f2f6] transition"
-                >
-                  <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#4283f3]/10">
-                    <Copy className="h-4 w-4 text-[#4283f3]" />
-                  </div>
-                  공유하기
-                </button>
-
-                {isAuthor && (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      setShowMenu(false);
-                      if (!confirm("이 일기를 삭제하면 댓글도 모두 사라져요. 삭제할까요?")) return;
-                      await deleteDiary(diaryId);
-                      navigate({ to: "/exchange", search: { invite: undefined } });
-                    }}
-                    className="w-full flex items-center gap-3 rounded-2xl bg-red-50 px-4 py-4 text-[15px] font-medium text-red-400 tracking-tight active:bg-red-100 transition"
-                  >
-                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-red-100">
-                      <Trash2 className="h-4 w-4 text-red-400" />
-                    </div>
-                    삭제하기
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+        <BottomSheet open={showMenu} onClose={() => setShowMenu(false)} title={diary.title}>
+          <SheetItem
+            icon={<Copy />}
+            label="공유하기"
+            onClick={() => { setShowMenu(false); setShareSheetMode("share"); }}
+          />
+          {isAuthor && (
+            <SheetItem
+              icon={<Trash2 />}
+              label="삭제하기"
+              danger
+              onClick={async () => {
+                setShowMenu(false);
+                if (!confirm("이 일기를 삭제하면 댓글도 모두 사라져요. 삭제할까요?")) return;
+                await deleteDiary(diaryId);
+                navigate({ to: "/exchange", search: { invite: undefined } });
+              }}
+            />
+          )}
+        </BottomSheet>
 
         {/* 공유 바텀시트 (생성 완료 / 공유하기 공용) */}
         {shareSheetMode && diary && (
@@ -482,8 +437,7 @@ function ExchangeDiaryPage() {
         {showReaders && (
           <ReadersSheet diary={diary} onClose={() => setShowReaders(false)} />
         )}
-      </div>
-    </div>
+    </PageShell>
   );
 }
 

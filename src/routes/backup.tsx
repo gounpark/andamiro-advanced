@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ChevronLeft, Eye, MessageCircle } from "lucide-react";
-import { PageHeader } from "@/components/PageHeader";
+import { Eye, MessageCircle } from "lucide-react";
+import { PageShell, PageHeader, BackButton, LoadingScreen } from "@/components";
 import {
   getMyDiaries,
   getSharedDiaries,
@@ -94,21 +94,13 @@ function BackupPage() {
     setDownloading(false);
   };
 
+  if (loading) return <LoadingScreen />;
+
   return (
-    <div className="app-shell">
-      <div className="app-frame flex flex-col bg-white">
+    <PageShell>
         <PageHeader
           title="데이터 백업"
-          left={
-            <button
-              type="button"
-              onClick={() => navigate({ to: "/my" })}
-              className="grid h-11 w-11 place-items-center active:opacity-60 transition"
-              aria-label="뒤로가기"
-            >
-              <ChevronLeft className="h-7 w-7 text-[#222]" strokeWidth={2.2} />
-            </button>
-          }
+          left={<BackButton onClick={() => navigate({ to: "/my" })} />}
           right={
             <button
               type="button"
@@ -123,9 +115,7 @@ function BackupPage() {
 
         {/* 목록 */}
         <div className="flex-1 overflow-y-auto">
-          {loading ? (
-            <div className="flex items-center justify-center h-40 text-[14px] text-[#999]">불러오는 중...</div>
-          ) : diaries.length === 0 ? (
+          {diaries.length === 0 ? (
             <div className="flex items-center justify-center h-40 text-[14px] text-[#999]">교환 일기가 없어요.</div>
           ) : (
             diaries.map((diary, i) => {
@@ -210,7 +200,6 @@ function BackupPage() {
             {downloading ? "다운로드 중..." : "다운로드 하기"}
           </button>
         </div>
-      </div>
-    </div>
+    </PageShell>
   );
 }
