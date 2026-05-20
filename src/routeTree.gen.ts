@@ -20,6 +20,7 @@ import { Route as FortuneRouteImport } from './routes/fortune'
 import { Route as ExchangeRouteImport } from './routes/exchange'
 import { Route as DiaryRouteImport } from './routes/diary'
 import { Route as ChatRouteImport } from './routes/chat'
+import { Route as DesignRouteImport } from './routes/design'
 import { Route as BackupRouteImport } from './routes/backup'
 import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as AdviceRouteImport } from './routes/advice'
@@ -82,6 +83,11 @@ const ChatRoute = ChatRouteImport.update({
   path: '/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DesignRoute = DesignRouteImport.update({
+  id: '/design',
+  path: '/design',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BackupRoute = BackupRouteImport.update({
   id: '/backup',
   path: '/backup',
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/advice': typeof AdviceRoute
   '/analysis': typeof AnalysisRoute
   '/backup': typeof BackupRoute
+  '/design': typeof DesignRoute
   '/chat': typeof ChatRoute
   '/diary': typeof DiaryRoute
   '/exchange': typeof ExchangeRouteWithChildren
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/advice': typeof AdviceRoute
   '/analysis': typeof AnalysisRoute
   '/backup': typeof BackupRoute
+  '/design': typeof DesignRoute
   '/chat': typeof ChatRoute
   '/diary': typeof DiaryRoute
   '/exchange': typeof ExchangeRouteWithChildren
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/advice': typeof AdviceRoute
   '/analysis': typeof AnalysisRoute
   '/backup': typeof BackupRoute
+  '/design': typeof DesignRoute
   '/chat': typeof ChatRoute
   '/diary': typeof DiaryRoute
   '/exchange': typeof ExchangeRouteWithChildren
@@ -178,6 +187,7 @@ export interface FileRouteTypes {
     | '/advice'
     | '/analysis'
     | '/backup'
+    | '/design'
     | '/chat'
     | '/diary'
     | '/exchange'
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/advice'
     | '/analysis'
     | '/backup'
+    | '/design'
     | '/chat'
     | '/diary'
     | '/exchange'
@@ -216,6 +227,7 @@ export interface FileRouteTypes {
     | '/advice'
     | '/analysis'
     | '/backup'
+    | '/design'
     | '/chat'
     | '/diary'
     | '/exchange'
@@ -236,6 +248,7 @@ export interface RootRouteChildren {
   AdviceRoute: typeof AdviceRoute
   AnalysisRoute: typeof AnalysisRoute
   BackupRoute: typeof BackupRoute
+  DesignRoute: typeof DesignRoute
   ChatRoute: typeof ChatRoute
   DiaryRoute: typeof DiaryRoute
   ExchangeRoute: typeof ExchangeRouteWithChildren
@@ -335,6 +348,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BackupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/design': {
+      id: '/design'
+      path: '/design'
+      fullPath: '/design'
+      preLoaderRoute: typeof DesignRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/analysis': {
       id: '/analysis'
       path: '/analysis'
@@ -392,6 +412,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdviceRoute: AdviceRoute,
   AnalysisRoute: AnalysisRoute,
   BackupRoute: BackupRoute,
+  DesignRoute: DesignRoute,
   ChatRoute: ChatRoute,
   DiaryRoute: DiaryRoute,
   ExchangeRoute: ExchangeRouteWithChildren,
