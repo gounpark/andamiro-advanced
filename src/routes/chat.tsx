@@ -362,15 +362,8 @@ function ChatPage() {
       emotionTimeline: [],
     });
 
-    // 채팅에 결과 주입
-    const domKo = dominant ? (EXPR_KO[dominant] ?? dominant) : "알 수 없음";
-    const pct   = dominant ? Math.round((expressions[dominant] ?? 0) * 100) : 0;
-    setMessages((m) => [...m, {
-      id: crypto.randomUUID(), role: "bot",
-      text: `표정 분석이 완료됐어요! 😊\n${domKo}이 ${pct}%로 감지됐어요.\n오늘 그 표정에 담긴 이야기를 들려주실래요?`,
-      canEnd: true,
-    }]);
-    setShowChips(false);
+    // 분석 완료 → 바로 결과 화면으로 이동
+    navigate({ to: "/analysis", search: { day: undefined } });
   };
 
   const endConversation = () => navigate({ to: "/analysis", search: { day: undefined } });
