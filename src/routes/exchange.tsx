@@ -10,6 +10,7 @@ import {
   MoreVertical,
   Copy,
   Trash2,
+  ChevronLeft,
 } from "lucide-react";
 import {
   getCachedDiaries,
@@ -26,7 +27,7 @@ import {
 } from "@/lib/exchangeStore";
 import { getAppOrigin } from "@/lib/navigate";
 import { getCachedUser } from "@/lib/auth";
-import { AppHeader } from "@/components/AppHeader";
+import { PageHeader } from "@/components/PageHeader";
 
 export const Route = createFileRoute("/exchange")({
   head: () => ({
@@ -165,7 +166,14 @@ function ExchangeListPage() {
   return (
     <div className="app-shell">
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
-        <AppHeader title="공유일기" backTo="/my" />
+        <PageHeader
+          title="공유일기"
+          left={
+            <Link to="/my" className="grid h-11 w-11 place-items-center active:opacity-60 transition" aria-label="뒤로가기">
+              <ChevronLeft className="h-7 w-7 text-[#222]" strokeWidth={2.2} />
+            </Link>
+          }
+        />
 
         <div className="bg-white flex border-b border-[#f0f0f0]">
           {(["my", "shared"] as TabId[]).map((t) => (

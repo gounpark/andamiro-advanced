@@ -7,12 +7,12 @@ import {
   Megaphone,
   HelpCircle,
   FileText,
-  BookOpen,
   BookMarked,
   X,
   LogIn,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { PageHeader } from "@/components/PageHeader";
 import cloverActiveSvg from "@/assets/icons/clover-active.svg";
 import bgShapeLargeSvg from "@/assets/icons/bg-shape-large.svg";
 import { BottomNav } from "@/components/BottomNav";
@@ -147,18 +147,16 @@ function MyPage() {
         <div className="absolute inset-0 overflow-y-auto pb-[126px]">
           {/* 그라디언트 헤더 */}
           <div
-            className="relative overflow-hidden pt-6 pb-20 px-6"
+            className="relative overflow-hidden pb-20"
             style={{ background: "var(--gradient-sky)" }}
           >
             <img src={bgShapeLargeSvg} alt="" aria-hidden className="pointer-events-none absolute -top-2 -right-4 w-[260px] h-[275px] z-0" />
             <img src={bgShapeSmallSvg} alt="" aria-hidden className="pointer-events-none absolute top-[40px] -left-8 w-[142px] h-[196px] z-0" />
-            <header className="relative z-10 flex items-center justify-center pb-2">
-              <h1 className="font-semibold text-white text-[16px] tracking-tight">마이</h1>
-            </header>
-            <p className="relative z-10 mt-3 text-white/85 text-[13px] tracking-tight">
+            <PageHeader className="bg-transparent" title="마이" titleColor="text-white" />
+            <p className="relative z-10 mt-3 px-6 text-white/85 text-[13px] tracking-tight">
               {user ? "안녕하세요," : "로그인하고 더 많은 기능을 사용해보세요"}
             </p>
-            <p className="relative z-10 mt-1 font-bold text-white text-[20px] leading-tight tracking-tight">
+            <p className="relative z-10 mt-1 px-6 font-bold text-white text-[20px] leading-tight tracking-tight">
               {user ? `${displayName}님` : "안다미로"}
             </p>
           </div>
@@ -219,7 +217,6 @@ function MyPage() {
           {/* 바로가기 */}
           <section className="px-4 mt-5">
             <div className="rounded-2xl bg-white border border-[#f0f0f0] overflow-hidden shadow-sm">
-              <MenuLinkRow to="/diary" icon={<BookOpen className="h-4 w-4" />} label="영상 일기 기록" />
               <MenuLinkRow to="/exchange" icon={<BookMarked className="h-4 w-4" />} label="공유 일기" />
               <div className="w-full flex items-center gap-3 px-4 py-3.5 border-t border-[#f5f5f5]">
                 <span className="grid h-7 w-7 place-items-center rounded-full bg-[#f4f6fa] text-[var(--primary)] shrink-0">

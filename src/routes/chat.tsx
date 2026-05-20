@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, Plus, Mic, ArrowUp } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { DemoCursor } from "@/components/DemoCursor";
 
 type MoodKey = "best" | "good" | "okay" | "bad" | "worst";
@@ -360,16 +361,15 @@ function ChatPage() {
       <div ref={frameRef} className="app-frame flex flex-col" style={{ position: "relative" }}>
         {(demo1 || demo2) && <DemoCursor {...cursor} />}
         {/* 헤더 */}
-        <header className="relative flex shrink-0 items-center justify-center px-4 pt-[52px] pb-3 border-b border-black/5">
-          <Link
-            to="/record"
-            aria-label="뒤로"
-            className="absolute left-3 top-[50px] grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground"
-          >
-            <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
-          </Link>
-          <h1 className="font-semibold text-foreground text-[16px] tracking-tight">오늘의 일기</h1>
-        </header>
+        <PageHeader
+          title="오늘의 일기"
+          className="bg-white border-b border-black/5"
+          left={
+            <Link to="/record" aria-label="뒤로" className="grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground">
+              <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
+            </Link>
+          }
+        />
 
         {/* 대화 영역 */}
         <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-5 py-5 scrollbar-hide">

@@ -6,7 +6,11 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "@tanstack/react-router";
 import { getRouter } from "./router";
+import { installAutoUpdate } from "./lib/autoUpdate";
 import "./styles.css";
+
+// 새 배포 자동 감지/새로고침
+installAutoUpdate();
 
 // GitHub Pages 404.html → index.html 리다이렉트 복구
 const redirect = sessionStorage.getItem("ghpages_redirect");

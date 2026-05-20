@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, Video } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { DemoCursor } from "@/components/DemoCursor";
+import { PageHeader } from "@/components/PageHeader";
 
 import moodBest from "@/assets/moods/mood-best.webp";
 import moodGood from "@/assets/moods/mood-good.webp";
@@ -240,30 +241,15 @@ function RecordPage() {
 
         {/* 콘텐츠 */}
         <div className="relative z-10 flex h-full flex-col">
-          {/* 헤더 (뒤로가기 + 영상 기록 버튼) */}
-          <header className="flex items-center justify-between px-5 pt-[52px] pb-1">
-            <Link
-              to="/"
-              search={{} as any}
-              aria-label="뒤로 가기"
-              className="grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground"
-            >
-              <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
-            </Link>
-            <button
-              type="button"
-              onClick={() =>
-                navigate({
-                  to: "/video-record",
-                  search: selected ? { mood: selected } : {},
-                })
-              }
-              className="flex items-center gap-1.5 rounded-full bg-white/90 px-3.5 py-2 shadow-sm border border-black/8 text-[13px] font-semibold text-foreground/80 backdrop-blur-sm active:scale-95 transition-transform"
-            >
-              <Video className="h-3.5 w-3.5" strokeWidth={2.2} />
-              영상으로 기록
-            </button>
-          </header>
+          {/* 헤더 (뒤로가기 버튼) */}
+          <PageHeader
+            className=""
+            left={
+              <Link to="/" search={{} as any} aria-label="뒤로 가기" className="grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground">
+                <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
+              </Link>
+            }
+          />
 
           {/* 타이틀 */}
           <section className="px-6 pt-3">

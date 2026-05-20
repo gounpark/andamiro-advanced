@@ -147,11 +147,15 @@ export function getCachedDiaries(): DiaryCache | null {
 }
 
 // ── 일기 조회 ─────────────────────────────────────────────────────────────────
+// 목록 조회용 컬럼 — 압축 후 20~40KB 이므로 포함해도 부담 없음
+const LIST_COLUMNS =
+  "id, author_id, author_name, title, body, password, invite_code, image_data_url, keywords, viewer_ids, viewer_names, viewer_avatars, created_at";
+
 export async function getMyDiaries(): Promise<ExchangeDiary[]> {
   const myId = getMyId();
   const { data, error } = await supabase
     .from("exchange_diaries")
-    .select("*")
+    .select(LIST_COLUMNS)
     .eq("author_id", myId)
     .order("created_at", { ascending: false });
   if (error) return [];
@@ -162,7 +166,7 @@ export async function getSharedDiaries(): Promise<ExchangeDiary[]> {
   const myId = getMyId();
   const { data, error } = await supabase
     .from("exchange_diaries")
-    .select("*")
+    .select(LIST_COLUMNS)
     .contains("viewer_ids", [myId])
     .neq("author_id", myId)
     .order("created_at", { ascending: false });
@@ -243,7 +247,10 @@ export async function createDiary(params: CreateDiaryParams): Promise<ExchangeDi
     created_at: diary.createdAt,
   });
 
-  if (error) throw new Error(`일기 생성 실패: ${error.message}`);
+  if (error) {
+    console.error("[createDiary] supabase insert error", error);
+    throw new Error(`일기 생성 실패: ${error.message}`);
+  }
   return diary;
 }
 

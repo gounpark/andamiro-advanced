@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ChevronLeft, Eye, MessageCircle } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import {
   getMyDiaries,
   getSharedDiaries,
@@ -96,9 +97,9 @@ function BackupPage() {
   return (
     <div className="app-shell">
       <div className="app-frame flex flex-col bg-white">
-        {/* 헤더 */}
-        <header className="relative shrink-0 bg-white" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
-          <div className="relative flex h-[68px] items-center px-[10px]">
+        <PageHeader
+          title="데이터 백업"
+          left={
             <button
               type="button"
               onClick={() => navigate({ to: "/my" })}
@@ -107,19 +108,18 @@ function BackupPage() {
             >
               <ChevronLeft className="h-7 w-7 text-[#222]" strokeWidth={2.2} />
             </button>
-            <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[18px] font-semibold text-[#222] tracking-tight">
-              데이터 백업
-            </h1>
+          }
+          right={
             <button
               type="button"
               onClick={toggleAll}
               disabled={diaries.length === 0}
-              className="absolute right-[16px] top-1/2 -translate-y-1/2 text-[14px] font-medium text-[#4B82F5] tracking-tight"
+              className="text-[14px] font-medium text-[#4B82F5] tracking-tight"
             >
               {allSelected ? "해제" : "전체선택"}
             </button>
-          </div>
-        </header>
+          }
+        />
 
         {/* 목록 */}
         <div className="flex-1 overflow-y-auto">

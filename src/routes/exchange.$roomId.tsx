@@ -1,6 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
-import { MoreHorizontal, Trash2, Send, CornerDownRight, X, Lock, Copy, Check } from "lucide-react";
+import { MoreHorizontal, Trash2, Send, CornerDownRight, X, Lock, Copy, Check, ChevronLeft } from "lucide-react";
 import {
   getDiaryById,
   getComments,
@@ -17,7 +17,7 @@ import {
   type ExchangeComment,
 } from "@/lib/exchangeStore";
 import { getAppOrigin } from "@/lib/navigate";
-import { AppHeader } from "@/components/AppHeader";
+import { PageHeader } from "@/components/PageHeader";
 import exchangeCharacters from "@/assets/exchange-created-characters.webp";
 
 export const Route = createFileRoute("/exchange/$roomId")({
@@ -40,6 +40,7 @@ function ExchangeDiaryPage() {
   const [shareSheetMode, setShareSheetMode] = useState<"created" | "share" | null>(null);
   const [copied, setCopied] = useState(false);
   const [replyTo, setReplyTo] = useState<ExchangeComment | null>(null);
+  const [showReaders, setShowReaders] = useState(false);
   const commentInputRef = useRef<HTMLInputElement>(null);
 
   const pwInputRef = useRef<HTMLInputElement>(null);
@@ -200,16 +201,15 @@ function ExchangeDiaryPage() {
   return (
     <div className="app-shell">
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
-        <AppHeader
+        <PageHeader
           title="공유일기 상세"
-          backTo="/exchange"
-          rightAction={
-            <button
-              type="button"
-              onClick={() => setShowMenu(true)}
-              className="grid h-11 w-11 place-items-center active:opacity-60 transition"
-              aria-label="메뉴 열기"
-            >
+          left={
+            <Link to="/exchange" search={{ invite: undefined }} className="grid h-11 w-11 place-items-center active:opacity-60 transition" aria-label="뒤로가기">
+              <ChevronLeft className="h-7 w-7 text-[#222]" strokeWidth={2.2} />
+            </Link>
+          }
+          right={
+            <button type="button" onClick={() => setShowMenu(true)} className="grid h-11 w-11 place-items-center active:opacity-60 transition" aria-label="메뉴 열기">
               <MoreHorizontal className="h-7 w-7 text-[#222]" strokeWidth={2.2} />
             </button>
           }
@@ -281,34 +281,27 @@ function ExchangeDiaryPage() {
               )}
 
               {diary.viewerIds.length > 0 && (
-                <div className="mt-5 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowReaders(true)}
+                  className="mt-5 flex items-center gap-2 active:opacity-70 transition"
+                >
                   <div className="flex -space-x-2">
-                    {diary.viewerIds.slice(0, 3).map((vid, i) => {
-                      const name = diary.viewerNames[i] ?? vid;
-                      const avatar = diary.viewerAvatars[i];
-                      return avatar ? (
-                        <img
-                          key={vid}
-                          src={avatar}
-                          alt={name}
-                          className="h-7 w-7 rounded-full border-2 border-white object-cover"
-                          style={{ zIndex: 10 - i }}
-                        />
-                      ) : (
-                        <div
-                          key={vid}
-                          className="grid h-7 w-7 place-items-center rounded-full border-2 border-white text-[11px] font-bold text-white"
-                          style={{ background: coverColorForId(vid), zIndex: 10 - i }}
-                        >
-                          {name.charAt(0)}
-                        </div>
-                      );
-                    })}
+                    {diary.viewerIds.slice(0, 3).map((vid, i) => (
+                      <ReaderAvatar
+                        key={vid}
+                        id={vid}
+                        name={diary.viewerNames[i] ?? vid}
+                        avatar={diary.viewerAvatars[i]}
+                        size={28}
+                        zIndex={10 - i}
+                      />
+                    ))}
                   </div>
                   <span className="text-[14px] text-[#999] tracking-tight">
                     {diary.viewerIds.length}명이 읽었어요
                   </span>
-                </div>
+                </button>
               )}
             </div>
           </article>
@@ -481,6 +474,95 @@ function ExchangeDiaryPage() {
             </div>
           </div>
         )}
+
+        {showReaders && (
+          <ReadersSheet diary={diary} onClose={() => setShowReaders(false)} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ReaderAvatar({
+  id,
+  name,
+  avatar,
+  size,
+  zIndex,
+}: {
+  id: string;
+  name: string;
+  avatar?: string;
+  size: number;
+  zIndex?: number;
+}) {
+  const style: React.CSSProperties = { width: size, height: size };
+  if (zIndex != null) style.zIndex = zIndex;
+  if (avatar) {
+    return (
+      <img
+        src={avatar}
+        alt={name}
+        className="rounded-full border-2 border-white object-cover"
+        style={style}
+      />
+    );
+  }
+  return (
+    <div
+      className="grid place-items-center rounded-full border-2 border-white font-bold text-white"
+      style={{
+        ...style,
+        background: coverColorForId(id),
+        fontSize: Math.max(10, Math.floor(size * 0.42)),
+      }}
+    >
+      {name.charAt(0)}
+    </div>
+  );
+}
+
+function ReadersSheet({
+  diary,
+  onClose,
+}: {
+  diary: ExchangeDiary;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      className="absolute inset-0 z-30 flex flex-col justify-end bg-black/40"
+      onClick={onClose}
+    >
+      <div
+        className="rounded-t-2xl bg-white pb-[calc(0.75rem+env(safe-area-inset-bottom))] max-h-[70%] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-5 pt-4 pb-3 shrink-0">
+          <h3 className="text-[15px] font-bold tracking-tight text-[#222]">
+            이 일기를 읽은 사람 ({diary.viewerIds.length})
+          </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="grid h-8 w-8 place-items-center rounded-full text-[#666] active:bg-[#f4f4f4] transition"
+            aria-label="닫기"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto scrollbar-hide px-5 pb-2">
+          {diary.viewerIds.map((vid, i) => {
+            const name = diary.viewerNames[i] ?? vid;
+            const avatar = diary.viewerAvatars[i];
+            return (
+              <div key={vid} className="flex items-center gap-3 py-2.5">
+                <ReaderAvatar id={vid} name={name} avatar={avatar} size={40} />
+                <span className="text-[15px] tracking-tight text-[#333]">{name}</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

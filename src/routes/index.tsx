@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
+import { PageHeader } from "@/components/PageHeader";
 import { DemoCursor } from "@/components/DemoCursor";
 import {
   ArrowRight,
@@ -438,8 +439,9 @@ function Index() {
               className="pointer-events-none absolute top-[140px] -left-8 w-[142px] h-[196px] z-0"
             />
 
-            <header className="relative z-10 flex items-center justify-start px-6 pt-[52px] pb-2">
-              <h1 className="m-0 inline-flex">
+            <PageHeader
+              className="bg-transparent"
+              left={
                 <img
                   src={logoSvg}
                   alt="안다미로"
@@ -448,8 +450,8 @@ function Index() {
                   className="block h-7 w-auto shrink-0"
                   style={{ aspectRatio: "81 / 28" }}
                 />
-              </h1>
-            </header>
+              }
+            />
 
             <section className="relative z-10 px-6 pt-2 pb-6">
               <p className="text-[#f8f8f8] text-[18px] leading-tight tracking-tight">

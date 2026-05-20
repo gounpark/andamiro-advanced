@@ -1,8 +1,9 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
-import { Folder, X } from "lucide-react";
+import { Folder, X, ChevronLeft } from "lucide-react";
 import { createDiary } from "@/lib/exchangeStore";
-import { AppHeader } from "@/components/AppHeader";
+import { compressImageToDataUrl } from "@/lib/image";
+import { PageHeader } from "@/components/PageHeader";
 
 export const Route = createFileRoute("/exchange/create")({
   head: () => ({
@@ -49,12 +50,20 @@ function ExchangeCreatePage() {
   }, []);
 
   // ── 이미지 선택 ──────────────────────────────────────────────────────────
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    const file = input.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setImageDataUrl(reader.result as string);
-    reader.readAsDataURL(file);
+    try {
+      const compressed = await compressImageToDataUrl(file);
+      setImageDataUrl(compressed);
+    } catch (err) {
+      console.error("[exchange.create] image compress failed", err);
+      const msg = err instanceof Error ? err.message : "이미지 처리에 실패했어요.";
+      setError(msg);
+    } finally {
+      input.value = "";
+    }
   };
 
   // ── 유효성 검사 → 생성 ──────────────────────────────────────────────────
@@ -103,15 +112,28 @@ function ExchangeCreatePage() {
       });
       sessionStorage.setItem("exchange_just_created", diary.id);
       navigate({ to: "/exchange/$roomId", params: { roomId: diary.id }, search: { invite: undefined } });
-    } catch {
-      setError("일기 저장에 실패했어요. 잠시 후 다시 시도해 주세요.");
+    } catch (err) {
+      console.error("[exchange.create] save failed", err);
+      const detail = err instanceof Error ? err.message : "";
+      setError(
+        detail
+          ? `일기 저장 실패: ${detail}`
+          : "일기 저장에 실패했어요. 잠시 후 다시 시도해 주세요.",
+      );
     }
   };
 
   return (
     <div className="app-shell">
       <div className="app-frame flex flex-col bg-white">
-        <AppHeader title="공유일기 만들기" backTo="/exchange" />
+        <PageHeader
+          title="공유일기 만들기"
+          left={
+            <Link to="/exchange" search={{ invite: undefined }} className="grid h-11 w-11 place-items-center active:opacity-60 transition" aria-label="뒤로가기">
+              <ChevronLeft className="h-7 w-7 text-[#222]" strokeWidth={2.2} />
+            </Link>
+          }
+        />
 
         <div className="flex-1 overflow-y-auto scrollbar-hide">
           <div className="px-6 pb-32 pt-[7px] flex flex-col gap-6">
