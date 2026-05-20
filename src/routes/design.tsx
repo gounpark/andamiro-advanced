@@ -1,972 +1,1101 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Home, BookOpen, ArrowLeftRight, User, Bell, ChevronLeft, ChevronRight,
+  Send, MoreHorizontal, Eye, MessageCircle, Lock, Copy, Check, Trash2,
+  Search, Settings, Heart, Star, Plus, X, ArrowLeft, Share2, Download,
+  AlertCircle, Info, Loader2, Camera, Image, Mic, Edit3, RefreshCw,
+  LogOut, Shield, HelpCircle, Moon, Sun, Zap, Filter, MoreVertical,
+} from "lucide-react";
 
 export const Route = createFileRoute("/design")({
   head: () => ({ meta: [{ title: "안다미로 디자인 시스템" }] }),
   component: DesignPage,
 });
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   색상 토큰 — styles.css oklch 값을 직접 계산한 hex (빌드 이후에도 정확함)
-   ───────────────────────────────────────────────────────────────────────────── */
-
-interface ColorToken {
-  key: string;
-  label: string;
-  value: string; // hex
-  description: string;
-  group: "brand" | "semantic" | "neutral";
-  on: "dark" | "light"; // 위에 올라갈 텍스트 색
+/* ─────────────────────────────────────────────────────────────
+   WCAG 대비율
+   ───────────────────────────────────────────────────────────── */
+function luminance(hex: string) {
+  const n = (s: string) => parseInt(s, 16) / 255;
+  const lin = (v: number) => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  const r = lin(n(hex.slice(1, 3)));
+  const g = lin(n(hex.slice(3, 5)));
+  const b = lin(n(hex.slice(5, 7)));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
+function contrast(a: string, b: string) {
+  const [L1, L2] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return +((L1 + 0.05) / (L2 + 0.05)).toFixed(2);
+}
+function wcagLevel(ratio: number, large = false) {
+  if (large) return ratio >= 3 ? (ratio >= 4.5 ? "AAA" : "AA") : "Fail";
+  return ratio >= 7 ? "AAA" : ratio >= 4.5 ? "AA" : ratio >= 3 ? "AA Large" : "Fail";
+}
+function isLight(hex: string) { return luminance(hex) > 0.35; }
 
-const COLOR_TOKENS: ColorToken[] = [
-  // Brand
-  {
-    key: "primary",
-    label: "Primary",
-    value: "#4B82F5",
-    description: "주요 CTA, 버튼, 링크, 탭 인디케이터에 사용됩니다.",
-    group: "brand",
-    on: "dark",
-  },
-  {
-    key: "primary-light",
-    label: "Primary Light",
-    value: "#A4C1FA",
-    description: "배지, 선택 상태 배경, 호버 영역에 사용됩니다.",
-    group: "brand",
-    on: "dark",
-  },
-  {
-    key: "brand-clover-active",
-    label: "Clover Active",
-    value: "#F9B602",
-    description: "채워진 클로버 리프 아이콘, 골든 포인트 강조.",
-    group: "brand",
-    on: "dark",
-  },
-  {
-    key: "brand-clover-special",
-    label: "Clover Special",
-    value: "#009A51",
-    description: "스페셜 클로버, 성취·완료 상태 표시.",
-    group: "brand",
-    on: "dark",
-  },
-  {
-    key: "brand-clover-empty",
-    label: "App Background",
-    value: "#E9EBEE",
-    description: "앱 외부 배경(app-shell). 카드 바깥 공간.",
-    group: "brand",
-    on: "light",
-  },
-  // Semantic
-  {
-    key: "destructive",
-    label: "Destructive",
-    value: "#E7000B",
-    description: "삭제, 경고, 오류 상태. 위험 동작 전용.",
-    group: "semantic",
-    on: "dark",
-  },
-  // Neutral
-  {
-    key: "foreground",
-    label: "Foreground",
-    value: "#020618",
-    description: "기본 본문 텍스트, 아이콘. 거의 모든 텍스트.",
-    group: "neutral",
-    on: "dark",
-  },
-  {
-    key: "muted-foreground",
-    label: "Muted Foreground",
-    value: "#62748E",
-    description: "보조 텍스트, 메타 정보, 타임스탬프, 플레이스홀더.",
-    group: "neutral",
-    on: "dark",
-  },
-  {
-    key: "background",
-    label: "Background",
-    value: "#FFFFFF",
-    description: "카드, 모달, 바텀시트, 입력 필드 배경.",
-    group: "neutral",
-    on: "light",
-  },
-  {
-    key: "border",
-    label: "Border",
-    value: "#E1E8F0",
-    description: "구분선, 카드 테두리, 입력 필드 경계.",
-    group: "neutral",
-    on: "light",
-  },
-];
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   hex ↔ oklch 변환
-   ───────────────────────────────────────────────────────────────────────────── */
-
+/* ─────────────────────────────────────────────────────────────
+   hex ↔ oklch
+   ───────────────────────────────────────────────────────────── */
 function hexToOklch(hex: string): [number, number, number] {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  const lin = (v: number) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
-  const rl = lin(r), gl = lin(g), bl = lin(b);
-  const l_ = (0.4122214708 * rl + 0.5363325363 * gl + 0.0514459929 * bl) ** (1 / 3);
-  const m_ = (0.2119034982 * rl + 0.6806995451 * gl + 0.1073969566 * bl) ** (1 / 3);
-  const s_ = (0.0883024619 * rl + 0.2817188376 * gl + 0.6299787005 * bl) ** (1 / 3);
-  const L = 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_;
-  const a = 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_;
-  const bv = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_;
-  const c = Math.sqrt(a * a + bv * bv);
-  const h = ((Math.atan2(bv, a) * 180) / Math.PI + 360) % 360;
-  return [+L.toFixed(3), +c.toFixed(3), +h.toFixed(1)];
+  const lin = (v: number) => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  const r = lin(parseInt(hex.slice(1, 3), 16) / 255);
+  const g = lin(parseInt(hex.slice(3, 5), 16) / 255);
+  const b = lin(parseInt(hex.slice(5, 7), 16) / 255);
+  const l_ = (0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b) ** (1 / 3);
+  const m_ = (0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b) ** (1 / 3);
+  const s_ = (0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b) ** (1 / 3);
+  const L = 0.2104542553 * l_ + 0.793617785 * m_ - 0.004072047 * s_;
+  const a = 1.977998495 * l_ - 2.428592205 * m_ + 0.450593710 * s_;
+  const bv = 0.025904037 * l_ + 0.782771766 * m_ - 0.808675766 * s_;
+  const C = Math.sqrt(a * a + bv * bv);
+  const H = ((Math.atan2(bv, a) * 180) / Math.PI + 360) % 360;
+  return [+L.toFixed(3), +C.toFixed(3), +H.toFixed(1)];
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   로컬스토리지
-   ───────────────────────────────────────────────────────────────────────────── */
-
-const LS_KEY = "andamiro_design_v2";
-
-function loadSaved(): Record<string, string> {
-  try { return JSON.parse(localStorage.getItem(LS_KEY) ?? "{}"); } catch { return {}; }
-}
-function save(o: Record<string, string>) {
-  localStorage.setItem(LS_KEY, JSON.stringify(o));
-}
-function applyAll(o: Record<string, string>) {
-  for (const [k, v] of Object.entries(o))
-    document.documentElement.style.setProperty(`--${k}`, v);
+/* ─────────────────────────────────────────────────────────────
+   토큰 정의 (oklch → hex 직접 계산)
+   ───────────────────────────────────────────────────────────── */
+interface ColorToken {
+  key: string; label: string; hex: string;
+  oklch: string; description: string; usage: string[];
+  group: "brand" | "semantic" | "neutral";
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   유틸
-   ───────────────────────────────────────────────────────────────────────────── */
-
-function hexToRgb(hex: string) {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return { r, g, b };
-}
-
-/** 밝기 판단 (WCAG relative luminance) */
-function isLight(hex: string) {
-  const { r, g, b } = hexToRgb(hex);
-  const lin = (v: number) => {
-    v /= 255;
-    return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
-  };
-  const L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
-  return L > 0.4;
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   타이포그래피 토큰
-   ───────────────────────────────────────────────────────────────────────────── */
-
-const TYPE_SCALE = [
-  { size: 28, weight: 700, label: "Display", usage: "온보딩 헤드라인, 빈 상태 타이틀" },
-  { size: 22, weight: 700, label: "Title 1", usage: "일기 제목, 모달 헤드라인" },
-  { size: 18, weight: 700, label: "Title 2", usage: "페이지 헤더" },
-  { size: 16, weight: 600, label: "Body Strong", usage: "버튼, 탭 레이블, 강조 텍스트" },
-  { size: 15, weight: 600, label: "Body Semi", usage: "카드 제목, 리스트 아이템" },
-  { size: 15, weight: 400, label: "Body", usage: "본문 텍스트, 댓글" },
-  { size: 14, weight: 500, label: "Caption Strong", usage: "배지, 칩" },
-  { size: 13, weight: 400, label: "Caption", usage: "섹션 레이블, 부제목" },
-  { size: 12, weight: 400, label: "Micro", usage: "타임스탬프, 메타 텍스트" },
+const COLORS: ColorToken[] = [
+  {
+    key: "primary", label: "Primary", hex: "#4B82F5",
+    oklch: "oklch(0.624 0.197 263.5)",
+    description: "브랜드의 핵심 색상. 모든 주요 인터랙션에 사용됩니다.",
+    usage: ["CTA 버튼", "탭 인디케이터", "링크", "진행 바"],
+    group: "brand",
+  },
+  {
+    key: "primary-light", label: "Primary Light", hex: "#A4C1FA",
+    oklch: "oklch(0.81 0.087 263.5)",
+    description: "Primary의 밝은 변형. 배경 강조에 사용됩니다.",
+    usage: ["선택 상태 배경", "배지", "호버 오버레이"],
+    group: "brand",
+  },
+  {
+    key: "brand-clover-active", label: "Clover Active", hex: "#F9B602",
+    oklch: "oklch(0.83 0.17 84)",
+    description: "채워진 클로버 리프. 성취와 활성 상태를 표현합니다.",
+    usage: ["클로버 채움", "골든 포인트", "성취 뱃지"],
+    group: "brand",
+  },
+  {
+    key: "brand-clover-special", label: "Clover Special", hex: "#009A51",
+    oklch: "oklch(0.62 0.17 155)",
+    description: "스페셜 클로버. 특별한 달성 상태를 나타냅니다.",
+    usage: ["스페셜 리프", "완료 상태"],
+    group: "brand",
+  },
+  {
+    key: "brand-clover-empty", label: "App Shell BG", hex: "#E9EBEE",
+    oklch: "oklch(0.94 0.005 250)",
+    description: "앱 외부 배경. 카드 사이 공간과 비활성 클로버에 사용됩니다.",
+    usage: ["app-shell 배경", "빈 클로버", "섹션 구분"],
+    group: "brand",
+  },
+  {
+    key: "destructive", label: "Destructive", hex: "#E7000B",
+    oklch: "oklch(0.577 0.245 27.325)",
+    description: "위험·삭제·오류 전용 색상. 남용하지 않습니다.",
+    usage: ["삭제 버튼", "오류 메시지", "경고 상태"],
+    group: "semantic",
+  },
+  {
+    key: "foreground", label: "Foreground", hex: "#020618",
+    oklch: "oklch(0.129 0.042 264.695)",
+    description: "기본 텍스트 색상. 최고 대비율로 가독성을 보장합니다.",
+    usage: ["본문 텍스트", "제목", "아이콘"],
+    group: "neutral",
+  },
+  {
+    key: "muted-foreground", label: "Muted", hex: "#62748E",
+    oklch: "oklch(0.554 0.046 257.417)",
+    description: "보조 텍스트. 메타 정보와 설명에 사용됩니다.",
+    usage: ["타임스탬프", "플레이스홀더", "서브텍스트"],
+    group: "neutral",
+  },
+  {
+    key: "background", label: "Background", hex: "#FFFFFF",
+    oklch: "oklch(1 0 0)",
+    description: "카드·모달·시트 배경색.",
+    usage: ["카드 배경", "모달", "바텀시트", "입력 필드"],
+    group: "neutral",
+  },
+  {
+    key: "border", label: "Border", hex: "#E1E8F0",
+    oklch: "oklch(0.929 0.013 255.508)",
+    description: "구분선 및 외곽선.",
+    usage: ["카드 테두리", "구분선", "입력 필드 경계"],
+    group: "neutral",
+  },
 ];
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   메인 페이지
-   ───────────────────────────────────────────────────────────────────────────── */
+const COVER_COLORS = [
+  { hex: "#7C6EF5", name: "라벤더" }, { hex: "#F5866E", name: "코랄" },
+  { hex: "#6EC7F5", name: "스카이" }, { hex: "#F5C96E", name: "골드" },
+  { hex: "#6EF5B4", name: "민트" },  { hex: "#F56EBD", name: "핑크" },
+  { hex: "#6E9DF5", name: "인디고" }, { hex: "#B4F56E", name: "라임" },
+];
 
+/* ─────────────────────────────────────────────────────────────
+   타이포그래피
+   ───────────────────────────────────────────────────────────── */
+const TYPE_SCALE = [
+  { name: "Display",       size: 28, weight: 700, lh: 1.25, ls: "-0.03em", usage: "온보딩·빈 상태 헤드라인" },
+  { name: "Title 1",       size: 22, weight: 700, lh: 1.30, ls: "-0.025em", usage: "일기 제목·모달 헤드라인" },
+  { name: "Title 2",       size: 18, weight: 700, lh: 1.35, ls: "-0.02em", usage: "페이지 헤더" },
+  { name: "Body Strong",   size: 16, weight: 600, lh: 1.40, ls: "-0.02em", usage: "버튼·탭 레이블" },
+  { name: "Body Semi",     size: 15, weight: 600, lh: 1.40, ls: "-0.018em", usage: "카드 제목·리스트 아이템" },
+  { name: "Body",          size: 15, weight: 400, lh: 1.70, ls: "-0.01em", usage: "본문 텍스트·댓글" },
+  { name: "Caption Strong",size: 14, weight: 500, lh: 1.40, ls: "-0.01em", usage: "배지·칩·레이블" },
+  { name: "Caption",       size: 13, weight: 400, lh: 1.45, ls: "0em",     usage: "서브타이틀·설명" },
+  { name: "Micro",         size: 12, weight: 400, lh: 1.45, ls: "0em",     usage: "타임스탬프·메타" },
+  { name: "Micro Bold",    size: 11, weight: 700, lh: 1.30, ls: "0.06em",  usage: "배지 레이블·CAPS 섹션명" },
+];
+
+const TYPE_SAMPLES: Record<string, string> = {
+  "Display": "말하지 못한 것들에 대하여",
+  "Title 1": "봄날의 산책 일기",
+  "Title 2": "교환일기",
+  "Body Strong": "Google 로 로그인",
+  "Body Semi": "말하지 못한 것들에 대하여",
+  "Body": "오늘은 유난히 봄바람이 따뜻했다. 점심을 먹고 나서 공원을 한 바퀴 돌았는데 벚꽃이 한창이었다.",
+  "Caption Strong": "3명이 읽었어요",
+  "Caption": "AI 감정일기 & 교환일기",
+  "Micro": "방금 전 · 댓글 2개",
+  "Micro Bold": "브랜드 COLOR",
+};
+
+/* ─────────────────────────────────────────────────────────────
+   간격 스케일
+   ───────────────────────────────────────────────────────────── */
+const SPACING = [
+  { px: 2, tw: "0.5" }, { px: 4, tw: "1" }, { px: 6, tw: "1.5" },
+  { px: 8, tw: "2" },   { px: 12, tw: "3" }, { px: 16, tw: "4" },
+  { px: 20, tw: "5" }, { px: 24, tw: "6" }, { px: 32, tw: "8" },
+  { px: 40, tw: "10" }, { px: 48, tw: "12" }, { px: 64, tw: "16" },
+  { px: 80, tw: "20" }, { px: 96, tw: "24" },
+];
+
+/* ─────────────────────────────────────────────────────────────
+   고도 (Elevation)
+   ───────────────────────────────────────────────────────────── */
+const ELEVATIONS = [
+  { level: 0, label: "Flat", token: "shadow-none",   shadow: "none",                                          usage: "배경·구분선" },
+  { level: 1, label: "Raised", token: "shadow-sm",   shadow: "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)", usage: "카드·리스트 아이템" },
+  { level: 2, label: "Overlay", token: "shadow-md",  shadow: "0 4px 16px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)", usage: "드롭다운·팝오버" },
+  { level: 3, label: "Modal", token: "shadow-xl",    shadow: "0 8px 32px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08)", usage: "바텀시트·모달" },
+  { level: 4, label: "Toast", token: "shadow-2xl",   shadow: "0 16px 48px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.10)", usage: "토스트·플로팅 버튼" },
+];
+
+/* ─────────────────────────────────────────────────────────────
+   아이콘 카탈로그
+   ───────────────────────────────────────────────────────────── */
+const ICON_GROUPS = [
+  {
+    label: "내비게이션",
+    icons: [
+      { C: Home, name: "Home" }, { C: BookOpen, name: "BookOpen" },
+      { C: ArrowLeftRight, name: "ArrowLeftRight" }, { C: User, name: "User" },
+      { C: ChevronLeft, name: "ChevronLeft" }, { C: ChevronRight, name: "ChevronRight" },
+      { C: ArrowLeft, name: "ArrowLeft" },
+    ],
+  },
+  {
+    label: "액션",
+    icons: [
+      { C: Plus, name: "Plus" }, { C: X, name: "X" }, { C: Search, name: "Search" },
+      { C: Settings, name: "Settings" }, { C: Edit3, name: "Edit3" },
+      { C: Copy, name: "Copy" }, { C: Check, name: "Check" },
+      { C: Download, name: "Download" }, { C: Share2, name: "Share2" },
+      { C: Trash2, name: "Trash2" }, { C: RefreshCw, name: "RefreshCw" },
+      { C: Filter, name: "Filter" }, { C: LogOut, name: "LogOut" },
+      { C: Camera, name: "Camera" }, { C: Image, name: "Image" },
+      { C: Mic, name: "Mic" },
+    ],
+  },
+  {
+    label: "상태 / 피드백",
+    icons: [
+      { C: Bell, name: "Bell" }, { C: AlertCircle, name: "AlertCircle" },
+      { C: Info, name: "Info" }, { C: Lock, name: "Lock" },
+      { C: Shield, name: "Shield" }, { C: HelpCircle, name: "HelpCircle" },
+      { C: Loader2, name: "Loader2" }, { C: Zap, name: "Zap" },
+    ],
+  },
+  {
+    label: "소셜 / 감정",
+    icons: [
+      { C: Heart, name: "Heart" }, { C: Star, name: "Star" },
+      { C: MessageCircle, name: "MessageCircle" }, { C: Send, name: "Send" },
+      { C: Eye, name: "Eye" }, { C: Moon, name: "Moon" }, { C: Sun, name: "Sun" },
+    ],
+  },
+  {
+    label: "UI 컨트롤",
+    icons: [
+      { C: MoreHorizontal, name: "MoreHorizontal" }, { C: MoreVertical, name: "MoreVertical" },
+    ],
+  },
+];
+
+/* ─────────────────────────────────────────────────────────────
+   모션 토큰
+   ───────────────────────────────────────────────────────────── */
+const DURATIONS = [100, 150, 200, 300, 500];
+const EASINGS = [
+  { name: "ease-out", value: "cubic-bezier(0, 0, 0.2, 1)", usage: "대부분의 UI 전환" },
+  { name: "ease-in-out", value: "cubic-bezier(0.4, 0, 0.2, 1)", usage: "슬라이드 인/아웃" },
+  { name: "spring", value: "cubic-bezier(0.34, 1.56, 0.64, 1)", usage: "버튼 탭·팝업 등장" },
+  { name: "linear", value: "linear", usage: "로딩 스피너·회전" },
+];
+
+/* ─────────────────────────────────────────────────────────────
+   로컬스토리지
+   ───────────────────────────────────────────────────────────── */
+const LS_KEY = "andamiro_ds_v3";
+function loadSaved() { try { return JSON.parse(localStorage.getItem(LS_KEY) ?? "{}") as Record<string,string>; } catch { return {}; } }
+function saveTo(o: Record<string,string>) { localStorage.setItem(LS_KEY, JSON.stringify(o)); }
+function applyAll(o: Record<string,string>) { Object.entries(o).forEach(([k,v]) => document.documentElement.style.setProperty(`--${k}`,v)); }
+
+/* ─────────────────────────────────────────────────────────────
+   섹션 ID 목록
+   ───────────────────────────────────────────────────────────── */
+const NAV_ITEMS = [
+  { id: "color",      label: "컬러",         sub: [] },
+  { id: "typography", label: "타이포그래피",  sub: [] },
+  { id: "spacing",    label: "간격",          sub: [] },
+  { id: "elevation",  label: "고도",          sub: [] },
+  { id: "radius",     label: "모서리 반경",   sub: [] },
+  { id: "components", label: "컴포넌트",      sub: ["버튼", "입력", "카드", "탭", "시트", "모달"] },
+  { id: "icons",      label: "아이콘",        sub: [] },
+  { id: "motion",     label: "모션",          sub: [] },
+];
+
+/* ═══════════════════════════════════════════════════════════
+   메인 페이지
+   ═══════════════════════════════════════════════════════════ */
 export default function DesignPage() {
-  // hex 값 상태 (defaults → saved 오버라이드 적용)
-  const [hexMap, setHexMap] = useState<Record<string, string>>(() => {
-    const base: Record<string, string> = {};
-    for (const t of COLOR_TOKENS) base[t.key] = t.value;
-    return base;
-  });
+  const [hexMap, setHexMap] = useState<Record<string, string>>(() =>
+    Object.fromEntries(COLORS.map((t) => [t.key, t.hex]))
+  );
   const [saved, setSaved] = useState<Record<string, string>>({});
   const [radius, setRadius] = useState(10);
-  const [activeKey, setActiveKey] = useState<string | null>(null); // 현재 편집 중인 토큰
+  const [activeSection, setActiveSection] = useState("color");
+  const [editKey, setEditKey] = useState<string | null>(null);
   const [exported, setExported] = useState(false);
   const pickerRef = useRef<HTMLInputElement>(null);
+  const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
-  // 초기화
+  /* 초기화 */
   useEffect(() => {
     const s = loadSaved();
     applyAll(s);
     setSaved(s);
+    if (s["radius"]) setRadius(Math.round(parseFloat(s["radius"]) * 16));
 
-    const next = { ...hexMap };
-    for (const [k, oklch] of Object.entries(s)) {
-      if (k === "radius") continue;
-      // oklch → hex
-      const m = oklch.match(/oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\)/);
-      if (m) {
-        // 저장된 oklch 값이 있으면 hexMap 갱신은 따로 안 해도 됨 (picking에서 처리)
-        void m; // 나중에 필요하면 역변환
-      }
-    }
-    setHexMap(next);
-
-    // 반경
-    const savedRadius = s["radius"];
-    if (savedRadius) {
-      setRadius(Math.round(parseFloat(savedRadius) * 16));
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    /* IntersectionObserver로 활성 섹션 추적 */
+    const els = NAV_ITEMS.map(n => document.getElementById(n.id)).filter(Boolean) as HTMLElement[];
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(e => { if (e.isIntersecting) setActiveSection(e.target.id); });
+      },
+      { rootMargin: "-30% 0px -60% 0px" }
+    );
+    els.forEach(el => io.observe(el));
+    return () => io.disconnect();
   }, []);
 
   const handleColor = useCallback((key: string, hex: string) => {
-    setHexMap((p) => ({ ...p, [key]: hex }));
-    const [l, c, h] = hexToOklch(hex);
+    setHexMap(p => ({ ...p, [key]: hex }));
+    const [l,c,h] = hexToOklch(hex);
     const oklch = `oklch(${l} ${c} ${h})`;
     document.documentElement.style.setProperty(`--${key}`, oklch);
     const next = { ...saved, [key]: oklch };
-    setSaved(next);
-    save(next);
+    setSaved(next); saveTo(next);
   }, [saved]);
 
   const handleRadius = useCallback((px: number) => {
     setRadius(px);
-    const rem = `${(px / 16).toFixed(4)}rem`;
+    const rem = `${(px/16).toFixed(4)}rem`;
     document.documentElement.style.setProperty("--radius", rem);
     const next = { ...saved, radius: rem };
-    setSaved(next);
-    save(next);
+    setSaved(next); saveTo(next);
   }, [saved]);
 
   const handleReset = useCallback(() => {
-    for (const t of COLOR_TOKENS)
-      document.documentElement.style.removeProperty(`--${t.key}`);
+    COLORS.forEach(t => document.documentElement.style.removeProperty(`--${t.key}`));
     document.documentElement.style.removeProperty("--radius");
     localStorage.removeItem(LS_KEY);
-    const base: Record<string, string> = {};
-    for (const t of COLOR_TOKENS) base[t.key] = t.value;
-    setHexMap(base);
-    setSaved({});
-    setRadius(10);
+    setHexMap(Object.fromEntries(COLORS.map(t => [t.key, t.hex])));
+    setSaved({}); setRadius(10);
   }, []);
 
   const handleExport = useCallback(() => {
     if (!Object.keys(saved).length) return;
-    const lines = [":root {", ...Object.entries(saved).map(([k, v]) => `  --${k}: ${v};`), "}"];
-    navigator.clipboard.writeText(lines.join("\n"));
-    setExported(true);
-    setTimeout(() => setExported(false), 2000);
+    navigator.clipboard.writeText([":root {", ...Object.entries(saved).map(([k,v]) => `  --${k}: ${v};`), "}"].join("\n"));
+    setExported(true); setTimeout(() => setExported(false), 2000);
   }, [saved]);
 
+  const copyToken = (token: string) => {
+    navigator.clipboard.writeText(`var(--${token})`);
+    setCopiedToken(token); setTimeout(() => setCopiedToken(null), 1500);
+  };
+
+  const primary = hexMap["primary"] ?? "#4B82F5";
   const hasChanges = Object.keys(saved).length > 0;
-  const groups: ColorToken["group"][] = ["brand", "semantic", "neutral"];
-  const groupLabel = { brand: "브랜드", semantic: "시맨틱", neutral: "뉴트럴" };
 
   return (
-    <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Pretendard', 'Noto Sans KR', sans-serif" }}
-      className="min-h-screen bg-[#F7F8FA]"
-    >
-      {/* ── 상단 헤더 ── */}
-      <header className="sticky top-0 z-40 border-b border-[#EAECF0] bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-[1280px] items-center justify-between px-8 h-16">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl" style={{ background: hexMap["primary"] ?? "#4B82F5" }}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <circle cx="7" cy="7" r="5" fill="white" fillOpacity="0.9" />
-                <circle cx="7" cy="4" r="1.5" fill={hexMap["primary"] ?? "#4B82F5"} />
-              </svg>
+    <div className="min-h-screen bg-[#F7F8FA]" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Pretendard', 'Noto Sans KR', sans-serif" }}>
+
+      {/* ── 헤더 ── */}
+      <header className="sticky top-0 z-50 border-b border-[#EAECF0] bg-white/95 backdrop-blur-md">
+        <div className="mx-auto flex max-w-[1380px] items-center gap-6 px-6 h-[60px]">
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className="flex h-8 w-8 items-center justify-center rounded-[10px]" style={{ background: primary }}>
+              <div className="h-3 w-3 rounded-full bg-white/90" />
             </div>
-            <div>
-              <span className="text-[15px] font-bold text-[#111]">안다미로</span>
-              <span className="ml-2 text-[13px] text-[#999]">Design System</span>
-            </div>
+            <span className="text-[15px] font-bold text-[#111]">안다미로</span>
+            <span className="rounded-md border border-[#E5E7EB] px-1.5 py-0.5 text-[10px] font-semibold text-[#9CA3AF]">Design System</span>
           </div>
 
-          {/* 내비게이션 */}
-          <nav className="hidden md:flex items-center gap-1">
-            {["colors", "typography", "radius", "components"].map((id) => (
-              <a
-                key={id}
-                href={`#${id}`}
-                className="rounded-lg px-3.5 py-2 text-[13px] font-medium text-[#666] transition hover:bg-[#F4F5F7] hover:text-[#111]"
-              >
-                {{ colors: "컬러", typography: "타이포그래피", radius: "반경", components: "컴포넌트" }[id]}
+          <nav className="hidden lg:flex items-center gap-0.5 flex-1">
+            {NAV_ITEMS.map(n => (
+              <a key={n.id} href={`#${n.id}`}
+                className="rounded-lg px-3 py-1.5 text-[13px] font-medium transition"
+                style={{ color: activeSection === n.id ? primary : "#6B7280",
+                         background: activeSection === n.id ? `${primary}12` : "transparent" }}>
+                {n.label}
               </a>
             ))}
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ml-auto shrink-0">
             {hasChanges && (
-              <>
-                <button
-                  onClick={handleReset}
-                  className="rounded-lg border border-[#EAECF0] bg-white px-4 h-9 text-[13px] font-medium text-[#666] transition hover:border-[#d0d0d0] hover:text-[#333]"
-                >
-                  초기화
-                </button>
-                <button
-                  onClick={handleExport}
-                  className="rounded-lg h-9 px-4 text-[13px] font-semibold text-white transition hover:opacity-90 active:scale-95"
-                  style={{ background: hexMap["primary"] ?? "#4B82F5" }}
-                >
-                  {exported ? "복사 완료 ✓" : "CSS 내보내기"}
-                </button>
-              </>
+              <span className="hidden sm:block rounded-full px-2.5 py-1 text-[11px] font-semibold" style={{ background: `${primary}15`, color: primary }}>
+                {Object.keys(saved).length}개 수정됨
+              </span>
             )}
+            {hasChanges && (
+              <button onClick={handleReset}
+                className="rounded-lg border border-[#E5E7EB] bg-white h-8 px-3.5 text-[12px] font-medium text-[#666] transition hover:border-[#CCC]">
+                초기화
+              </button>
+            )}
+            <button onClick={handleExport} disabled={!hasChanges}
+              className="rounded-lg h-8 px-4 text-[12px] font-semibold text-white transition hover:opacity-90 disabled:opacity-30"
+              style={{ background: primary }}>
+              {exported ? "복사 완료 ✓" : "CSS 내보내기"}
+            </button>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto max-w-[1280px] px-8 py-12 space-y-20">
+      <div className="mx-auto flex max-w-[1380px]">
 
-        {/* ══ 컬러 ══════════════════════════════════════════════════════════════ */}
-        <section id="colors">
-          <SectionHeader
-            label="Color"
-            title="컬러 시스템"
-            desc="안다미로의 모든 색상은 oklch 색공간 기반으로 정의되어 있습니다. 스와치를 클릭하면 실시간으로 편집할 수 있으며, CSS 변수로 즉시 반영됩니다."
-          />
-
-          {groups.map((group) => {
-            const tokens = COLOR_TOKENS.filter((t) => t.group === group);
-            return (
-              <div key={group} className="mb-10">
-                <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.1em] text-[#B0B7C3]">
-                  {groupLabel[group]}
-                </p>
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-                  {tokens.map((token) => {
-                    const hex = hexMap[token.key] ?? token.value;
-                    const light = isLight(hex);
-                    const textColor = light ? "#111827" : "#FFFFFF";
-                    const subColor = light ? "#4B5563" : "rgba(255,255,255,0.65)";
-                    const changed = saved[token.key] !== undefined;
-                    return (
-                      <div key={token.key} className="group overflow-hidden rounded-2xl border border-[#EAECF0] bg-white shadow-sm transition hover:shadow-md">
-                        {/* 스와치 */}
-                        <div
-                          className="relative cursor-pointer"
-                          style={{ background: hex, height: 120 }}
-                          onClick={() => {
-                            setActiveKey(token.key);
-                            setTimeout(() => pickerRef.current?.click(), 0);
-                          }}
-                        >
-                          {/* 호버 오버레이 */}
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
-                            style={{ background: "rgba(0,0,0,0.15)" }}>
-                            <div className="rounded-full bg-white/90 px-3 py-1 text-[12px] font-semibold text-[#111]">
-                              편집
-                            </div>
-                          </div>
-                          {changed && (
-                            <div className="absolute top-2 right-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-bold" style={{ color: hexMap["primary"] ?? "#4B82F5" }}>
-                              수정됨
-                            </div>
-                          )}
-                          {/* 토큰 이름 */}
-                          <div className="absolute bottom-0 left-0 right-0 p-3">
-                            <p className="text-[13px] font-bold leading-tight" style={{ color: textColor }}>
-                              {token.label}
-                            </p>
-                            <p className="mt-0.5 font-mono text-[11px]" style={{ color: subColor }}>
-                              {hex.toUpperCase()}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* 설명 + 토큰 이름 */}
-                        <div className="px-3.5 py-3">
-                          <p className="font-mono text-[10px] text-[#B0B7C3] mb-1.5">--{token.key}</p>
-                          <p className="text-[12px] text-[#6B7280] leading-relaxed">{token.description}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-
-          {/* 숨김 color picker */}
-          <input
-            ref={pickerRef}
-            type="color"
-            className="sr-only"
-            value={activeKey ? (hexMap[activeKey] ?? "#000000") : "#000000"}
-            onChange={(e) => { if (activeKey) handleColor(activeKey, e.target.value); }}
-          />
-
-          {/* 커버 팔레트 */}
-          <div className="mt-2">
-            <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.1em] text-[#B0B7C3]">커버 팔레트 (일기 썸네일)</p>
-            <div className="flex gap-3 flex-wrap">
-              {[
-                { hex: "#7C6EF5", name: "라벤더" },
-                { hex: "#F5866E", name: "코랄" },
-                { hex: "#6EC7F5", name: "스카이" },
-                { hex: "#F5C96E", name: "골드" },
-                { hex: "#6EF5B4", name: "민트" },
-                { hex: "#F56EBD", name: "핑크" },
-                { hex: "#6E9DF5", name: "인디고" },
-                { hex: "#B4F56E", name: "라임" },
-              ].map(({ hex, name }) => (
-                <div key={hex} className="flex flex-col items-center gap-2">
-                  <div
-                    className="h-16 w-16 rounded-2xl shadow-sm border border-black/[0.06]"
-                    style={{ background: hex }}
-                  />
-                  <div className="text-center">
-                    <p className="text-[12px] font-medium text-[#374151]">{name}</p>
-                    <p className="font-mono text-[10px] text-[#9CA3AF]">{hex}</p>
-                  </div>
-                </div>
+        {/* ── 사이드바 ── */}
+        <aside className="hidden xl:block w-[220px] shrink-0">
+          <div className="sticky top-[60px] h-[calc(100vh-60px)] overflow-y-auto py-8 pr-4">
+            <nav className="flex flex-col gap-0.5">
+              {NAV_ITEMS.map(n => (
+                <a key={n.id} href={`#${n.id}`}
+                  className="flex items-center rounded-lg px-3 py-2 text-[13px] font-medium transition"
+                  style={{ color: activeSection === n.id ? primary : "#6B7280",
+                           background: activeSection === n.id ? `${primary}10` : "transparent" }}>
+                  <span className="h-1 w-1 rounded-full mr-2.5 shrink-0 transition"
+                    style={{ background: activeSection === n.id ? primary : "#D1D5DB" }} />
+                  {n.label}
+                </a>
               ))}
-            </div>
-          </div>
-        </section>
+            </nav>
 
-        {/* ══ 타이포그래피 ═══════════════════════════════════════════════════════ */}
-        <section id="typography">
-          <SectionHeader
-            label="Typography"
-            title="타이포그래피 스케일"
-            desc="시스템 폰트 스택 기반. 한국어 가독성을 위해 tracking-tight(-0.02em) 기본 적용."
-          />
-
-          <div className="rounded-2xl border border-[#EAECF0] bg-white overflow-hidden shadow-sm">
-            {/* 헤더 */}
-            <div className="grid grid-cols-[120px_1fr_180px] gap-4 border-b border-[#F3F4F6] px-8 py-3">
-              {["스타일", "미리보기", "사용처"].map((h) => (
-                <p key={h} className="text-[11px] font-bold uppercase tracking-widest text-[#B0B7C3]">{h}</p>
-              ))}
-            </div>
-
-            {TYPE_SCALE.map((row, i) => (
-              <div
-                key={row.label}
-                className={`grid grid-cols-[120px_1fr_180px] gap-4 items-center px-8 py-5 ${i !== TYPE_SCALE.length - 1 ? "border-b border-[#F9FAFB]" : ""}`}
-              >
-                {/* 메타 */}
-                <div>
-                  <p className="text-[12px] font-bold text-[#374151]">{row.label}</p>
-                  <p className="mt-0.5 font-mono text-[11px] text-[#9CA3AF]">{row.size}/{row.weight}</p>
-                </div>
-
-                {/* 스펙 */}
-                <p
-                  style={{
-                    fontSize: row.size,
-                    fontWeight: row.weight,
-                    lineHeight: 1.35,
-                    letterSpacing: "-0.02em",
-                    color: "#111827",
-                  }}
-                  className="min-w-0 truncate"
-                >
-                  {row.size >= 20
-                    ? "말하지 못한 것들에 대하여"
-                    : row.size >= 16
-                    ? "Google 로 로그인 — 안다미로"
-                    : row.size >= 14
-                    ? "오늘은 유난히 봄바람이 따뜻했다. 점심을 먹고 나서 공원을 한 바퀴 돌았는데…"
-                    : "3명이 읽었어요 · 방금 전 · 댓글 2개"}
-                </p>
-
-                {/* 사용처 */}
-                <p className="text-[12px] text-[#9CA3AF] leading-relaxed">{row.usage}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ══ 반경 ══════════════════════════════════════════════════════════════ */}
-        <section id="radius">
-          <SectionHeader
-            label="Border Radius"
-            title="모서리 반경"
-            desc="--radius 를 조정하면 모든 컴포넌트의 곡률이 연동됩니다."
-          />
-
-          <div className="rounded-2xl border border-[#EAECF0] bg-white p-8 shadow-sm">
-            <div className="flex items-center gap-6 mb-8">
-              <input
-                type="range" min={0} max={24} value={radius}
-                onChange={(e) => handleRadius(Number(e.target.value))}
-                className="flex-1 h-1.5 appearance-none rounded-full outline-none cursor-pointer"
-                style={{ accentColor: hexMap["primary"] ?? "#4B82F5" }}
-              />
-              <div className="w-20 text-right">
-                <span className="text-[22px] font-bold text-[#111]">{radius}</span>
-                <span className="text-[14px] text-[#9CA3AF] ml-1">px</span>
-              </div>
-            </div>
-
-            {/* 반경 단계별 프리뷰 */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {[
-                { label: "radius-sm", calc: Math.max(0, radius - 4) },
-                { label: "radius (base)", calc: radius },
-                { label: "radius-lg", calc: radius },
-                { label: "radius-xl", calc: radius + 4 },
-              ].map(({ label, calc }) => (
-                <div key={label} className="flex flex-col items-center gap-3">
-                  <div
-                    className="h-20 w-full border-2 border-[#EAECF0]"
-                    style={{ borderRadius: calc, background: `${hexMap["primary"] ?? "#4B82F5"}18` }}
-                  />
-                  <div className="text-center">
-                    <p className="font-mono text-[11px] text-[#6B7280]">{label}</p>
-                    <p className="font-mono text-[12px] font-bold text-[#111]">{calc}px</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ══ 컴포넌트 ══════════════════════════════════════════════════════════ */}
-        <section id="components">
-          <SectionHeader
-            label="Components"
-            title="컴포넌트"
-            desc="실제 앱에서 사용 중인 컴포넌트입니다. 위 컬러·반경을 수정하면 아래 컴포넌트에 즉시 반영됩니다."
-          />
-
-          <div className="grid gap-6 lg:grid-cols-2">
-
-            {/* 버튼 */}
-            <ComponentCard title="버튼" desc="앱 전체에서 사용되는 버튼 스타일">
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-wrap gap-3 items-end">
-                  <Btn variant="primary">다운로드 하기</Btn>
-                  <Btn variant="outline">링크 복사</Btn>
-                  <Btn variant="destructive">삭제하기</Btn>
-                  <Btn variant="primary" disabled>비활성화</Btn>
-                </div>
-                <div className="flex gap-3 items-center">
-                  <GoogleBtn />
-                </div>
-                <div className="flex gap-3">
-                  <Btn variant="primary" size="sm">확인</Btn>
-                  <Btn variant="ghost" size="sm">취소</Btn>
-                </div>
-              </div>
-            </ComponentCard>
-
-            {/* 입력 필드 */}
-            <ComponentCard title="입력 필드" desc="일기 작성, 비밀번호, 댓글 입력">
-              <div className="flex flex-col gap-3">
-                <FakeInput label="일기 제목" placeholder="제목을 입력하세요" />
-                <FakeInput label="비밀번호" placeholder="비밀번호" type="password" />
-                <FakeInput label="댓글" placeholder="댓글을 입력하세요..." suffix />
-                <div className="flex items-center gap-3 rounded-xl border border-[#E5E7EB] bg-white px-4 py-3.5">
-                  <span className="text-[14px] text-[#111] flex-1">교환일기 알림 받기</span>
-                  <FakeToggle />
-                </div>
-              </div>
-            </ComponentCard>
-
-            {/* 교환일기 카드 */}
-            <ComponentCard title="교환일기 카드" desc="교환일기 목록에서 사용되는 리스트 아이템">
-              <div className="rounded-2xl border border-[#F0F0F0] overflow-hidden divide-y divide-[#F9F9F9]">
-                {[
-                  { color: "#7C6EF5", title: "말하지 못한 것들에 대하여", viewers: 3, time: "방금 전", comments: 2 },
-                  { color: "#F5866E", title: "봄날의 산책", viewers: 2, time: "3일 전", comments: 0 },
-                  { color: "#6EC7F5", title: "오늘의 작은 성취", viewers: 0, time: "1주 전", comments: 1 },
-                ].map((item) => (
-                  <div key={item.title} className="flex items-center gap-3 bg-white px-4 py-4">
-                    <div
-                      className="grid h-14 w-14 shrink-0 place-items-center rounded-xl font-bold text-[22px] text-white"
-                      style={{ background: item.color }}
-                    >
-                      {item.title.charAt(0)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[15px] font-semibold text-[#111] tracking-tight truncate">{item.title}</p>
-                      <div className="flex items-center gap-1.5 mt-1 text-[12px] text-[#AAA]">
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
-                        </svg>
-                        <span>{item.viewers}명이 읽었어요 · {item.time}</span>
-                      </div>
-                      {item.comments > 0 && (
-                        <div className="flex items-center gap-1 mt-0.5 text-[12px] text-[#AAA]">
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                          </svg>
-                          <span>댓글 {item.comments}개</span>
-                        </div>
-                      )}
-                    </div>
-                    <svg className="h-5 w-5 text-[#D1D5DB] shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <circle cx="12" cy="5" r="1" fill="currentColor" /><circle cx="12" cy="12" r="1" fill="currentColor" /><circle cx="12" cy="19" r="1" fill="currentColor" />
-                    </svg>
+            {hasChanges && (
+              <div className="mt-8 rounded-xl border border-[#E5E7EB] bg-white p-4">
+                <p className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-3">수정된 변수</p>
+                {Object.entries(saved).slice(0, 6).map(([k]) => (
+                  <div key={k} className="flex items-center gap-2 py-1">
+                    <div className="h-3 w-3 rounded-full shrink-0" style={{ background: hexMap[k] ?? primary }} />
+                    <span className="font-mono text-[10px] text-[#6B7280] truncate">--{k}</span>
                   </div>
                 ))}
               </div>
-            </ComponentCard>
+            )}
+          </div>
+        </aside>
 
-            {/* 탭 */}
-            <ComponentCard title="탭" desc="교환일기 내 / 공유받은 전환 탭">
-              <TabPreview primary={hexMap["primary"] ?? "#4B82F5"} />
-            </ComponentCard>
+        {/* ── 메인 콘텐츠 ── */}
+        <main className="flex-1 min-w-0 px-6 lg:px-8 py-10 space-y-24">
 
-            {/* 바텀시트 */}
-            <ComponentCard title="바텀시트" desc="공유하기 / 삭제 등의 맥락 메뉴">
-              <div className="rounded-[24px] bg-white border border-[#F0F0F0] px-5 pt-5 pb-6 shadow-sm">
-                <p className="font-bold text-[16px] text-[#222] mb-4 tracking-tight">말하지 못한 것들에 대하여</p>
-                <div className="flex flex-col gap-2">
-                  <SheetRow icon="share" label="공유하기" primary={hexMap["primary"] ?? "#4B82F5"} />
-                  <SheetRow icon="trash" label="삭제하기" danger />
-                </div>
+          {/* ══ 히어로 ═══════════════════════════════════════════════ */}
+          <div className="relative overflow-hidden rounded-3xl p-10" style={{
+            background: `linear-gradient(135deg, ${primary} 0%, ${hexMap["primary-light"] ?? "#A4C1FA"} 100%)`
+          }}>
+            <div className="relative z-10">
+              <p className="text-white/70 text-[13px] font-semibold tracking-widest uppercase mb-3">Andamiro Design System</p>
+              <h1 className="text-white text-[40px] font-bold leading-tight tracking-tight mb-3">
+                디자인의 기준을<br />코드로 정의합니다.
+              </h1>
+              <p className="text-white/80 text-[16px] leading-relaxed max-w-[480px]">
+                컬러·타이포그래피·간격·컴포넌트까지 — 안다미로의 모든 시각적 언어를 한 곳에서 확인하고 수정할 수 있습니다.
+              </p>
+              <div className="mt-6 flex items-center gap-4">
+                <span className="rounded-full bg-white/20 border border-white/30 px-4 py-1.5 text-[13px] font-semibold text-white">
+                  oklch · Tailwind v4 · CSS Custom Properties
+                </span>
               </div>
-            </ComponentCard>
-
-            {/* 모달 */}
-            <ComponentCard title="모달 / 알림" desc="비밀번호 잠금, 알림 허용 성공 등">
-              <div className="flex gap-4">
-                {/* 잠금 모달 */}
-                <div className="flex-1 rounded-2xl bg-[#F5F6F8] p-5 flex flex-col items-center gap-3">
-                  <div
-                    className="grid h-14 w-14 place-items-center rounded-2xl"
-                    style={{ background: `${hexMap["primary"] ?? "#4B82F5"}18` }}
-                  >
-                    <svg className="h-6 w-6" style={{ color: hexMap["primary"] ?? "#4B82F5" }} fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
-                      <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                    </svg>
-                  </div>
-                  <p className="text-[15px] font-bold text-[#111] text-center">비밀번호를 입력해 주세요</p>
-                  <div className="w-full flex items-center gap-2 rounded-xl bg-white border border-[#E8E8E8] px-3 py-2.5">
-                    <svg className="h-4 w-4 text-[#AAA] shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                    </svg>
-                    <span className="text-[14px] text-[#CCC]">비밀번호</span>
-                  </div>
-                  <Btn variant="primary" className="w-full">열람하기</Btn>
-                </div>
-                {/* 알림 성공 */}
-                <div className="flex-1 rounded-2xl bg-white border border-[#F0F0F0] p-5 flex flex-col items-center gap-2">
-                  <span className="text-[40px]">🔔</span>
-                  <p className="text-[15px] font-bold text-[#111] text-center">알림이 허용되었어요</p>
-                  <p className="text-[12px] text-[#999] text-center">새 알림이 오면 알려드릴게요.</p>
-                  <Btn variant="primary" className="w-full mt-1">확인</Btn>
-                </div>
-              </div>
-            </ComponentCard>
-
+            </div>
+            {/* 데코 서클 */}
+            <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/8" />
+            <div className="absolute -right-6 -bottom-20 h-48 w-48 rounded-full bg-white/6" />
           </div>
 
-          {/* 앱 프레임 풀 미리보기 */}
-          <div className="mt-6 rounded-2xl border border-[#EAECF0] bg-white p-8 shadow-sm">
-            <p className="mb-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[#B0B7C3]">앱 화면 미리보기</p>
-            <p className="mb-6 text-[14px] text-[#6B7280]">실제 앱의 주요 화면을 축소한 목업입니다.</p>
-            <div className="flex gap-5 overflow-x-auto pb-2">
-              {(["exchange", "room", "my"] as const).map((screen) => (
-                <AppMockup key={screen} screen={screen} primary={hexMap["primary"] ?? "#4B82F5"} cloverActive={hexMap["brand-clover-active"] ?? "#F9B602"} cloverBg={hexMap["brand-clover-empty"] ?? "#E9EBEE"} />
+          {/* ══ 컬러 ═══════════════════════════════════════════════ */}
+          <section id="color">
+            <SecHeader tag="Color" title="컬러 시스템"
+              desc="모든 색상은 oklch 색공간으로 정의됩니다. 스와치를 클릭하면 실시간으로 편집되며 CSS 변수에 즉시 반영됩니다." />
+
+            {/* 숨김 color picker */}
+            <input ref={pickerRef} type="color" className="sr-only"
+              value={editKey ? (hexMap[editKey] ?? "#000") : "#000"}
+              onChange={e => { if (editKey) handleColor(editKey, e.target.value); }} />
+
+            {(["brand","semantic","neutral"] as const).map(group => {
+              const tokens = COLORS.filter(t => t.group === group);
+              const labels = { brand: "브랜드", semantic: "시맨틱", neutral: "뉴트럴" };
+              return (
+                <div key={group} className="mb-12">
+                  <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.12em] text-[#9CA3AF]">{labels[group]}</p>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                    {tokens.map(token => {
+                      const hex = hexMap[token.key] ?? token.hex;
+                      const light = isLight(hex);
+                      const fg = light ? "#111827" : "#FFFFFF";
+                      const sub = light ? "rgba(0,0,0,0.45)" : "rgba(255,255,255,0.6)";
+                      const cr = contrast(hex, "#FFFFFF");
+                      const wLevel = wcagLevel(cr);
+                      const changed = saved[token.key] !== undefined;
+                      return (
+                        <div key={token.key} className="group rounded-2xl bg-white border border-[#F3F4F6] overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                          {/* 스와치 */}
+                          <button type="button"
+                            onClick={() => { setEditKey(token.key); setTimeout(() => pickerRef.current?.click(), 0); }}
+                            className="relative w-full cursor-pointer focus:outline-none"
+                            style={{ height: 104, background: hex }}>
+                            {/* 편집 오버레이 */}
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: "rgba(0,0,0,0.18)" }}>
+                              <div className="rounded-full bg-white/95 px-3.5 py-1 text-[12px] font-semibold text-[#111] shadow-sm flex items-center gap-1.5">
+                                <Edit3 size={11} /> 편집
+                              </div>
+                            </div>
+                            {/* WCAG 배지 */}
+                            <div className="absolute top-2.5 right-2.5">
+                              <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${
+                                wLevel === "AAA" ? "bg-green-500 text-white" :
+                                wLevel === "AA" ? "bg-blue-500 text-white" :
+                                wLevel === "AA Large" ? "bg-yellow-400 text-[#333]" : "bg-red-500 text-white"
+                              }`}>{wLevel} {cr}:1</span>
+                            </div>
+                            {/* 수정됨 */}
+                            {changed && (
+                              <div className="absolute top-2.5 left-2.5 rounded-full bg-white/90 px-2 py-0.5 text-[9px] font-bold" style={{ color: primary }}>
+                                수정됨
+                              </div>
+                            )}
+                          </button>
+
+                          {/* 정보 */}
+                          <div className="p-3.5">
+                            <div className="flex items-start justify-between mb-1">
+                              <p className="text-[13px] font-bold text-[#111] leading-tight">{token.label}</p>
+                              <button type="button" onClick={() => copyToken(token.key)}
+                                className="ml-1 rounded p-0.5 text-[#CBD5E1] hover:text-[#6B7280] transition shrink-0 mt-0.5">
+                                {copiedToken === token.key ? <Check size={11} className="text-green-500" /> : <Copy size={11} />}
+                              </button>
+                            </div>
+                            <p className="font-mono text-[10px] text-[#9CA3AF] mb-0.5">--{token.key}</p>
+                            <p className="font-mono text-[11px] font-semibold text-[#374151] mb-2">{hex.toUpperCase()}</p>
+                            <p className="text-[11px] text-[#6B7280] leading-relaxed mb-2">{token.description}</p>
+                            <div className="flex flex-wrap gap-1">
+                              {token.usage.map(u => (
+                                <span key={u} className="rounded-full border border-[#F3F4F6] bg-[#F9FAFB] px-2 py-0.5 text-[10px] text-[#6B7280]">{u}</span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* 그라디언트 */}
+            <div className="mb-10">
+              <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.12em] text-[#9CA3AF]">그라디언트</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="rounded-2xl overflow-hidden">
+                  <div className="h-24" style={{ background: `linear-gradient(180deg, ${hexMap["primary"] ?? "#4B82F5"} 0%, ${hexMap["primary-light"] ?? "#A4C1FA"} 100%)` }} />
+                  <div className="bg-white border border-t-0 border-[#F3F4F6] rounded-b-2xl p-3.5">
+                    <p className="text-[12px] font-bold text-[#111]">Sky Gradient</p>
+                    <p className="font-mono text-[10px] text-[#9CA3AF] mt-0.5">--gradient-sky</p>
+                    <p className="text-[11px] text-[#6B7280] mt-1">앱 배경·헤더 등 주요 그라디언트</p>
+                  </div>
+                </div>
+                <div className="rounded-2xl overflow-hidden">
+                  <div className="h-24 flex" style={{ background: `linear-gradient(135deg, ${hexMap["brand-clover-active"] ?? "#F9B602"} 0%, ${hexMap["brand-clover-special"] ?? "#009A51"} 100%)` }} />
+                  <div className="bg-white border border-t-0 border-[#F3F4F6] rounded-b-2xl p-3.5">
+                    <p className="text-[12px] font-bold text-[#111]">Clover Gradient</p>
+                    <p className="font-mono text-[10px] text-[#9CA3AF] mt-0.5">클로버 Active → Special</p>
+                    <p className="text-[11px] text-[#6B7280] mt-1">클로버 성취·보상 화면용</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 커버 팔레트 */}
+            <div>
+              <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.12em] text-[#9CA3AF]">커버 팔레트 — 일기 썸네일</p>
+              <div className="rounded-2xl bg-white border border-[#F3F4F6] p-6 shadow-sm">
+                <div className="flex flex-wrap gap-4">
+                  {COVER_COLORS.map(({ hex, name }) => (
+                    <div key={hex} className="flex flex-col items-center gap-2">
+                      <div className="h-16 w-16 rounded-2xl border border-black/[0.06] shadow-sm" style={{ background: hex }} />
+                      <div className="text-center">
+                        <p className="text-[12px] font-semibold text-[#374151]">{name}</p>
+                        <p className="font-mono text-[10px] text-[#9CA3AF]">{hex}</p>
+                        <p className="text-[10px] text-[#9CA3AF]">{contrast(hex, "#FFFFFF")}:1</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-5 text-[12px] text-[#9CA3AF]">커버 팔레트는 <code className="bg-[#F3F4F6] px-1.5 py-0.5 rounded text-[11px]">coverColorForId(id)</code> 함수로 일기 ID 기반 자동 배정됩니다. 사용자가 직접 바꿀 수 없는 고정 팔레트입니다.</p>
+              </div>
+            </div>
+          </section>
+
+          {/* ══ 타이포그래피 ═══════════════════════════════════════════ */}
+          <section id="typography">
+            <SecHeader tag="Typography" title="타이포그래피 스케일"
+              desc="시스템 폰트(Pretendard → Apple SD Gothic → 기본)를 사용합니다. 모든 텍스트에 tracking-tight(-0.02em)를 기본 적용합니다." />
+
+            <div className="rounded-2xl bg-white border border-[#F3F4F6] overflow-hidden shadow-sm">
+              <div className="hidden md:grid grid-cols-[160px_1fr_80px_80px_80px_80px_180px] gap-4 border-b border-[#F9FAFB] px-6 py-3 bg-[#FAFBFC]">
+                {["스타일","미리보기","크기","굵기","행간","자간","사용처"].map(h => (
+                  <p key={h} className="text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF]">{h}</p>
+                ))}
+              </div>
+              {TYPE_SCALE.map((row, i) => (
+                <div key={row.name}
+                  className={`flex flex-col md:grid md:grid-cols-[160px_1fr_80px_80px_80px_80px_180px] gap-2 md:gap-4 items-start md:items-center px-6 py-4 ${i !== TYPE_SCALE.length - 1 ? "border-b border-[#F9FAFB]" : ""}`}>
+                  <div>
+                    <p className="text-[13px] font-bold text-[#111]">{row.name}</p>
+                  </div>
+                  <p className="min-w-0 overflow-hidden" style={{ fontSize: row.size, fontWeight: row.weight, lineHeight: row.lh, letterSpacing: row.ls, color: "#111827", maxHeight: "3.5em" }}>
+                    {TYPE_SAMPLES[row.name] ?? row.name}
+                  </p>
+                  <p className="font-mono text-[12px] text-[#6B7280]">{row.size}px</p>
+                  <p className="font-mono text-[12px] text-[#6B7280]">{row.weight}</p>
+                  <p className="font-mono text-[12px] text-[#6B7280]">{row.lh}</p>
+                  <p className="font-mono text-[12px] text-[#6B7280]">{row.ls}</p>
+                  <p className="text-[12px] text-[#9CA3AF]">{row.usage}</p>
+                </div>
               ))}
             </div>
-          </div>
-        </section>
+          </section>
 
+          {/* ══ 간격 ═══════════════════════════════════════════════════ */}
+          <section id="spacing">
+            <SecHeader tag="Spacing" title="간격 스케일"
+              desc="4px 베이스 그리드를 기준으로 합니다. Tailwind 유틸리티와 1:1 대응됩니다." />
+
+            <div className="rounded-2xl bg-white border border-[#F3F4F6] p-6 shadow-sm space-y-3">
+              {SPACING.map(({ px, tw }) => (
+                <div key={px} className="flex items-center gap-4">
+                  <div className="w-16 shrink-0 text-right">
+                    <span className="font-mono text-[12px] font-semibold text-[#374151]">{px}px</span>
+                  </div>
+                  <div className="flex-shrink-0 h-5 rounded" style={{ width: px * 2, background: primary, opacity: 0.8 }} />
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <code className="rounded-md bg-[#F3F4F6] px-2 py-0.5 font-mono text-[11px] text-[#6B7280]">gap-{tw}</code>
+                    <code className="rounded-md bg-[#F3F4F6] px-2 py-0.5 font-mono text-[11px] text-[#6B7280]">p-{tw}</code>
+                    <code className="rounded-md bg-[#F3F4F6] px-2 py-0.5 font-mono text-[11px] text-[#6B7280]">{px/16 % 1 === 0 ? px/16 : (px/16).toFixed(3)}rem</code>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ══ 고도 ═══════════════════════════════════════════════════ */}
+          <section id="elevation">
+            <SecHeader tag="Elevation" title="고도 (Elevation)"
+              desc="5단계 고도 시스템. 레이어가 올라갈수록 그림자가 강해집니다." />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+              {ELEVATIONS.map(({ level, label, token, shadow, usage }) => (
+                <div key={level} className="flex flex-col gap-3">
+                  <div className="flex items-center justify-center bg-white rounded-2xl h-28"
+                    style={{ boxShadow: shadow }}>
+                    <span className="text-[13px] font-bold text-[#374151]">Level {level}</span>
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-bold text-[#111]">{label}</p>
+                    <code className="block font-mono text-[10px] text-[#9CA3AF] mt-0.5">{token}</code>
+                    <p className="text-[12px] text-[#6B7280] mt-1">{usage}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ══ 반경 ═══════════════════════════════════════════════════ */}
+          <section id="radius">
+            <SecHeader tag="Border Radius" title="모서리 반경"
+              desc="--radius를 조절하면 sm / md / lg / xl이 모두 자동으로 연동됩니다." />
+
+            <div className="rounded-2xl bg-white border border-[#F3F4F6] p-8 shadow-sm">
+              <div className="flex items-center gap-5 mb-8">
+                <input type="range" min={0} max={24} value={radius}
+                  onChange={e => handleRadius(Number(e.target.value))}
+                  className="flex-1 h-1.5 rounded-full cursor-pointer"
+                  style={{ accentColor: primary }} />
+                <div className="text-right shrink-0 w-24">
+                  <span className="text-[28px] font-bold text-[#111]">{radius}</span>
+                  <span className="text-[14px] text-[#9CA3AF] ml-1">px</span>
+                  <p className="font-mono text-[11px] text-[#9CA3AF]">{(radius/16).toFixed(4)}rem</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {[
+                  { name: "radius-sm",  sub: "calc(base - 4px)", val: Math.max(0, radius - 4) },
+                  { name: "radius",     sub: "base",              val: radius },
+                  { name: "radius-lg",  sub: "= base",            val: radius },
+                  { name: "radius-xl",  sub: "calc(base + 4px)",  val: radius + 4 },
+                ].map(row => (
+                  <div key={row.name} className="flex flex-col items-center gap-3">
+                    <div className="w-full h-20 border-2 border-[#E5E7EB]"
+                      style={{ borderRadius: row.val, background: `${primary}12` }} />
+                    <div className="text-center">
+                      <p className="font-mono text-[11px] font-semibold text-[#374151]">--{row.name}</p>
+                      <p className="text-[10px] text-[#9CA3AF]">{row.sub}</p>
+                      <p className="font-mono text-[13px] font-bold text-[#111] mt-0.5">{row.val}px</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ══ 컴포넌트 ═══════════════════════════════════════════════ */}
+          <section id="components">
+            <SecHeader tag="Components" title="컴포넌트"
+              desc="위 컬러·반경을 수정하면 아래 모든 컴포넌트에 즉시 반영됩니다." />
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+              {/* 버튼 */}
+              <CompCard id="버튼" title="버튼" desc="앱 전체 버튼 스타일 — 4종 variant × 3 size + 상태">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-2.5">Variant</p>
+                    <div className="flex flex-wrap gap-2.5 items-center">
+                      <DSBtn v="primary">Primary</DSBtn>
+                      <DSBtn v="outline">Outline</DSBtn>
+                      <DSBtn v="ghost">Ghost</DSBtn>
+                      <DSBtn v="destructive">Destructive</DSBtn>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-2.5">Size</p>
+                    <div className="flex flex-wrap gap-2.5 items-end">
+                      <DSBtn v="primary" sz="lg">Large</DSBtn>
+                      <DSBtn v="primary" sz="md">Medium</DSBtn>
+                      <DSBtn v="primary" sz="sm">Small</DSBtn>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-2.5">State</p>
+                    <div className="flex flex-wrap gap-2.5 items-center">
+                      <DSBtn v="primary">Default</DSBtn>
+                      <DSBtn v="primary" disabled>Disabled</DSBtn>
+                      <DSBtn v="primary" loading>Loading</DSBtn>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-2.5">실제 사용 예시</p>
+                    <div className="flex flex-col gap-2.5">
+                      <button className="flex h-[52px] w-full max-w-[320px] items-center justify-center gap-3 rounded-[12px] border border-[#E2E2E2] bg-white shadow-sm">
+                        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                        <span className="text-[16px] font-semibold text-[#454545] tracking-[-0.48px]">Google 로 로그인</span>
+                      </button>
+                      <div className="flex gap-2 max-w-[320px]">
+                        <button className="flex-1 h-[52px] rounded-[12px] border text-[15px] font-semibold transition hover:opacity-80"
+                          style={{ borderColor: primary, color: primary, background: "white" }}>링크 복사</button>
+                        <button className="flex-1 h-[52px] rounded-[12px] text-white text-[15px] font-semibold"
+                          style={{ background: primary }}>친구에게 공유</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CompCard>
+
+              {/* 입력 필드 */}
+              <CompCard id="입력" title="입력 필드" desc="텍스트, 비밀번호, 토글, 댓글 입력">
+                <div className="space-y-3">
+                  <DSInput label="일기 제목" placeholder="오늘은 어떤 하루였나요?" />
+                  <DSInput label="비밀번호" placeholder="공유 일기 비밀번호" type="password" />
+                  <DSInput label="오류 상태" placeholder="다시 입력해 주세요" error="비밀번호가 맞지 않아요." />
+                  <div>
+                    <p className="mb-1.5 text-[13px] font-semibold text-[#374151]">댓글 입력</p>
+                    <div className="flex items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-3 py-2">
+                      <span className="flex-1 text-[14px] text-[#D1D5DB]">댓글을 입력하세요...</span>
+                      <div className="grid h-8 w-8 place-items-center rounded-full shrink-0" style={{ background: primary }}>
+                        <Send size={14} className="text-white" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between rounded-xl border border-[#E5E7EB] bg-white px-4 py-3.5">
+                    <span className="text-[14px] font-medium text-[#111]">교환일기 알림 받기</span>
+                    <FakeToggle primary={primary} defaultOn />
+                  </div>
+                  <div className="flex items-center justify-between rounded-xl border border-[#E5E7EB] bg-white px-4 py-3.5">
+                    <span className="text-[14px] font-medium text-[#111]">다크 모드</span>
+                    <FakeToggle primary={primary} />
+                  </div>
+                </div>
+              </CompCard>
+
+              {/* 카드 */}
+              <CompCard id="카드" title="카드 / 리스트 아이템" desc="교환일기 목록 카드">
+                <div className="rounded-2xl border border-[#F0F0F0] overflow-hidden divide-y divide-[#FAFAFA]">
+                  {[
+                    { color: "#7C6EF5", title: "말하지 못한 것들에 대하여", viewers: 3, time: "방금 전", comments: 2, mine: true },
+                    { color: "#F5866E", title: "봄날의 산책", viewers: 2, time: "3일 전", comments: 0, mine: false },
+                    { color: "#6EC7F5", title: "오늘의 작은 성취", viewers: 0, time: "1주 전", comments: 1, mine: false },
+                  ].map((item) => (
+                    <div key={item.title} className="flex items-center gap-3 bg-white px-4 py-4">
+                      <div className="grid h-14 w-14 shrink-0 place-items-center rounded-xl font-bold text-[22px] text-white" style={{ background: item.color }}>
+                        {item.title.charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-[15px] font-semibold text-[#111] tracking-tight truncate flex-1">{item.title}</p>
+                          {item.mine && <span className="shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold" style={{ background: `${primary}15`, color: primary }}>내 글</span>}
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-1 text-[12px] text-[#AAA]">
+                          <Eye size={11} /><span>{item.viewers}명이 읽었어요</span>
+                          <span>·</span><span>{item.time}</span>
+                        </div>
+                        {item.comments > 0 && (
+                          <div className="flex items-center gap-1 mt-0.5 text-[12px] text-[#AAA]">
+                            <MessageCircle size={11} /><span>댓글 {item.comments}개</span>
+                          </div>
+                        )}
+                      </div>
+                      <MoreVertical size={18} className="text-[#D1D5DB] shrink-0" />
+                    </div>
+                  ))}
+                </div>
+              </CompCard>
+
+              {/* 탭 */}
+              <CompCard id="탭" title="탭" desc="교환일기 내/공유받은 전환 탭">
+                <FancyTab primary={primary} />
+              </CompCard>
+
+              {/* 바텀시트 */}
+              <CompCard id="시트" title="바텀시트" desc="공유·삭제 맥락 메뉴">
+                <div className="rounded-[24px] border border-[#F0F0F0] bg-white px-5 pt-5 pb-6">
+                  <p className="font-bold text-[16px] text-[#111] mb-1 tracking-tight truncate">말하지 못한 것들에 대하여</p>
+                  <p className="text-[13px] text-[#9CA3AF] mb-4">공유 일기 · 3명이 읽었어요</p>
+                  <div className="flex flex-col gap-2">
+                    {[
+                      { icon: <Share2 size={16} />, label: "공유하기", desc: "초대 링크로 친구에게 공유" },
+                      { icon: <Copy size={16} />,   label: "링크 복사", desc: "클립보드에 링크 복사" },
+                    ].map(row => (
+                      <div key={row.label} className="flex items-center gap-3 rounded-2xl bg-[#F8F9FB] px-4 py-3.5">
+                        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full" style={{ background: `${primary}15`, color: primary }}>{row.icon}</div>
+                        <div>
+                          <p className="text-[14px] font-semibold text-[#111]">{row.label}</p>
+                          <p className="text-[11px] text-[#9CA3AF]">{row.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="flex items-center gap-3 rounded-2xl bg-red-50 px-4 py-3.5">
+                      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-red-100 text-red-400"><Trash2 size={16} /></div>
+                      <div>
+                        <p className="text-[14px] font-semibold text-red-400">삭제하기</p>
+                        <p className="text-[11px] text-red-300">삭제하면 댓글도 모두 사라져요</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CompCard>
+
+              {/* 모달 */}
+              <CompCard id="모달" title="모달" desc="비밀번호 잠금, 알림 성공, 삭제 확인">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* 잠금 */}
+                  <div className="rounded-2xl bg-[#F5F6F8] p-4 flex flex-col items-center gap-2.5">
+                    <div className="grid h-12 w-12 place-items-center rounded-2xl" style={{ background: `${primary}18` }}>
+                      <Lock size={22} style={{ color: primary }} />
+                    </div>
+                    <p className="text-[13px] font-bold text-center text-[#111]">비밀번호를 입력해 주세요</p>
+                    <div className="w-full flex items-center gap-2 rounded-xl bg-white border border-[#E5E7EB] px-3 py-2">
+                      <Lock size={13} className="text-[#CCC] shrink-0" />
+                      <span className="text-[12px] text-[#CCC]">비밀번호</span>
+                    </div>
+                    <button className="w-full h-10 rounded-xl text-white text-[13px] font-bold" style={{ background: primary }}>열람하기</button>
+                  </div>
+                  {/* 알림 성공 */}
+                  <div className="rounded-2xl bg-white border border-[#F0F0F0] p-4 flex flex-col items-center gap-2">
+                    <span className="text-[36px]">🔔</span>
+                    <p className="text-[13px] font-bold text-center text-[#111]">알림이 허용되었어요</p>
+                    <p className="text-[11px] text-[#9CA3AF] text-center">새 알림이 오면 알려드릴게요.</p>
+                    <button className="w-full h-10 rounded-xl text-white text-[13px] font-bold" style={{ background: primary }}>확인</button>
+                  </div>
+                  {/* 삭제 확인 */}
+                  <div className="rounded-2xl bg-white border border-[#F0F0F0] p-4 flex flex-col items-center gap-2">
+                    <div className="grid h-12 w-12 place-items-center rounded-2xl bg-red-50">
+                      <Trash2 size={22} className="text-red-400" />
+                    </div>
+                    <p className="text-[13px] font-bold text-center text-[#111]">일기를 삭제할까요?</p>
+                    <p className="text-[11px] text-[#9CA3AF] text-center">댓글도 모두 사라져요.</p>
+                    <div className="flex w-full gap-2 mt-1">
+                      <button className="flex-1 h-10 rounded-xl bg-[#F3F4F6] text-[#666] text-[12px] font-semibold">취소</button>
+                      <button className="flex-1 h-10 rounded-xl bg-red-500 text-white text-[12px] font-bold">삭제</button>
+                    </div>
+                  </div>
+                </div>
+              </CompCard>
+
+            </div>
+          </section>
+
+          {/* ══ 아이콘 ═════════════════════════════════════════════════ */}
+          <section id="icons">
+            <SecHeader tag="Icons" title="아이콘 카탈로그"
+              desc="Lucide React 아이콘을 사용합니다. strokeWidth={2}가 기본값입니다." />
+
+            <div className="space-y-6">
+              {ICON_GROUPS.map(({ label, icons }) => (
+                <div key={label} className="rounded-2xl bg-white border border-[#F3F4F6] p-6 shadow-sm">
+                  <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.12em] text-[#9CA3AF]">{label}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {icons.map(({ C, name }) => (
+                      <button key={name} type="button"
+                        onClick={() => { navigator.clipboard.writeText(`<${name} />`); setCopiedToken(`icon-${name}`); setTimeout(() => setCopiedToken(null), 1500); }}
+                        className="flex flex-col items-center gap-1.5 rounded-xl border border-[#F3F4F6] p-3 w-[72px] transition hover:border-[var(--primary)] hover:bg-[#F9FAFB] group">
+                        <C size={20} className="text-[#374151] group-hover:text-[var(--primary)] transition" strokeWidth={2} />
+                        <span className="text-[9px] text-[#9CA3AF] text-center leading-tight break-all">
+                          {copiedToken === `icon-${name}` ? "✓ 복사" : name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ══ 모션 ═══════════════════════════════════════════════════ */}
+          <section id="motion">
+            <SecHeader tag="Motion" title="모션 & 애니메이션"
+              desc="트랜지션 지속 시간과 이징 곡선 토큰입니다. 아래 버튼을 눌러 직접 확인할 수 있습니다." />
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* 지속 시간 */}
+              <div className="rounded-2xl bg-white border border-[#F3F4F6] p-6 shadow-sm">
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#9CA3AF] mb-5">Duration</p>
+                <div className="space-y-3">
+                  {DURATIONS.map(ms => (
+                    <DurationRow key={ms} ms={ms} primary={primary} />
+                  ))}
+                </div>
+              </div>
+
+              {/* 이징 */}
+              <div className="rounded-2xl bg-white border border-[#F3F4F6] p-6 shadow-sm">
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#9CA3AF] mb-5">Easing</p>
+                <div className="space-y-4">
+                  {EASINGS.map(({ name, value, usage }) => (
+                    <EasingRow key={name} name={name} value={value} usage={usage} primary={primary} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </main>
       </div>
 
       {/* 푸터 */}
-      <footer className="mt-20 border-t border-[#EAECF0] bg-white">
-        <div className="mx-auto flex max-w-[1280px] items-center justify-between px-8 py-6">
-          <p className="text-[13px] text-[#9CA3AF]">안다미로 Design System · v1.0</p>
-          <p className="text-[13px] text-[#9CA3AF]">CSS custom properties · oklch · Tailwind v4</p>
+      <footer className="border-t border-[#EAECF0] bg-white mt-20">
+        <div className="mx-auto flex max-w-[1380px] items-center justify-between px-8 py-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: primary }}>
+              <div className="h-2.5 w-2.5 rounded-full bg-white/90" />
+            </div>
+            <span className="text-[13px] text-[#9CA3AF]">안다미로 Design System v2.0</span>
+          </div>
+          <p className="text-[12px] text-[#D1D5DB]">oklch · Tailwind v4 · CSS Custom Properties · Lucide React</p>
         </div>
       </footer>
     </div>
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   소형 컴포넌트들
-   ───────────────────────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────
+   소형 컴포넌트
+   ───────────────────────────────────────────────────────────── */
 
-function SectionHeader({ label, title, desc }: { label: string; title: string; desc: string }) {
+function SecHeader({ tag, title, desc }: { tag: string; title: string; desc: string }) {
   return (
-    <div className="mb-8">
-      <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: "var(--primary, #4B82F5)" }}>{label}</p>
-      <h2 className="text-[28px] font-bold text-[#111] tracking-tight mb-2">{title}</h2>
+    <div className="mb-10">
+      <p className="mb-2.5 inline-flex items-center rounded-full border border-[#E5E7EB] bg-white px-3 py-1 text-[11px] font-bold tracking-widest uppercase" style={{ color: "var(--primary,#4B82F5)" }}>{tag}</p>
+      <h2 className="text-[32px] font-bold text-[#111] tracking-tight mb-2.5">{title}</h2>
       <p className="text-[15px] text-[#6B7280] leading-relaxed max-w-[600px]">{desc}</p>
     </div>
   );
 }
 
-function ComponentCard({ title, desc, children }: { title: string; desc: string; children: React.ReactNode }) {
+function CompCard({ id, title, desc, children }: { id: string; title: string; desc: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-[#EAECF0] bg-white p-6 shadow-sm">
-      <p className="text-[15px] font-bold text-[#111] mb-0.5">{title}</p>
+    <div id={id} className="rounded-2xl bg-white border border-[#F3F4F6] p-6 shadow-sm">
+      <p className="text-[16px] font-bold text-[#111] mb-0.5">{title}</p>
       <p className="text-[13px] text-[#9CA3AF] mb-5">{desc}</p>
       {children}
     </div>
   );
 }
 
-function Btn({
-  variant,
-  size = "md",
-  disabled,
-  children,
-  className = "",
-}: {
-  variant: "primary" | "outline" | "destructive" | "ghost";
-  size?: "md" | "sm";
-  disabled?: boolean;
-  children: React.ReactNode;
-  className?: string;
+function DSBtn({ v, sz = "md", disabled, loading, children }: {
+  v: "primary"|"outline"|"ghost"|"destructive";
+  sz?: "sm"|"md"|"lg"; disabled?: boolean; loading?: boolean; children: React.ReactNode;
 }) {
-  const base = "inline-flex items-center justify-center font-semibold tracking-tight transition rounded-[var(--radius,10px)] select-none";
-  const sizeClass = size === "md" ? "h-[48px] px-6 text-[15px]" : "h-[36px] px-4 text-[13px]";
-  const variantStyle: Record<string, React.CSSProperties> = {
-    primary: { background: "var(--primary, #4B82F5)", color: "#fff" },
-    outline: { background: "#fff", color: "var(--primary, #4B82F5)", border: "1.5px solid var(--primary, #4B82F5)" },
-    destructive: { background: "var(--destructive, #E7000B)", color: "#fff" },
-    ghost: { background: "transparent", color: "#6B7280", border: "1.5px solid #E5E7EB" },
+  const styles: Record<string, React.CSSProperties> = {
+    primary:     { background: "var(--primary,#4B82F5)", color: "#fff" },
+    outline:     { background: "#fff", color: "var(--primary,#4B82F5)", border: "1.5px solid var(--primary,#4B82F5)" },
+    ghost:       { background: "transparent", color: "#6B7280", border: "1.5px solid #E5E7EB" },
+    destructive: { background: "var(--destructive,#E7000B)", color: "#fff" },
   };
+  const sizes = { sm: "h-8 px-4 text-[12px]", md: "h-10 px-5 text-[14px]", lg: "h-12 px-6 text-[16px]" };
   return (
-    <button
-      type="button"
-      disabled={disabled}
-      className={`${base} ${sizeClass} ${disabled ? "opacity-40 cursor-not-allowed" : "hover:opacity-90 active:scale-[0.98]"} ${className}`}
-      style={variantStyle[variant]}
-    >
+    <button type="button" disabled={disabled || loading}
+      className={`inline-flex items-center justify-center gap-2 font-semibold tracking-tight rounded-[var(--radius,10px)] transition ${sizes[sz]} ${(disabled||loading) ? "opacity-40 cursor-not-allowed" : "hover:opacity-90 active:scale-[0.97]"}`}
+      style={styles[v]}>
+      {loading && <Loader2 size={14} className="animate-spin" />}
       {children}
     </button>
   );
 }
 
-function GoogleBtn() {
-  return (
-    <button
-      type="button"
-      className="flex h-[52px] w-full max-w-[280px] items-center justify-center gap-3 rounded-[12px] border border-[#E2E2E2] bg-white shadow-sm transition hover:bg-[#f9f9f9] active:scale-[0.99]"
-    >
-      <svg width="20" height="20" viewBox="0 0 24 24">
-        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
-        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-      </svg>
-      <span className="text-[16px] font-semibold text-[#454545] tracking-[-0.48px]">Google 로 로그인</span>
-    </button>
-  );
-}
-
-function FakeInput({ label, placeholder, type = "text", suffix }: { label: string; placeholder: string; type?: string; suffix?: boolean }) {
+function DSInput({ label, placeholder, type = "text", error }: { label: string; placeholder: string; type?: string; error?: string }) {
   return (
     <div>
-      <p className="mb-1.5 text-[13px] font-medium text-[#374151]">{label}</p>
-      <div className="flex items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 h-[48px]">
-        <span className="flex-1 text-[15px] text-[#D1D5DB]">{placeholder}</span>
-        {suffix && (
-          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full" style={{ background: "var(--primary, #4B82F5)" }}>
-            <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
-            </svg>
-          </div>
-        )}
+      <p className="mb-1.5 text-[13px] font-semibold text-[#374151]">{label}</p>
+      <div className={`flex items-center gap-2 rounded-xl border bg-white px-4 h-[46px] ${error ? "border-red-400" : "border-[#E5E7EB]"}`}>
+        <span className="flex-1 text-[14px] text-[#D1D5DB]">{placeholder}</span>
       </div>
+      {error && <p className="mt-1 text-[11px] text-red-400">{error}</p>}
     </div>
   );
 }
 
-function FakeToggle() {
-  const [on, setOn] = useState(false);
+function FakeToggle({ primary, defaultOn = false }: { primary: string; defaultOn?: boolean }) {
+  const [on, setOn] = useState(defaultOn);
   return (
-    <button
-      type="button"
-      onClick={() => setOn((p) => !p)}
-      className="relative h-6 w-11 rounded-full transition-colors duration-200"
-      style={{ background: on ? "var(--primary, #4B82F5)" : "#E5E7EB" }}
-    >
-      <span
-        className="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-all duration-200"
-        style={{ left: on ? "calc(100% - 22px)" : 2 }}
-      />
+    <button type="button" onClick={() => setOn(p => !p)}
+      className="relative h-[26px] w-[46px] rounded-full transition-colors duration-200 shrink-0"
+      style={{ background: on ? primary : "#E5E7EB" }}>
+      <span className="absolute top-[3px] h-5 w-5 rounded-full bg-white shadow-sm transition-all duration-200"
+        style={{ left: on ? 22 : 3 }} />
     </button>
   );
 }
 
-function TabPreview({ primary }: { primary: string }) {
-  const [tab, setTab] = useState<"my" | "shared">("my");
+function FancyTab({ primary }: { primary: string }) {
+  const [tab, setTab] = useState<"my"|"shared">("my");
+  const DIARY_DATA = {
+    my: [
+      { color: "#7C6EF5", title: "말하지 못한 것들에 대하여", viewers: 3, time: "방금 전" },
+      { color: "#F5866E", title: "봄날의 산책", viewers: 2, time: "3일 전" },
+    ],
+    shared: [
+      { color: "#6EC7F5", title: "오늘의 작은 성취", viewers: 1, time: "1주 전" },
+      { color: "#6EF5B4", title: "새벽 세 시의 생각들", viewers: 4, time: "2주 전" },
+    ],
+  };
   return (
     <div className="rounded-xl border border-[#F0F0F0] overflow-hidden">
       <div className="flex bg-white">
-        {(["my", "shared"] as const).map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setTab(t)}
-            className="flex-1 py-3.5 text-[14px] font-semibold tracking-tight transition"
-            style={tab === t
-              ? { color: primary, borderBottom: `2px solid ${primary}` }
-              : { color: "#CBD5E1", borderBottom: "2px solid transparent" }}
-          >
-            {t === "my" ? "내가 공유한" : "공유 받은"}
+        {(["my","shared"] as const).map(t => (
+          <button key={t} type="button" onClick={() => setTab(t)}
+            className="flex-1 py-3.5 text-[14px] font-semibold tracking-tight transition-all"
+            style={tab===t ? { color: primary, borderBottom: `2px solid ${primary}` } : { color: "#CBD5E1", borderBottom: "2px solid transparent" }}>
+            {t==="my" ? "내가 공유한" : "공유 받은"}
           </button>
         ))}
       </div>
-      <div className="bg-[#F8F9FB] px-5 py-8 text-center">
-        <p className="text-[13px] text-[#CBD5E1]">
-          {tab === "my" ? "내가 작성한 교환일기 목록" : "초대받아 읽은 교환일기 목록"}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function SheetRow({ icon, label, danger, primary }: { icon: "share" | "trash"; label: string; danger?: boolean; primary?: string }) {
-  const bg = danger ? "#FEF2F2" : "#F8F9FB";
-  const iconBg = danger ? "#FEE2E2" : `${primary ?? "#4B82F5"}18`;
-  const color = danger ? "#F87171" : (primary ?? "#4B82F5");
-  return (
-    <div className="flex items-center gap-3 rounded-2xl px-4 py-3.5" style={{ background: bg }}>
-      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full" style={{ background: iconBg }}>
-        {icon === "share" ? (
-          <svg className="h-4 w-4" style={{ color }} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-          </svg>
-        ) : (
-          <svg className="h-4 w-4" style={{ color }} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" />
-          </svg>
-        )}
-      </div>
-      <span className="text-[15px] font-medium tracking-tight" style={{ color: danger ? "#F87171" : "#222" }}>{label}</span>
-    </div>
-  );
-}
-
-function AppMockup({ screen, primary, cloverActive, cloverBg }: { screen: "exchange" | "room" | "my"; primary: string; cloverActive: string; cloverBg: string }) {
-  const labels = { exchange: "교환일기 목록", room: "일기 상세", my: "마이페이지" };
-  const W = 160, H = 300;
-  const covers = ["#7C6EF5","#F5866E","#6EC7F5"];
-  const titles = ["말하지 못한","봄날의 산책","작은 성취"];
-
-  return (
-    <div className="shrink-0 flex flex-col gap-2">
-      <div
-        className="rounded-[22px] border border-[#E5E7EB] bg-white overflow-hidden flex flex-col shadow-md"
-        style={{ width: W, height: H }}
-      >
-        {/* 상태바 */}
-        <div className="flex items-center justify-between px-4 pt-3 pb-1">
-          <span className="text-[8px] font-bold text-[#111]">9:41</span>
-          <div className="flex gap-1 items-center">
-            <div className="h-1.5 w-3.5 rounded-[2px] border border-[#555]">
-              <div className="h-full w-2/3 rounded-[1px] bg-[#555]" />
+      <div className="divide-y divide-[#FAFAFA] bg-[#FAFBFC]">
+        {DIARY_DATA[tab].map(item => (
+          <div key={item.title} className="flex items-center gap-3 px-4 py-3">
+            <div className="h-10 w-10 rounded-lg grid place-items-center text-white font-bold text-[14px] shrink-0" style={{ background: item.color }}>
+              {item.title.charAt(0)}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-semibold text-[#111] truncate">{item.title}</p>
+              <p className="text-[11px] text-[#AAA]">{item.viewers}명이 읽었어요 · {item.time}</p>
             </div>
           </div>
-        </div>
-
-        {/* 헤더 */}
-        <div className="flex items-center justify-between px-3 pb-2 border-b border-[#F5F5F5]">
-          <div className="h-4 w-4 rounded-full bg-[#F0F0F0]" />
-          <span className="text-[10px] font-bold text-[#111]">{labels[screen]}</span>
-          <div className="h-4 w-4 rounded-full bg-[#F0F0F0]" />
-        </div>
-
-        {/* 컨텐츠 */}
-        <div className="flex-1 overflow-hidden">
-          {screen === "exchange" && (
-            <div>
-              {/* 탭 */}
-              <div className="flex border-b border-[#F5F5F5]">
-                {["내가 공유한", "공유 받은"].map((t, i) => (
-                  <div key={t} className="flex-1 py-2 text-center">
-                    <span
-                      className="text-[8px] font-semibold"
-                      style={i === 0 ? { color: primary, borderBottom: `1.5px solid ${primary}`, paddingBottom: 2 } : { color: "#CCC" }}
-                    >{t}</span>
-                  </div>
-                ))}
-              </div>
-              {covers.map((c, i) => (
-                <div key={c} className="flex items-center gap-2 px-3 py-2.5 border-b border-[#FAFAFA]">
-                  <div className="h-9 w-9 rounded-lg shrink-0 grid place-items-center text-white font-bold text-[12px]" style={{ background: c }}>
-                    {titles[i].charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[9px] font-semibold text-[#111] truncate">{titles[i]}</p>
-                    <p className="text-[7px] text-[#BBB] mt-0.5">👁 3명 · 방금 전</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          {screen === "room" && (
-            <div>
-              <div className="h-24 w-full" style={{ background: covers[0] }} />
-              <div className="px-3 pt-3">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <div className="h-5 w-5 rounded-full" style={{ background: covers[0] }} />
-                  <div>
-                    <p className="text-[8px] font-semibold text-[#111]">작성자</p>
-                    <p className="text-[7px] text-[#BBB]">방금 전</p>
-                  </div>
-                </div>
-                <p className="text-[10px] font-bold text-[#111] mb-1">말하지 못한 것들에 대하여</p>
-                <div className="flex gap-1 mb-2">
-                  {["일상","감정"].map(k => (
-                    <span key={k} className="text-[7px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: `${primary}20`, color: primary }}>#{k}</span>
-                  ))}
-                </div>
-                <p className="text-[8px] text-[#555] leading-relaxed line-clamp-3">오늘은 유난히 봄바람이 따뜻했다. 점심을 먹고 나서…</p>
-              </div>
-            </div>
-          )}
-          {screen === "my" && (
-            <div className="px-3 pt-3">
-              <div className="flex flex-col items-center pb-3 border-b border-[#F5F5F5]">
-                <div className="h-12 w-12 rounded-full mb-2" style={{ background: primary }} />
-                <p className="text-[10px] font-bold text-[#111]">홍길동</p>
-                <p className="text-[8px] text-[#BBB]">hong@gmail.com</p>
-              </div>
-              {[["🔔","알림 설정"],["💾","데이터 백업"],["🎨","디자인 가이드"]].map(([ico, name]) => (
-                <div key={name} className="flex items-center gap-2 py-2.5 border-b border-[#FAFAFA]">
-                  <span className="text-[12px]">{ico}</span>
-                  <span className="text-[9px] font-medium text-[#333]">{name}</span>
-                </div>
-              ))}
-              {/* 클로버 */}
-              <div className="mt-2 rounded-lg p-2" style={{ background: cloverBg }}>
-                <p className="text-[8px] font-bold text-[#555] mb-1">오늘의 클로버 5/5</p>
-                <div className="flex gap-1">
-                  {[1,2,3,4,5].map(i => (
-                    <div key={i} className="h-4 w-4 rounded-full" style={{ background: i <= 5 ? cloverActive : "#DDD" }} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* 바텀 탭 */}
-        <div className="flex border-t border-[#F5F5F5] bg-white">
-          {[
-            { label: "홈", active: false },
-            { label: "일기", active: false },
-            { label: "교환", active: screen === "exchange" || screen === "room" },
-            { label: "마이", active: screen === "my" },
-          ].map(({ label, active }) => (
-            <div key={label} className="flex-1 flex flex-col items-center py-2 gap-0.5">
-              <div className="h-3 w-3 rounded-sm" style={{ background: active ? primary : "#E5E7EB" }} />
-              <span className="text-[6px] font-medium" style={{ color: active ? primary : "#CCC" }}>{label}</span>
-            </div>
-          ))}
-        </div>
+        ))}
       </div>
-      <p className="text-center text-[11px] text-[#9CA3AF]">{labels[screen]}</p>
+    </div>
+  );
+}
+
+function DurationRow({ ms, primary }: { ms: number; primary: string }) {
+  const [active, setActive] = useState(false);
+  return (
+    <div className="flex items-center gap-4">
+      <code className="w-14 shrink-0 font-mono text-[12px] font-semibold text-[#374151]">{ms}ms</code>
+      <div className="flex-1 h-1.5 bg-[#F3F4F6] rounded-full overflow-hidden">
+        <div className="h-full rounded-full transition-all ease-out" style={{
+          width: active ? "100%" : "0%",
+          background: primary,
+          transitionDuration: `${ms}ms`,
+        }} />
+      </div>
+      <button type="button" onClick={() => { setActive(false); setTimeout(() => setActive(true), 50); }}
+        className="shrink-0 rounded-lg border border-[#E5E7EB] px-3 h-7 text-[11px] font-medium text-[#6B7280] transition hover:bg-[#F9FAFB]">
+        재생
+      </button>
+    </div>
+  );
+}
+
+function EasingRow({ name, value, usage, primary }: { name: string; value: string; usage: string; primary: string }) {
+  const [active, setActive] = useState(false);
+  return (
+    <div className="flex items-start gap-3">
+      <button type="button"
+        onClick={() => { setActive(false); setTimeout(() => setActive(true), 50); setTimeout(() => setActive(false), 600); }}
+        className="relative shrink-0 h-10 w-10 rounded-xl border-2 border-[#E5E7EB] overflow-hidden cursor-pointer hover:border-[var(--primary)] transition">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="h-4 w-4 rounded-full transition-all duration-500"
+            style={{ background: primary, transform: active ? "translateX(8px)" : "translateX(-8px)", transitionTimingFunction: value }} />
+        </div>
+      </button>
+      <div className="min-w-0 flex-1">
+        <p className="text-[13px] font-bold text-[#111]">{name}</p>
+        <code className="block font-mono text-[10px] text-[#9CA3AF] truncate">{value}</code>
+        <p className="text-[11px] text-[#6B7280] mt-0.5">{usage}</p>
+      </div>
     </div>
   );
 }
