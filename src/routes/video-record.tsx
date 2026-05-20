@@ -1,3 +1,13 @@
+/**
+ * ⚠️  레거시 라우트 — /video-record
+ *
+ * 이 페이지는 더 이상 메인 UI에서 연결되지 않습니다.
+ * 실시간 표정 분석 기능은 채팅 화면(/chat)의 "영상으로 분석" 버튼으로 이전되었습니다.
+ * (FaceAnalysisOverlay 컴포넌트 → src/components/FaceAnalysisOverlay.tsx)
+ *
+ * 이 파일은 추후 참고 또는 재활용을 위해 보존합니다.
+ * 직접 URL 접근(/video-record)은 여전히 가능합니다.
+ */
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { X, Camera, Loader2, Mic } from "lucide-react";

@@ -14,6 +14,10 @@ export { EmptyState }       from "./EmptyState";
 export { BottomNav }        from "./BottomNav";
 export type { BottomNavTab } from "./BottomNav";
 
+// 카메라 / 미디어
+export { FaceAnalysisOverlay } from "./FaceAnalysisOverlay";
+export type { ExpressionMap, FaceExpression } from "./FaceAnalysisOverlay";
+
 // 프레젠테이션 전용 (라우트에선 사용 안 함)
 export { DemoCursor }       from "./DemoCursor";
 export { Splash, SPLASH_COMPLETE_KEY } from "./Splash";

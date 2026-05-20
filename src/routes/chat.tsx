@@ -1,8 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, Plus, Mic, ArrowUp } from "lucide-react";
-import { PageHeader } from "@/components/PageHeader";
+import { Plus, Mic, ArrowUp, ImageIcon, ScanFace } from "lucide-react";
+import { PageHeader, BackButton, BottomSheet, SheetItem, FaceAnalysisOverlay } from "@/components";
+import type { ExpressionMap, FaceExpression } from "@/components";
 import { DemoCursor } from "@/components/DemoCursor";
+import { setVideoRecord } from "@/lib/videoStore";
 
 type MoodKey = "best" | "good" | "okay" | "bad" | "worst";
 
@@ -26,30 +28,22 @@ export const Route = createFileRoute("/chat")({
   component: ChatPage,
 });
 
+// ── 메시지 타입 ─────────────────────────────────────────────────────────────
 type Msg =
-  | { id: string; role: "user"; text: string }
+  | { id: string; role: "user"; text: string; imageUrl?: string }
   | { id: string; role: "bot"; text: string; canEnd?: boolean };
 
+// ── 인사말 & 칩 ────────────────────────────────────────────────────────────
 const MOOD_GREETING: Record<MoodKey, { title: string; sub: string; chips: string[] }> = {
   best: {
     title: "안녕하세요!\n오늘 정말 최고의 하루였군요!",
     sub: "선택하신 감정의 세부 감정을 선택해주세요",
-    chips: [
-      "⚡ 에너지가 넘쳐요",
-      "😊 기분이 아주 좋아요",
-      "✨ 오늘 잘될 것 같아요",
-      "💪 활기차고 자신 있어요",
-    ],
+    chips: ["⚡ 에너지가 넘쳐요", "😊 기분이 아주 좋아요", "✨ 오늘 잘될 것 같아요", "💪 활기차고 자신 있어요"],
   },
   good: {
     title: "안녕하세요!\n오늘의 하루가 좋으셨군요!",
     sub: "선택하신 감정의 세부 감정을 선택해주세요",
-    chips: [
-      "⚡ 에너지가 넘쳐요",
-      "😊 기분이 아주 좋아요",
-      "✨ 오늘 잘될 것 같아요",
-      "💪 활기차고 자신 있어요",
-    ],
+    chips: ["⚡ 에너지가 넘쳐요", "😊 기분이 아주 좋아요", "✨ 오늘 잘될 것 같아요", "💪 활기차고 자신 있어요"],
   },
   okay: {
     title: "안녕하세요!\n평범한 하루를 보내셨군요.",
@@ -68,6 +62,7 @@ const MOOD_GREETING: Record<MoodKey, { title: string; sub: string; chips: string
   },
 };
 
+// ── 봇 응답 ────────────────────────────────────────────────────────────────
 const BOT_REPLY: Record<string, string> = {
   default: "그러셨군요. 그 감정에 대해 조금 더 들려주실래요? 🙂",
   "⚡ 에너지가 넘쳐요": "정말 잘됐네요 🎉\n어떤 점이 특히 좋았나요?",
@@ -76,10 +71,6 @@ const BOT_REPLY: Record<string, string> = {
   "💪 활기차고 자신 있어요": "에너지가 느껴져요 💪\n오늘 하루 어떻게 보내셨어요?",
 };
 
-/**
- * 사용자 입력에서 키워드를 인식해 자연스러운 답변을 생성.
- * 정확한 칩 매칭 → 키워드 카테고리 매칭 → 길이 기반 fallback 순.
- */
 const KEYWORD_REPLIES: { keywords: string[]; replies: string[] }[] = [
   {
     keywords: ["일", "회사", "업무", "프로젝트", "출근", "야근", "미팅", "회의"],
@@ -155,25 +146,40 @@ const GENERIC_REPLIES = [
 ];
 
 function pickReply(text: string): string {
-  // 1) 정확한 칩 매칭
   if (BOT_REPLY[text]) return BOT_REPLY[text];
-  // 2) 키워드 카테고리 매칭
   const lower = text.toLowerCase();
   for (const cat of KEYWORD_REPLIES) {
-    if (cat.keywords.some((k) => lower.includes(k))) {
+    if (cat.keywords.some((k) => lower.includes(k)))
       return cat.replies[Math.floor(Math.random() * cat.replies.length)];
-    }
   }
-  // 3) 일반 답변
   return GENERIC_REPLIES[Math.floor(Math.random() * GENERIC_REPLIES.length)];
 }
 
+// ── 표정 → 기분 매핑 ───────────────────────────────────────────────────────
+const EXPR_KO: Record<string, string> = {
+  happy: "행복", neutral: "평온", sad: "슬픔",
+  angry: "긴장", fearful: "두려움", disgusted: "불쾌", surprised: "놀람",
+};
+
+function exprToMood(
+  dominant: FaceExpression,
+  confidence: number,
+): "best" | "good" | "okay" | "bad" | "worst" | null {
+  if (dominant === "happy")    return confidence > 0.65 ? "best" : "good";
+  if (dominant === "neutral")  return "okay";
+  if (dominant === "sad")      return "bad";
+  if (dominant === "angry" || dominant === "fearful" || dominant === "disgusted") return "worst";
+  if (dominant === "surprised") return "okay";
+  return "okay";
+}
+
+// ── 메인 컴포넌트 ──────────────────────────────────────────────────────────
 function ChatPage() {
   const { mood = "good", demo: demoParam } = Route.useSearch();
-  const demo1 = demoParam === "1"; // 주요기능02: 칩선택→대화 애니메이션 → 대화종료에 커서만 (화면전환 없음)
-  const demo2 = demoParam === "2"; // 주요기능03: 정적 완료 화면 → 대화종료 클릭 → 분석 이동
-  const navigate = useNavigate();
-  const greeting = MOOD_GREETING[mood] ?? MOOD_GREETING.good;
+  const demo1 = demoParam === "1";
+  const demo2 = demoParam === "2";
+  const navigate  = useNavigate();
+  const greeting  = MOOD_GREETING[mood as MoodKey] ?? MOOD_GREETING.good;
 
   // demo=2: 정적 완료 메시지 미리 세팅
   const [messages, setMessages] = useState<Msg[]>(() => {
@@ -183,35 +189,38 @@ function ChatPage() {
     const msg3 = "친구랑 오랜만에 만났거든요";
     return [
       { id: "d1", role: "user", text: msg1 },
-      { id: "d2", role: "bot", text: pickReply(msg1), canEnd: true },
+      { id: "d2", role: "bot",  text: pickReply(msg1), canEnd: true },
       { id: "d3", role: "user", text: msg2 },
-      { id: "d4", role: "bot", text: pickReply(msg2), canEnd: true },
+      { id: "d4", role: "bot",  text: pickReply(msg2), canEnd: true },
       { id: "d5", role: "user", text: msg3 },
-      { id: "d6", role: "bot", text: pickReply(msg3), canEnd: true },
+      { id: "d6", role: "bot",  text: pickReply(msg3), canEnd: true },
     ];
   });
-  const [showChips, setShowChips] = useState(!demo2);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [isTyping, setIsTyping] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [cursor, setCursor] = useState({ x: 50, y: 700, tapping: false, visible: false });
-  const frameRef = useRef<HTMLDivElement>(null);
-  const endBtnRef = useRef<HTMLButtonElement>(null);
-  const chip1Ref = useRef<HTMLButtonElement>(null);
+  const [showChips,       setShowChips]       = useState(!demo2);
+  const [isTyping,        setIsTyping]         = useState(false);
+  const [showAttachSheet, setShowAttachSheet]  = useState(false);
+  const [showFaceAnalysis,setShowFaceAnalysis] = useState(false);
 
+  const inputRef    = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const scrollRef   = useRef<HTMLDivElement>(null);
+  const [cursor,    setCursor]   = useState({ x: 50, y: 700, tapping: false, visible: false });
+  const frameRef    = useRef<HTMLDivElement>(null);
+  const endBtnRef   = useRef<HTMLButtonElement>(null);
+  const chip1Ref    = useRef<HTMLButtonElement>(null);
+
+  // 새 메시지가 오면 스크롤 아래로
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, isTyping]);
 
-  // ── demo=1 (주요기능02): 칩 선택 → 대화 애니메이션 → 대화종료 커서 hover (화면 전환 없음) ──
+  // ── demo=1: 칩 선택 → 대화 애니메이션 ───────────────────────────────────
   useEffect(() => {
     if (!demo1) return;
     let cancelled = false;
     const timers: ReturnType<typeof setTimeout>[] = [];
     const track = (fn: () => void, delay: number) => {
-      const t = setTimeout(() => {
-        if (!cancelled) fn();
-      }, delay);
+      const t = setTimeout(() => { if (!cancelled) fn(); }, delay);
       timers.push(t);
     };
     const addUser = (text: string) => {
@@ -221,17 +230,12 @@ function ChatPage() {
     };
     const addBot = (replyTo: string) => {
       setIsTyping(false);
-      setMessages((m) => [
-        ...m,
-        { id: crypto.randomUUID(), role: "bot", text: pickReply(replyTo), canEnd: true },
-      ]);
+      setMessages((m) => [...m, { id: crypto.randomUUID(), role: "bot", text: pickReply(replyTo), canEnd: true }]);
     };
-
-    const msg1 = greeting.chips[1]; // "😊 기분이 아주 좋아요"
+    const msg1 = greeting.chips[1];
     const msg2 = "오늘 기분 좋은 일이 있었어요";
     const msg3 = "친구랑 오랜만에 만났거든요";
 
-    // rAF로 칩 위치 읽어 커서 배치
     const raf = requestAnimationFrame(() => {
       if (cancelled) return;
       const chip = chip1Ref.current;
@@ -240,135 +244,148 @@ function ChatPage() {
         const cr = chip.getBoundingClientRect();
         const fr = frame.getBoundingClientRect();
         const cx = cr.left - fr.left + cr.width / 2;
-        const cy = cr.top - fr.top + cr.height / 2;
+        const cy = cr.top  - fr.top  + cr.height / 2;
         setCursor({ x: cx, y: cy + 60, tapping: false, visible: false });
-        track(() => setCursor({ x: cx, y: cy + 60, tapping: false, visible: true }), 400);
-        track(() => setCursor({ x: cx, y: cy, tapping: false, visible: true }), 800);
-        track(() => setCursor((c) => ({ ...c, tapping: true })), 1200);
-        track(() => {
-          setCursor((c) => ({ ...c, tapping: false }));
-          addUser(msg1);
-        }, 1500);
+        track(() => setCursor({ x: cx, y: cy + 60, tapping: false, visible: true }),  400);
+        track(() => setCursor({ x: cx, y: cy,      tapping: false, visible: true }),  800);
+        track(() => setCursor((c) => ({ ...c, tapping: true  })), 1200);
+        track(() => { setCursor((c) => ({ ...c, tapping: false })); addUser(msg1); }, 1500);
       } else {
         track(() => addUser(msg1), 900);
       }
     });
 
-    track(() => addBot(msg1), 2900);
+    track(() => addBot(msg1),  2900);
     track(() => addUser(msg2), 4600);
-    track(() => addBot(msg2), 6000);
+    track(() => addBot(msg2),  6000);
     track(() => addUser(msg3), 7700);
-    track(() => addBot(msg3), 9100);
+    track(() => addBot(msg3),  9100);
 
-    // 대화종료 버튼으로 커서 이동 (hover만, 화면 전환 없음)
     track(() => {
       requestAnimationFrame(() => {
         if (cancelled) return;
-        const btn = endBtnRef.current;
+        const btn   = endBtnRef.current;
         const frame = frameRef.current;
         if (btn && frame) {
           const br = btn.getBoundingClientRect();
           const fr = frame.getBoundingClientRect();
-          setCursor({
-            x: br.left - fr.left + br.width / 2,
-            y: br.top - fr.top + br.height / 2,
-            tapping: false,
-            visible: true,
-          });
+          setCursor({ x: br.left - fr.left + br.width / 2, y: br.top - fr.top + br.height / 2, tapping: false, visible: true });
         }
       });
     }, 10400);
-    track(() => setCursor((c) => ({ ...c, tapping: true })), 11100);
-    track(() => setCursor((c) => ({ ...c, tapping: false, visible: false })), 11400); // 멈춤
+    track(() => setCursor((c) => ({ ...c, tapping: true  })), 11100);
+    track(() => setCursor((c) => ({ ...c, tapping: false, visible: false })), 11400);
 
-    return () => {
-      cancelled = true;
-      cancelAnimationFrame(raf);
-      timers.forEach(clearTimeout);
-    };
+    return () => { cancelled = true; cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demo1]);
 
-  // ── demo=2 (주요기능03): 정적 완료 화면 → 대화종료 클릭 → 분석 이동 ──
+  // ── demo=2: 완료 화면 → 분석 이동 ────────────────────────────────────────
   useEffect(() => {
     if (!demo2) return;
     let cancelled = false;
     const timers: ReturnType<typeof setTimeout>[] = [];
     const track = (fn: () => void, delay: number) => {
-      const t = setTimeout(() => {
-        if (!cancelled) fn();
-      }, delay);
+      const t = setTimeout(() => { if (!cancelled) fn(); }, delay);
       timers.push(t);
     };
-    // 1s: 커서 등장 (대화종료 버튼 위치 측정)
     track(() => {
       requestAnimationFrame(() => {
         if (cancelled) return;
-        const btn = endBtnRef.current;
+        const btn   = endBtnRef.current;
         const frame = frameRef.current;
         if (btn && frame) {
           const br = btn.getBoundingClientRect();
           const fr = frame.getBoundingClientRect();
-          setCursor({
-            x: br.left - fr.left + br.width / 2,
-            y: br.top - fr.top + br.height / 2,
-            tapping: false,
-            visible: true,
-          });
+          setCursor({ x: br.left - fr.left + br.width / 2, y: br.top - fr.top + br.height / 2, tapping: false, visible: true });
         }
       });
     }, 1000);
     track(() => setCursor((c) => ({ ...c, tapping: true })), 1700);
-    track(() => {
-      setCursor((c) => ({ ...c, tapping: false }));
-      navigate({ to: "/analysis", search: { day: 21 } });
-    }, 2000);
+    track(() => { setCursor((c) => ({ ...c, tapping: false })); navigate({ to: "/analysis", search: { day: 21 } }); }, 2000);
 
-    return () => {
-      cancelled = true;
-      timers.forEach(clearTimeout);
-    };
+    return () => { cancelled = true; timers.forEach(clearTimeout); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demo2]);
 
+  // ── 텍스트 전송 ──────────────────────────────────────────────────────────
   const send = (text: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
-    const userMsg: Msg = { id: crypto.randomUUID(), role: "user", text: trimmed };
-    setMessages((m) => [...m, userMsg]);
+    setMessages((m) => [...m, { id: crypto.randomUUID(), role: "user", text: trimmed }]);
     setShowChips(false);
     if (inputRef.current) inputRef.current.value = "";
-
-    // 타이핑 인디케이터: 길이에 따라 800~1800ms 정도 사고하는 척
     setIsTyping(true);
     const thinkMs = Math.min(1800, 700 + trimmed.length * 35);
     setTimeout(() => {
-      const replyText = pickReply(trimmed);
       setIsTyping(false);
-      setMessages((m) => [
-        ...m,
-        { id: crypto.randomUUID(), role: "bot", text: replyText, canEnd: true },
-      ]);
+      setMessages((m) => [...m, { id: crypto.randomUUID(), role: "bot", text: pickReply(trimmed), canEnd: true }]);
     }, thinkMs);
   };
 
-  const endConversation = () => {
-    navigate({ to: "/analysis", search: { day: undefined } });
+  // ── 사진 업로드 ──────────────────────────────────────────────────────────
+  const handlePhotoSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setMessages((m) => [...m, { id: crypto.randomUUID(), role: "user", text: "", imageUrl: url }]);
+    setShowChips(false);
+    setTimeout(() => {
+      setMessages((m) => [...m, {
+        id: crypto.randomUUID(), role: "bot",
+        text: "사진을 올려주셨네요 🖼️\n이 사진과 함께한 오늘 하루는 어떠셨나요?",
+        canEnd: true,
+      }]);
+    }, 800);
+    e.target.value = "";
   };
 
+  // ── 표정 분석 완료 ────────────────────────────────────────────────────────
+  const handleFaceAnalysisComplete = (
+    expressions: ExpressionMap,
+    dominant: FaceExpression | null,
+    confidence: number,
+  ) => {
+    setShowFaceAnalysis(false);
+
+    // videoStore에 결과 저장 (분석 페이지에서 읽음)
+    const aiMood = dominant ? exprToMood(dominant, confidence) : null;
+    setVideoRecord({
+      videoUrl:        "",
+      aiMood,
+      aiMoodLabel:     dominant ? (EXPR_KO[dominant] ?? "-") : "-",
+      aiConfidence:    confidence,
+      rawExpressions:  expressions as Record<string, number>,
+      userMood:        null,
+      userMoodLabel:   null,
+      transcript:      "",
+      emotionTimeline: [],
+    });
+
+    // 채팅에 결과 주입
+    const domKo = dominant ? (EXPR_KO[dominant] ?? dominant) : "알 수 없음";
+    const pct   = dominant ? Math.round((expressions[dominant] ?? 0) * 100) : 0;
+    setMessages((m) => [...m, {
+      id: crypto.randomUUID(), role: "bot",
+      text: `표정 분석이 완료됐어요! 😊\n${domKo}이 ${pct}%로 감지됐어요.\n오늘 그 표정에 담긴 이야기를 들려주실래요?`,
+      canEnd: true,
+    }]);
+    setShowChips(false);
+  };
+
+  const endConversation = () => navigate({ to: "/analysis", search: { day: undefined } });
+
+  // ── 렌더 ─────────────────────────────────────────────────────────────────
   return (
     <div className="app-shell">
       <div ref={frameRef} className="app-frame flex flex-col" style={{ position: "relative" }}>
         {(demo1 || demo2) && <DemoCursor {...cursor} />}
+
         {/* 헤더 */}
         <PageHeader
           title="오늘의 일기"
           className="bg-white border-b border-black/5"
-          left={
-            <Link to="/record" aria-label="뒤로" className="grid h-9 w-9 place-items-center rounded-full text-foreground/70 hover:text-foreground">
-              <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
-            </Link>
-          }
+          left={<BackButton onClick={() => navigate({ to: "/record" })} />}
         />
 
         {/* 대화 영역 */}
@@ -384,7 +401,7 @@ function ChatPage() {
           {/* 추천 칩 */}
           {showChips && (
             <div className="flex flex-wrap gap-2 mb-5 animate-in fade-in slide-in-from-top-1 duration-300">
-              {greeting.chips.map((c, chipIdx) => (
+              {greeting.chips.map((c: string, chipIdx: number) => (
                 <button
                   key={c}
                   ref={chipIdx === 1 ? chip1Ref : undefined}
@@ -401,17 +418,24 @@ function ChatPage() {
           {/* 메시지 */}
           <div className="flex flex-col gap-3">
             {(() => {
-              // 마지막 canEnd 봇 메시지 id만 찾아서 그 위에만 "대화 종료" 버튼 표시
-              const lastCanEndId = [...messages]
-                .reverse()
-                .find((m) => m.role === "bot" && m.canEnd)?.id;
+              const lastCanEndId = [...messages].reverse().find((m) => m.role === "bot" && m.canEnd)?.id;
               return messages.map((m) => (
                 <div key={m.id}>
                   {m.role === "user" ? (
                     <div className="flex justify-end">
-                      <div className="max-w-[78%] rounded-2xl rounded-tr-md bg-[var(--primary)] px-4 py-2.5 text-white text-[14px] leading-snug shadow-sm animate-in fade-in slide-in-from-bottom-1 duration-300">
-                        {m.text}
-                      </div>
+                      {/* 이미지 메시지 */}
+                      {m.imageUrl ? (
+                        <img
+                          src={m.imageUrl}
+                          alt="업로드한 사진"
+                          className="max-w-[200px] max-h-[200px] rounded-2xl rounded-tr-md object-cover shadow-sm animate-in fade-in slide-in-from-bottom-1 duration-300"
+                        />
+                      ) : (
+                        /* 텍스트 메시지 */
+                        <div className="max-w-[78%] rounded-2xl rounded-tr-md bg-[var(--primary)] px-4 py-2.5 text-white text-[14px] leading-snug shadow-sm animate-in fade-in slide-in-from-bottom-1 duration-300">
+                          {m.text}
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="flex flex-col items-start gap-2">
@@ -447,16 +471,20 @@ function ChatPage() {
           </div>
         </div>
 
-        {/* 입력 바 */}
+        {/* ── 입력 바 ── */}
         <div className="shrink-0 border-t border-black/5 bg-white px-3 pt-2 pb-[44px]">
           <div className="flex items-center gap-1">
+
+            {/* + 첨부 버튼 */}
             <button
               type="button"
-              aria-label="추가"
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-foreground/60 hover:bg-black/5"
+              aria-label="첨부"
+              onClick={() => setShowAttachSheet(true)}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-foreground/60 hover:bg-black/5 active:bg-black/8 transition"
             >
               <Plus className="h-5 w-5" />
             </button>
+
             <input
               ref={inputRef}
               onKeyDown={(e) => {
@@ -467,13 +495,15 @@ function ChatPage() {
               placeholder="질문을 입력해 보세요"
               className="min-w-0 flex-1 bg-transparent px-2 text-[14px] text-foreground placeholder:text-[#b8bac2] outline-none tracking-tight"
             />
+
             <button
               type="button"
               aria-label="음성 입력"
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-foreground/60 hover:bg-black/5"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-foreground/60 hover:bg-black/5 transition"
             >
               <Mic className="h-5 w-5" />
             </button>
+
             <button
               type="button"
               aria-label="보내기"
@@ -484,6 +514,49 @@ function ChatPage() {
             </button>
           </div>
         </div>
+
+        {/* 숨겨진 파일 입력 */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handlePhotoSelected}
+        />
+
+        {/* ── 첨부 바텀시트 ── */}
+        <BottomSheet
+          open={showAttachSheet}
+          onClose={() => setShowAttachSheet(false)}
+          title="어떻게 기록할까요?"
+        >
+          <SheetItem
+            icon={<ImageIcon />}
+            label="사진 업로드"
+            description="갤러리에서 사진을 선택하세요"
+            onClick={() => {
+              setShowAttachSheet(false);
+              fileInputRef.current?.click();
+            }}
+          />
+          <SheetItem
+            icon={<ScanFace />}
+            label="영상으로 분석"
+            description="카메라로 표정을 실시간 분석해요"
+            onClick={() => {
+              setShowAttachSheet(false);
+              setShowFaceAnalysis(true);
+            }}
+          />
+        </BottomSheet>
+
+        {/* ── 실시간 표정 분석 오버레이 ── */}
+        {showFaceAnalysis && (
+          <FaceAnalysisOverlay
+            onClose={() => setShowFaceAnalysis(false)}
+            onComplete={handleFaceAnalysisComplete}
+          />
+        )}
       </div>
     </div>
   );
