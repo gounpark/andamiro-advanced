@@ -45,9 +45,9 @@ export function BottomSheet({
         onClick={(e) => e.stopPropagation()}
       >
         {(title || subtitle) && (
-          <div className="mb-4 px-1">
+          <div className="mb-[14px] px-1">
             {title && (
-              <h3 className="font-bold text-[#111] text-[16px] tracking-tight truncate">
+              <h3 className="font-bold text-[#454545] text-[18px] tracking-[-0.5px] truncate">
                 {title}
               </h3>
             )}
@@ -85,27 +85,45 @@ export function SheetItem({
   onClick,
   disabled = false,
 }: SheetItemProps) {
-  const bg = danger ? "bg-red-50 active:bg-red-100" : "bg-[#f8f9fb] active:bg-[#f0f2f6]";
-  const iconBg = danger ? "bg-red-100" : "bg-[var(--primary)]/10";
+  const rich = !!description; // description 있을 때 → 큰 아이콘 스타일 (42px)
+
+  const bg        = danger ? "bg-[#fff8f9] active:bg-red-100" : "bg-[#f8f9fb] active:bg-[#f0f2f6]";
+  const iconBg    = danger ? "bg-[#ffe1e2]" : "bg-[#ecf3fe]";
   const iconColor = danger ? "text-red-400" : "text-[var(--primary)]";
-  const textColor = danger ? "text-red-400" : "text-[#222]";
+  const textColor = danger ? "text-[#ff5461]" : "text-[#454545]";
 
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`w-full flex items-center gap-3 rounded-2xl px-4 py-3.5 text-left transition active:scale-[0.99] disabled:opacity-40 ${bg}`}
+      className={`w-full flex items-center gap-[10px] rounded-[20px] px-[14px] py-[16px] text-left transition active:scale-[0.99] disabled:opacity-40 ${bg}`}
     >
-      <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${iconBg}`}>
-        <span className={`flex items-center justify-center [&>svg]:h-4 [&>svg]:w-4 ${iconColor}`}>
+      {/* 아이콘 컨테이너: description 있으면 42px, 없으면 30px */}
+      <div
+        className={`grid shrink-0 place-items-center rounded-full ${iconBg} ${
+          rich ? "size-[42px]" : "size-[30px]"
+        }`}
+      >
+        <span
+          className={`flex items-center justify-center ${iconColor} ${
+            rich ? "[&>svg]:h-[19px] [&>svg]:w-[19px]" : "[&>svg]:h-4 [&>svg]:w-4"
+          }`}
+        >
           {icon}
         </span>
       </div>
+
       <div className="flex-1 min-w-0">
-        <p className={`text-[15px] font-medium tracking-tight ${textColor}`}>{label}</p>
+        <p
+          className={`tracking-tight ${textColor} ${
+            rich ? "text-[16px] font-semibold" : "text-[14px] font-medium"
+          }`}
+        >
+          {label}
+        </p>
         {description && (
-          <p className={`text-[12px] mt-0.5 ${danger ? "text-red-300" : "text-[#999]"}`}>
+          <p className={`text-[14px] mt-[2px] ${danger ? "text-red-300" : "text-[#666]"}`}>
             {description}
           </p>
         )}
