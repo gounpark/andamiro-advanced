@@ -60,7 +60,7 @@ export function EmptyState({
       )}
 
       {description && (
-        <p className="mt-3 text-center text-[13px] text-[#8a8d96] tracking-tight leading-relaxed">
+        <p className="mt-3 text-center text-[14px] text-[#8a8d96] tracking-tight leading-relaxed">
           {description}
         </p>
       )}

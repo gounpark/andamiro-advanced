@@ -145,7 +145,7 @@ function ExchangeCreatePage() {
 
             {/* 이미지 첨부 */}
             <div>
-              <p className="text-[15px] font-bold text-[#222] tracking-tight mb-2">이미지</p>
+              <p className="text-[16px] font-bold text-[#222] tracking-tight mb-2">이미지</p>
               <div className="flex items-center gap-3">
                 {imageDataUrl && (
                   <div className="relative h-[98px] w-[98px] shrink-0 overflow-hidden rounded-[12px]">
@@ -169,7 +169,7 @@ function ExchangeCreatePage() {
                   className="flex h-[98px] w-[98px] shrink-0 flex-col items-center justify-center rounded-[12px] border border-dashed border-[#ddd] bg-[#fafafa] text-[#999] active:bg-[#f4f4f4] transition"
                 >
                   <Folder className="h-5 w-5" strokeWidth={1.7} />
-                  <span className="text-[15px] font-light leading-3 tracking-[-0.375px]">+</span>
+                  <span className="text-[16px] font-light leading-3 tracking-[-0.375px]">+</span>
                 </button>
               </div>
               <input
@@ -183,7 +183,7 @@ function ExchangeCreatePage() {
 
             {/* 제목 */}
             <label className="block">
-              <span className="text-[15px] font-bold text-[#222] tracking-tight mb-3 block">
+              <span className="text-[16px] font-bold text-[#222] tracking-tight mb-3 block">
                 제목
               </span>
               <input
@@ -196,7 +196,7 @@ function ExchangeCreatePage() {
 
             {/* 본문 */}
             <label className="block">
-              <span className="text-[15px] font-bold text-[#222] tracking-tight mb-2 block">
+              <span className="text-[16px] font-bold text-[#222] tracking-tight mb-2 block">
                 내용
               </span>
               <textarea
@@ -209,7 +209,7 @@ function ExchangeCreatePage() {
 
             {/* 비밀번호 */}
             <label className="block">
-              <span className="text-[15px] font-bold text-[#222] tracking-tight mb-2 block">
+              <span className="text-[16px] font-bold text-[#222] tracking-tight mb-2 block">
                 비밀번호
               </span>
               <input

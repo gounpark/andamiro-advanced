@@ -138,14 +138,14 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
               {FORTUNE_CHIPS.map((chip) => (
                 <span
                   key={chip}
-                  className="rounded-md bg-white/10 px-3 py-1.5 text-[13px] font-medium text-white/85 tracking-tight"
+                  className="rounded-md bg-white/10 px-3 py-1.5 text-[14px] font-medium text-white/85 tracking-tight"
                 >
                   {chip}
                 </span>
               ))}
             </div>
 
-            <p className="mt-6 whitespace-pre-line text-center text-[15px] leading-[1.7] text-white tracking-tight">
+            <p className="mt-6 whitespace-pre-line text-center text-[16px] leading-[1.7] text-white tracking-tight">
               {FORTUNE_TEXT}
             </p>
           </div>
@@ -155,7 +155,7 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
             <button
               type="button"
               onClick={goBack}
-              className="w-full rounded-2xl bg-white py-4 text-[15px] font-semibold text-foreground tracking-tight shadow-[0_8px_24px_rgba(0,0,0,0.3)] active:scale-[0.99] transition"
+              className="w-full rounded-2xl bg-white py-4 text-[16px] font-semibold text-foreground tracking-tight shadow-[0_8px_24px_rgba(0,0,0,0.3)] active:scale-[0.99] transition"
             >
               확인
             </button>
@@ -418,7 +418,7 @@ function FortunePageLegacy() {
                 className="w-full h-auto select-none drop-shadow-[0_12px_24px_rgba(0,0,0,0.12)]"
                 draggable={false}
               />
-              <p className="absolute inset-0 flex items-center justify-center px-10 text-center whitespace-pre-line text-[15px] leading-[1.75] text-foreground tracking-tight">
+              <p className="absolute inset-0 flex items-center justify-center px-10 text-center whitespace-pre-line text-[16px] leading-[1.75] text-foreground tracking-tight">
                 {FORTUNE_TEXT}
               </p>
             </div>

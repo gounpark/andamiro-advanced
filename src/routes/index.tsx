@@ -82,7 +82,7 @@ function Clover({ className }: { className?: string }) {
   );
 }
 
-type DayState = "active" | "today" | "empty" | "out";
+type DayState = "active" | "today" | "empty" | "future" | "out";
 const WEEK_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 
 // ── 데모 모드 전용 하드코딩 데이터 ──────────────────────────────────────────
@@ -142,6 +142,7 @@ function buildCalendar(
     let state: DayState = "empty";
     if (d === todayDay) state = "today";
     else if (activeDays.has(d)) state = "active";
+    else if (todayDay !== null && d > todayDay) state = "future";
     cells.push({ day: d, state });
   }
   while (cells.length % 7 !== 0) cells.push({ day: 0, state: "out" });
@@ -177,6 +178,13 @@ function DayCell({
   onClick?: () => void;
 }) {
   if (state === "out") return <div className="h-[38px] w-[38px]" />;
+  if (state === "future") {
+    return (
+      <div className="h-[38px] w-[38px] flex items-center justify-center">
+        <span className="text-[12px] font-medium text-[#d0d0d8]">{day}</span>
+      </div>
+    );
+  }
   const labelColor = state === "empty" ? "text-[#9395a1]" : "text-white";
   const cloverSrc =
     state === "active" ? cloverActiveSvg : state === "today" ? cloverSpecialSvg : cloverEmptySvg;
@@ -421,9 +429,9 @@ function Index() {
 
   return (
     <div className="app-shell">
-      <div ref={frameRef} className="app-frame" style={{ position: "relative" }}>
+      <div ref={frameRef} className="app-frame flex flex-col" style={{ position: "relative" }}>
         {demo && <DemoCursor {...cursor} />}
-        <div className="absolute inset-0 overflow-y-auto pb-[126px] bg-white">
+        <div className="flex-1 overflow-y-auto scrollbar-hide bg-white">
           {/* 상단 그라디언트 헤더 */}
           <div className="relative overflow-hidden" style={{ background: "var(--gradient-sky)" }}>
             <img
@@ -529,8 +537,8 @@ function Index() {
                   <DayCell
                     day={cell.day}
                     state={cell.state}
-                    selected={cell.state !== "out" && selectedDay === cell.day}
-                    onClick={() => setSelectedDay(cell.day)}
+                    selected={cell.state !== "out" && cell.state !== "future" && selectedDay === cell.day}
+                    onClick={cell.state !== "future" ? () => setSelectedDay(cell.day) : undefined}
                   />
                 </div>
               ))}
@@ -541,7 +549,7 @@ function Index() {
           {selectedDay !== null && (
             <section className="relative z-10 border-t border-[#f0f0f0] bg-white px-6 pt-5 pb-6">
               <div className="flex items-baseline gap-2">
-                <h3 className="font-semibold text-foreground text-[15px] tracking-tight">
+                <h3 className="font-semibold text-foreground text-[16px] tracking-tight">
                   {dispMonth}월 {selectedDay}일 {selectedWeekday}요일
                 </h3>
                 <span className="text-[12px] text-[#999]">
@@ -582,7 +590,7 @@ function Index() {
 function DemoEmptyEntry() {
   return (
     <div className="rounded-xl bg-[#f7f7f9] px-4 py-5 text-center">
-      <p className="text-[13px] text-[#888]">아직 작성한 일기가 없어요.</p>
+      <p className="text-[14px] text-[#888]">아직 작성한 일기가 없어요.</p>
       <button
         type="button"
         className="mt-3 inline-flex items-center gap-1 font-semibold text-foreground text-[14px] tracking-tight"
@@ -637,7 +645,7 @@ function DemoEntryList({ entries, day }: { entries: DemoEntry[]; day: number }) 
 function EmptyEntry() {
   return (
     <div className="rounded-xl bg-[#f7f7f9] px-4 py-5 text-center">
-      <p className="text-[13px] text-[#888]">아직 작성한 일기가 없어요.</p>
+      <p className="text-[14px] text-[#888]">아직 작성한 일기가 없어요.</p>
       <Link
         to="/record"
         className="mt-3 inline-flex items-center gap-1 font-semibold text-[var(--primary)] text-[14px] tracking-tight"

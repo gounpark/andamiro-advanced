@@ -132,7 +132,7 @@ function AdviceWithData() {
           }
         />
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide pb-32 bg-white">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide bg-white">
           {/* 포춘쿠키 알림 배너 */}
           <div style={fadeIn(1)}>
             <Link
@@ -217,7 +217,7 @@ function AdviceWithData() {
                   오늘은 이렇게 보내보세요!
                 </h3>
               </div>
-              <p className="mt-4 text-[13px] leading-[1.75] text-foreground/85 tracking-tight">
+              <p className="mt-4 text-[14px] leading-[1.75] text-foreground/85 tracking-tight">
                 평온한 마음으로 하루를 차분하게 보내신 점이 정말 좋습니다. 애정 운이 82점으로 높은
                 만큼, 소중한 사람들과의 작은 순간들을 더 의식적으로 챙겨보세요. 습한 날씨 속에서도
                 당신의 따뜻한 에너지가 주변을 밝혀주고 있으니, 내일도 그 평온함을 잃지 않으시길
@@ -254,7 +254,7 @@ function ChatBubble({
   const tagBg = tone === "green" ? "bg-[#7AC47D] text-white" : "";
   return (
     <div className="rounded-xl bg-[#eef7f0] px-4 py-3">
-      <span className={`inline-block rounded-md px-2 py-0.5 text-[11px] font-semibold ${tagBg}`}>
+      <span className={`inline-block rounded-md px-2 py-0.5 text-[12px] font-semibold ${tagBg}`}>
         {tag}
       </span>
       <p className="mt-2 text-[12.5px] leading-[1.65] text-foreground/80 tracking-tight">

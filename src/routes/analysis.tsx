@@ -590,7 +590,7 @@ function AnalysisPage() {
           {/* 점수 카드 */}
           <section className="bg-white px-5 pt-8 pb-10">
             <div style={fadeIn(1)}>
-              <p className="text-[13px] text-[#9a9aa3] tracking-tight">데일리 채팅 분석</p>
+              <p className="text-[14px] text-[#9a9aa3] tracking-tight">데일리 채팅 분석</p>
               <h2 className="mt-1.5 font-bold text-foreground text-[20px] tracking-tight">
                 오늘의 감정 점수
               </h2>
@@ -655,10 +655,10 @@ function AnalysisPage() {
                     {t.num}
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground text-[15px] tracking-tight">
+                    <p className="font-semibold text-foreground text-[16px] tracking-tight">
                       {t.title}
                     </p>
-                    <p className="mt-0.5 text-[13px] text-foreground/65 tracking-tight">{t.body}</p>
+                    <p className="mt-0.5 text-[14px] text-foreground/65 tracking-tight">{t.body}</p>
                   </div>
                 </li>
               ))}
@@ -670,7 +670,7 @@ function AnalysisPage() {
             <Link
               to="/advice"
               search={{ empty: false }}
-              className="flex w-full items-center justify-center bg-white py-3.5 font-semibold text-[var(--primary)] text-[15px] tracking-tight border border-[var(--primary)]/20 active:scale-[0.99] transition rounded-2xl shadow-none"
+              className="flex w-full items-center justify-center bg-white py-3.5 font-semibold text-[var(--primary)] text-[16px] tracking-tight border border-[var(--primary)]/20 active:scale-[0.99] transition rounded-2xl shadow-none"
             >
               조언 바로가기
             </Link>
@@ -691,7 +691,7 @@ function AnalysisPage() {
                 }
                 navigate({ to: "/exchange/create", search: { invite: undefined } });
               }}
-              className="flex w-full items-center justify-center gap-2 bg-white py-3.5 font-semibold text-[var(--primary)] text-[15px] tracking-tight border border-[var(--primary)]/20 active:scale-[0.99] transition rounded-2xl shadow-none"
+              className="flex w-full items-center justify-center gap-2 bg-white py-3.5 font-semibold text-[var(--primary)] text-[16px] tracking-tight border border-[var(--primary)]/20 active:scale-[0.99] transition rounded-2xl shadow-none"
             >
               <BookOpen className="h-4 w-4" />
               교환일기로 만들기
@@ -699,7 +699,7 @@ function AnalysisPage() {
             <Link
               to="/"
               search={{} as any}
-              className="flex w-full items-center justify-center rounded-2xl bg-[var(--primary)] py-3.5 font-semibold text-white text-[15px] tracking-tight shadow-md active:scale-[0.99] transition"
+              className="flex w-full items-center justify-center rounded-2xl bg-[var(--primary)] py-3.5 font-semibold text-white text-[16px] tracking-tight shadow-md active:scale-[0.99] transition"
             >
               완료
             </Link>
@@ -754,7 +754,7 @@ function ScoreGauge({ score, label }: { score: number; label: string }) {
 
       {/* 중앙 라벨 */}
       <div className="absolute inset-x-0 flex flex-col items-center" style={{ top: 44 }}>
-        <span className="text-[13px] font-semibold text-foreground/80 tracking-tight">{label}</span>
+        <span className="text-[14px] font-semibold text-foreground/80 tracking-tight">{label}</span>
         <div className="mt-2 font-extrabold text-foreground text-[38px] leading-none tracking-tight">
           {score}
         </div>
@@ -775,7 +775,7 @@ function MetricBar({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex flex-col items-start">
       <span className="text-[12px] text-foreground/70 tracking-tight">{label}</span>
-      <span className="mt-1 text-[11px] font-semibold text-foreground tracking-tight">
+      <span className="mt-1 text-[12px] font-semibold text-foreground tracking-tight">
         {value}
         <span className="ml-0.5 text-[10px] font-normal text-[#9a9aa3]">/100점</span>
       </span>
@@ -918,7 +918,7 @@ function generateQuestions(stats: EmotionStats | null, timeline: EmotionSnapshot
 function EmotionGraph({ timeline }: { timeline: EmotionSnapshot[] }) {
   if (timeline.length < 2)
     return (
-      <div className="flex items-center justify-center h-[100px] text-[13px] text-[#bbb]">
+      <div className="flex items-center justify-center h-[100px] text-[14px] text-[#bbb]">
         데이터가 충분하지 않아요
       </div>
     );
@@ -1110,7 +1110,7 @@ function EmotionReportPage({
                 ) : (
                   <div className="rounded-2xl bg-[#f3f4f8] aspect-video flex flex-col items-center justify-center gap-2">
                     <span className="text-3xl">🎙</span>
-                    <p className="text-[13px] text-[#999] tracking-tight">
+                    <p className="text-[14px] text-[#999] tracking-tight">
                       음성으로만 기록되었어요
                     </p>
                   </div>
@@ -1202,7 +1202,7 @@ function EmotionReportPage({
                           className="h-2 w-2 rounded-full shrink-0"
                           style={{ background: EMOTION_COLORS[e] }}
                         />
-                        <span className="text-[11px] text-[#666]">{EMOTION_KO[e]}</span>
+                        <span className="text-[12px] text-[#666]">{EMOTION_KO[e]}</span>
                       </div>
                     ))}
                   </div>
@@ -1210,7 +1210,7 @@ function EmotionReportPage({
                 </section>
               ) : (
                 <div className="mx-4 mt-5 rounded-2xl bg-white p-6 shadow-sm flex items-center justify-center">
-                  <p className="text-[13px] text-[#bbb]">감정 데이터가 충분하지 않아요</p>
+                  <p className="text-[14px] text-[#bbb]">감정 데이터가 충분하지 않아요</p>
                 </div>
               )}
 
@@ -1256,7 +1256,7 @@ function EmotionReportPage({
                         key={i}
                         className="rounded-xl bg-[#f7f8fc] border border-[#eaecf4] px-4 py-3.5"
                       >
-                        <p className="text-[13px] leading-relaxed text-foreground/85 tracking-tight whitespace-pre-line">
+                        <p className="text-[14px] leading-relaxed text-foreground/85 tracking-tight whitespace-pre-line">
                           {q}
                         </p>
                       </div>
@@ -1276,7 +1276,7 @@ function EmotionReportPage({
 
               {questions.length === 0 && !record.transcript && (
                 <div className="mx-4 mt-5 rounded-2xl bg-white p-6 shadow-sm flex items-center justify-center">
-                  <p className="text-[13px] text-[#bbb]">분석 데이터가 없어요</p>
+                  <p className="text-[14px] text-[#bbb]">분석 데이터가 없어요</p>
                 </div>
               )}
             </div>
@@ -1290,7 +1290,7 @@ function EmotionReportPage({
                 <h2 className="font-bold text-foreground text-[20px] tracking-tight mb-1">
                   지금 기분이 어때요?
                 </h2>
-                <p className="text-[13px] text-[#9a9aa3] tracking-tight mb-6">
+                <p className="text-[14px] text-[#9a9aa3] tracking-tight mb-6">
                   AI 분석은 참고용이에요. 내가 느낀 감정을 직접 골라주세요.
                 </p>
                 <div className="grid grid-cols-5 gap-2">
@@ -1328,7 +1328,7 @@ function EmotionReportPage({
             <button
               type="button"
               onClick={goPrev}
-              className="flex-1 flex items-center justify-center rounded-2xl py-3.5 font-semibold text-[15px] tracking-tight border border-[#e0e0e8] text-foreground/70 active:scale-[0.99] transition bg-white"
+              className="flex-1 flex items-center justify-center rounded-2xl py-3.5 font-semibold text-[16px] tracking-tight border border-[#e0e0e8] text-foreground/70 active:scale-[0.99] transition bg-white"
             >
               이전
             </button>
@@ -1337,7 +1337,7 @@ function EmotionReportPage({
             <button
               type="button"
               onClick={goNext}
-              className="flex-1 flex items-center justify-center rounded-2xl bg-[var(--primary)] py-3.5 font-semibold text-white text-[15px] tracking-tight shadow-md active:scale-[0.99] transition"
+              className="flex-1 flex items-center justify-center rounded-2xl bg-[var(--primary)] py-3.5 font-semibold text-white text-[16px] tracking-tight shadow-md active:scale-[0.99] transition"
             >
               다음
             </button>
@@ -1347,7 +1347,7 @@ function EmotionReportPage({
               onClick={handleSave}
               disabled={!selectedMood || saved}
               style={{ touchAction: "manipulation" }}
-              className={`flex-1 flex items-center justify-center rounded-2xl py-3.5 font-bold text-[15px] tracking-tight transition-all shadow-md ${
+              className={`flex-1 flex items-center justify-center rounded-2xl py-3.5 font-bold text-[16px] tracking-tight transition-all shadow-md ${
                 selectedMood && !saved
                   ? "bg-[var(--primary)] text-white active:scale-[0.99]"
                   : "bg-[#e8e8ec] text-[#b8bac2] cursor-not-allowed"
@@ -1467,7 +1467,7 @@ function MoodSelectionStep({
           {/* 타이틀 */}
           <section className="px-6 pt-3">
             <p
-              className="text-[15px] tracking-tight transition-colors duration-300"
+              className="text-[16px] tracking-tight transition-colors duration-300"
               style={{ color: selectedMood === "worst" ? "#ffffff" : "#8a8d96" }}
             >
               AI 분석은 참고용이에요
@@ -1487,7 +1487,7 @@ function MoodSelectionStep({
             {/* 말풍선 */}
             <div className="rounded-full bg-white/95 px-5 py-2 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
               {current ? (
-                <span className="font-semibold text-foreground text-[15px] tracking-tight">
+                <span className="font-semibold text-foreground text-[16px] tracking-tight">
                   {current.label}
                 </span>
               ) : (
@@ -1567,7 +1567,7 @@ function MoodSelectionStep({
               disabled={!hasSelection || saved}
               onClick={onSave}
               style={{ touchAction: "manipulation" }}
-              className={`mt-3 flex w-full items-center justify-center rounded-2xl py-3.5 font-semibold text-[15px] tracking-tight transition-all ${
+              className={`mt-3 flex w-full items-center justify-center rounded-2xl py-3.5 font-semibold text-[16px] tracking-tight transition-all ${
                 hasSelection && !saved
                   ? "bg-[var(--primary)] text-white shadow-md active:scale-[0.99]"
                   : "bg-[#e8e8ec] text-[#a8a8b0] cursor-not-allowed"
@@ -1634,7 +1634,7 @@ function VideoPlayer({ src }: { src: string }) {
         style={{ background: "linear-gradient(transparent, rgba(0,0,0,0.55))" }}
       >
         <div className="flex items-center gap-2">
-          <span className="text-white text-[11px] tabular-nums">
+          <span className="text-white text-[12px] tabular-nums">
             {ref.current ? formatSec(Math.floor(ref.current.currentTime)) : "0:00"}
           </span>
           <div
@@ -1653,7 +1653,7 @@ function VideoPlayer({ src }: { src: string }) {
               style={{ width: `${progress * 100}%` }}
             />
           </div>
-          <span className="text-white text-[11px] tabular-nums">
+          <span className="text-white text-[12px] tabular-nums">
             {formatSec(Math.floor(duration))}
           </span>
         </div>
@@ -1667,8 +1667,8 @@ function SummaryRow({ icon, label, value }: { icon: string; label: string; value
     <div className="flex items-start gap-3">
       <span className="text-[18px] leading-none mt-0.5">{icon}</span>
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] text-[#9a9aa3] tracking-tight">{label}</p>
-        <p className="text-[13px] font-semibold text-foreground tracking-tight mt-0.5">{value}</p>
+        <p className="text-[12px] text-[#9a9aa3] tracking-tight">{label}</p>
+        <p className="text-[14px] font-semibold text-foreground tracking-tight mt-0.5">{value}</p>
       </div>
     </div>
   );

@@ -359,7 +359,7 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
   return (
     <div className="app-shell">
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
-        <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide pb-32">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide">
           {/* 상단 블루 헤더 */}
           <div className="relative bg-[#3d78f3] text-white px-6 pb-8" style={fadeIn(1)}>
             <PageHeader
@@ -418,7 +418,7 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
             </h3>
             {!demo && entries.length < 2 ? (
               <div className="mt-4 rounded-xl bg-[#f7f8f9] px-4 py-6 text-center">
-                <p className="text-[13px] text-[#aaa]">
+                <p className="text-[14px] text-[#aaa]">
                   기록이 2개 이상 있으면 감정 순위가 보여요!
                 </p>
               </div>
@@ -488,7 +488,7 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
                 className="w-[72px] h-[72px] object-contain shrink-0"
               />
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold text-[#C49A3A] tracking-tight uppercase">
+                <p className="text-[12px] font-semibold text-[#C49A3A] tracking-tight uppercase">
                   오늘의 운세
                 </p>
                 <h3 className="mt-0.5 font-bold text-foreground text-[14px] tracking-tight leading-tight">

@@ -4,7 +4,6 @@ import { Plus, Mic, ArrowUp, ImageIcon, ScanFace } from "lucide-react";
 import { PageHeader, BackButton, BottomSheet, SheetItem, FaceAnalysisOverlay } from "@/components";
 import type { ExpressionMap, FaceExpression } from "@/components";
 import { DemoCursor } from "@/components/DemoCursor";
-import { setVideoRecord } from "@/lib/videoStore";
 
 type MoodKey = "best" | "good" | "okay" | "bad" | "worst";
 
@@ -155,23 +154,6 @@ function pickReply(text: string): string {
   return GENERIC_REPLIES[Math.floor(Math.random() * GENERIC_REPLIES.length)];
 }
 
-// ── 표정 → 기분 매핑 ───────────────────────────────────────────────────────
-const EXPR_KO: Record<string, string> = {
-  happy: "행복", neutral: "평온", sad: "슬픔",
-  angry: "긴장", fearful: "두려움", disgusted: "불쾌", surprised: "놀람",
-};
-
-function exprToMood(
-  dominant: FaceExpression,
-  confidence: number,
-): "best" | "good" | "okay" | "bad" | "worst" | null {
-  if (dominant === "happy")    return confidence > 0.65 ? "best" : "good";
-  if (dominant === "neutral")  return "okay";
-  if (dominant === "sad")      return "bad";
-  if (dominant === "angry" || dominant === "fearful" || dominant === "disgusted") return "worst";
-  if (dominant === "surprised") return "okay";
-  return "okay";
-}
 
 // ── 메인 컴포넌트 ──────────────────────────────────────────────────────────
 function ChatPage() {
@@ -341,28 +323,14 @@ function ChatPage() {
   };
 
   // ── 표정 분석 완료 ────────────────────────────────────────────────────────
+  // videoStore에 저장하지 않음 → EmotionReportPage 4단계 플로우 스킵
+  // 대화 종료와 동일하게 바로 결과 화면으로 이동
   const handleFaceAnalysisComplete = (
-    expressions: ExpressionMap,
-    dominant: FaceExpression | null,
-    confidence: number,
+    _expressions: ExpressionMap,
+    _dominant: FaceExpression | null,
+    _confidence: number,
   ) => {
     setShowFaceAnalysis(false);
-
-    // videoStore에 결과 저장 (분석 페이지에서 읽음)
-    const aiMood = dominant ? exprToMood(dominant, confidence) : null;
-    setVideoRecord({
-      videoUrl:        "",
-      aiMood,
-      aiMoodLabel:     dominant ? (EXPR_KO[dominant] ?? "-") : "-",
-      aiConfidence:    confidence,
-      rawExpressions:  expressions as Record<string, number>,
-      userMood:        null,
-      userMoodLabel:   null,
-      transcript:      "",
-      emotionTimeline: [],
-    });
-
-    // 분석 완료 → 바로 결과 화면으로 이동
     navigate({ to: "/analysis", search: { day: undefined } });
   };
 
@@ -388,7 +356,7 @@ function ChatPage() {
             <h2 className="font-bold text-foreground text-[20px] leading-[1.35] tracking-tight whitespace-pre-line">
               {greeting.title}
             </h2>
-            <p className="mt-2 text-[13px] text-[#8a8d96] tracking-tight">{greeting.sub}</p>
+            <p className="mt-2 text-[14px] text-[#8a8d96] tracking-tight">{greeting.sub}</p>
           </div>
 
           {/* 추천 칩 */}
@@ -400,7 +368,7 @@ function ChatPage() {
                   ref={chipIdx === 1 ? chip1Ref : undefined}
                   type="button"
                   onClick={() => send(c)}
-                  className="rounded-full border border-[var(--primary)]/40 bg-white px-3.5 py-2 text-[13px] font-medium text-[var(--primary)] hover:bg-[var(--primary)]/5 active:scale-[0.98] transition"
+                  className="rounded-full border border-[var(--primary)]/40 bg-white px-3.5 py-2 text-[14px] font-medium text-[var(--primary)] hover:bg-[var(--primary)]/5 active:scale-[0.98] transition"
                 >
                   {c}
                 </button>

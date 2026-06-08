@@ -153,7 +153,7 @@ function MyPage() {
             <img src={bgShapeLargeSvg} alt="" aria-hidden className="pointer-events-none absolute -top-2 -right-4 w-[260px] h-[275px] z-0" />
             <img src={bgShapeSmallSvg} alt="" aria-hidden className="pointer-events-none absolute top-[40px] -left-8 w-[142px] h-[196px] z-0" />
             <PageHeader className="bg-transparent" title="마이" titleColor="text-white" />
-            <p className="relative z-10 mt-3 px-6 text-white/85 text-[13px] tracking-tight">
+            <p className="relative z-10 mt-3 px-6 text-white/85 text-[14px] tracking-tight">
               {user ? "안녕하세요," : "로그인하고 더 많은 기능을 사용해보세요"}
             </p>
             <p className="relative z-10 mt-1 px-6 font-bold text-white text-[20px] leading-tight tracking-tight">
@@ -176,7 +176,7 @@ function MyPage() {
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="font-semibold text-foreground text-[15px] tracking-tight truncate">
+                <p className="font-semibold text-foreground text-[16px] tracking-tight truncate">
                   {user ? displayName : "로그인이 필요해요"}
                 </p>
                 <p className="text-[12px] text-[#999] truncate">
@@ -286,12 +286,12 @@ function MyPage() {
                 className="w-full rounded-xl border border-[#e8eaed] bg-[#f8f9fb] px-4 py-3.5 text-[16px] text-foreground tracking-tight focus:outline-none focus:border-[var(--primary)] mb-1"
                 autoFocus
               />
-              <p className="text-[11px] text-[#bbb] text-right mb-4 tracking-tight">{nameInput.length}/20</p>
+              <p className="text-[12px] text-[#bbb] text-right mb-4 tracking-tight">{nameInput.length}/20</p>
               <button
                 type="button"
                 onClick={handleNameSave}
                 disabled={nameSaving || !nameInput.trim()}
-                className="w-full rounded-2xl py-3.5 font-bold text-white text-[15px] tracking-tight disabled:opacity-50"
+                className="w-full rounded-2xl py-3.5 font-bold text-white text-[16px] tracking-tight disabled:opacity-50"
                 style={{ background: "var(--primary)" }}
               >
                 {nameSaving ? "저장 중..." : "저장"}
@@ -385,7 +385,7 @@ function Stat({ value, label, divided }: { value: string; label: string; divided
   return (
     <div className={`flex flex-col items-center justify-center py-2 ${divided ? "border-l border-[#eeeeee]" : ""}`}>
       <span className="text-[22px] font-semibold text-foreground tracking-tight leading-none">{value}</span>
-      <span className="mt-1.5 text-[11px] text-[#999] tracking-tight">{label}</span>
+      <span className="mt-1.5 text-[12px] text-[#999] tracking-tight">{label}</span>
     </div>
   );
 }

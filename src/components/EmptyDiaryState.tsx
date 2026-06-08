@@ -45,7 +45,7 @@ export function EmptyDiaryState({ title, activeTab }: Props) {
             <br />
             기다리고 있어요!
           </h2>
-          <p className="mt-3 text-center text-[13px] text-[#8a8d96] tracking-tight">
+          <p className="mt-3 text-center text-[14px] text-[#8a8d96] tracking-tight">
             작은 기록이 모여 당신의 마음 지도가 완성돼요.
           </p>
           <Link

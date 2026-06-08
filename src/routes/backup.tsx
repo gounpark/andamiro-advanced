@@ -150,7 +150,7 @@ function BackupPage() {
 
                   {/* 텍스트 */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-[15px] font-semibold text-foreground tracking-tight truncate">
+                    <p className="text-[16px] font-semibold text-foreground tracking-tight truncate">
                       {diary.title}
                     </p>
                     <div className="flex items-center gap-2 mt-1 text-[12px] text-[#999]">

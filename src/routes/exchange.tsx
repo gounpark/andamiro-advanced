@@ -69,14 +69,14 @@ function LoginPrompt() {
       <p className="text-[18px] font-bold text-foreground tracking-tight mb-2 text-center">
         교환일기는 로그인이 필요해요
       </p>
-      <p className="text-[13px] text-[#aaa] tracking-tight mb-8 text-center leading-relaxed">
+      <p className="text-[14px] text-[#aaa] tracking-tight mb-8 text-center leading-relaxed">
         로그인하면 누가 일기를 읽었는지,<br />
         누가 댓글을 달았는지 확인할 수 있어요.
       </p>
       <Link
         to="/login"
         search={{ redirect: "/exchange" }}
-        className="w-full flex items-center justify-center gap-2 rounded-2xl py-4 font-bold text-white text-[15px] tracking-tight active:scale-[0.99] transition"
+        className="w-full flex items-center justify-center gap-2 rounded-2xl py-4 font-bold text-white text-[16px] tracking-tight active:scale-[0.99] transition"
         style={{ background: "var(--primary)" }}
       >
         Google로 로그인하기
@@ -241,7 +241,7 @@ function ExchangeListPage() {
           <button
             type="button"
             onClick={handleJoinConfirm}
-            className="mt-2 w-full rounded-2xl py-3.5 font-bold text-white text-[15px] tracking-tight active:scale-[0.99] transition"
+            className="mt-2 w-full rounded-2xl py-3.5 font-bold text-white text-[16px] tracking-tight active:scale-[0.99] transition"
             style={{ background: "var(--primary)" }}
           >
             열람하기
@@ -301,7 +301,7 @@ function EmptyMy() {
       <p className="text-[18px] font-bold text-foreground tracking-tight mb-2">
         아직 공유한 일기가 없어요
       </p>
-      <p className="text-[13px] text-[#aaa] tracking-tight leading-relaxed mb-8">
+      <p className="text-[14px] text-[#aaa] tracking-tight leading-relaxed mb-8">
         일기를 만들고 소중한 사람에게
         <br />
         초대 링크를 공유해 보세요.
@@ -319,7 +319,7 @@ function EmptyShared() {
       <p className="text-[18px] font-bold text-foreground tracking-tight mb-2">
         아직 공유받은 일기가 없어요
       </p>
-      <p className="text-[13px] text-[#aaa] tracking-tight leading-relaxed">
+      <p className="text-[14px] text-[#aaa] tracking-tight leading-relaxed">
         초대 링크를 받으면 여기에 표시돼요.
       </p>
     </div>
@@ -370,7 +370,7 @@ function DiaryCard({ diary, showAuthor, commentCount, onMenuOpen }: { diary: Exc
       )}
 
       <div className="min-w-0 flex-1">
-        <p className="max-w-[170px] truncate text-[15px] font-bold text-[#222] tracking-[-0.3px] leading-normal">
+        <p className="max-w-[170px] truncate text-[16px] font-bold text-[#222] tracking-[-0.3px] leading-normal">
           {diary.title}
         </p>
 

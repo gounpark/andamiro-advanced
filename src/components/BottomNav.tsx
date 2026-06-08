@@ -28,7 +28,7 @@ export function BottomNav({ active }: { active: BottomNavTab }) {
   return (
     <nav
       aria-label="하단 내비게이션"
-      className="absolute bottom-0 left-0 right-0 z-20 flex min-h-[96px] w-full items-center justify-around bg-white px-6 pt-4 pb-9 shadow-[0_-2px_8px_0_rgba(221,221,221,0.25)]"
+      className="shrink-0 z-20 flex min-h-[96px] w-full items-center justify-around bg-white px-6 pt-4 pb-9 shadow-[0_-2px_8px_0_rgba(221,221,221,0.25)]"
     >
       {TABS.map((tab) => {
         const isActive = active === tab.key;
@@ -46,7 +46,7 @@ export function BottomNav({ active }: { active: BottomNavTab }) {
               aria-hidden
               className="h-[26px] w-[26px]"
             />
-            <span className="text-[11px] font-medium tracking-tight">{tab.label}</span>
+            <span className="text-[12px] font-medium tracking-tight">{tab.label}</span>
           </Link>
         );
       })}

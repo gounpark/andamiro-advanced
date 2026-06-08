@@ -254,7 +254,7 @@ function RecordPage() {
           {/* 타이틀 */}
           <section className="px-6 pt-3">
             <p
-              className="text-[15px] tracking-tight transition-colors duration-300"
+              className="text-[16px] tracking-tight transition-colors duration-300"
               style={{ color: selected === "worst" ? "#ffffff" : "#8a8d96" }}
             >
               가장 가까운 감정을 골라주세요
@@ -272,7 +272,7 @@ function RecordPage() {
             {/* 말풍선 */}
             <div className="rounded-full bg-white/95 px-5 py-2 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
               {current ? (
-                <span className="font-semibold text-foreground text-[15px] tracking-tight">
+                <span className="font-semibold text-foreground text-[16px] tracking-tight">
                   {current.label}
                 </span>
               ) : (
@@ -358,7 +358,7 @@ function RecordPage() {
                 if (!selected) return;
                 navigate({ to: "/chat", search: { mood: selected } });
               }}
-              className={`mt-3 flex w-full items-center justify-center rounded-2xl py-3.5 font-semibold text-[15px] tracking-tight transition-all ${
+              className={`mt-3 flex w-full items-center justify-center rounded-2xl py-3.5 font-semibold text-[16px] tracking-tight transition-all ${
                 hasSelection
                   ? "bg-[var(--primary)] text-white shadow-md active:scale-[0.99]"
                   : "bg-[#e8e8ec] text-[#a8a8b0] cursor-not-allowed"

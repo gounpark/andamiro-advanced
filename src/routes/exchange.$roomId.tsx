@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
-import { MoreHorizontal, Trash2, Send, CornerDownRight, X, Lock, Copy, Check } from "lucide-react";
+import { MoreHorizontal, Trash2, ArrowUp, CornerDownRight, X, Lock, Copy, Check } from "lucide-react";
 import {
   getDiaryById,
   getComments,
@@ -41,6 +41,7 @@ function ExchangeDiaryPage() {
   const [copied, setCopied] = useState(false);
   const [replyTo, setReplyTo] = useState<ExchangeComment | null>(null);
   const [showReaders, setShowReaders] = useState(false);
+  const [commentText, setCommentText] = useState("");
   const commentInputRef = useRef<HTMLInputElement>(null);
 
   const pwInputRef = useRef<HTMLInputElement>(null);
@@ -121,11 +122,10 @@ function ExchangeDiaryPage() {
   };
 
   const handleSendComment = async () => {
-    const input = commentInputRef.current;
-    const comment = input?.value ?? "";
+    const comment = commentText;
     if (!comment.trim()) return;
     await createComment(diaryId, comment.trim(), replyTo?.id);
-    if (input) input.value = "";
+    setCommentText("");
     setReplyTo(null);
     await refreshComments();
   };
@@ -145,7 +145,7 @@ function ExchangeDiaryPage() {
             <p className="font-bold text-foreground text-[18px] tracking-tight mb-1 text-center">
               비밀번호를 입력해 주세요
             </p>
-            <p className="text-[13px] text-[#aaa] mb-6 text-center tracking-tight leading-relaxed">
+            <p className="text-[14px] text-[#aaa] mb-6 text-center tracking-tight leading-relaxed">
               <span className="font-semibold text-foreground">"{diary.title}"</span>을<br />
               읽으려면 비밀번호가 필요해요.
             </p>
@@ -169,7 +169,7 @@ function ExchangeDiaryPage() {
             )}
             <button
               type="button"
-              className="w-full mt-2 rounded-2xl py-3.5 font-bold text-white text-[15px] tracking-tight active:scale-[0.99] transition"
+              className="w-full mt-2 rounded-2xl py-3.5 font-bold text-white text-[16px] tracking-tight active:scale-[0.99] transition"
               style={{ background: "var(--primary)" }}
               onClick={handleAuthorize}
             >
@@ -226,22 +226,22 @@ function ExchangeDiaryPage() {
             <div className="px-6 pt-4 pb-5">
               <div className="mb-3 flex items-center gap-2">
                 <div
-                  className="grid h-8 w-8 place-items-center rounded-full text-white text-[13px] font-bold shrink-0"
+                  className="grid h-8 w-8 place-items-center rounded-full text-white text-[14px] font-bold shrink-0"
                   style={{ background: color }}
                 >
                   {diary.authorName.charAt(0)}
                 </div>
                 <div>
-                  <p className="text-[14px] font-semibold text-[#222] tracking-tight leading-tight">
+                  <p className="text-[14px] font-bold text-[#222] tracking-[-0.26px] leading-tight">
                     {diary.authorName}
                   </p>
-                  <p className="text-[12px] text-[#bbb] tracking-tight">
+                  <p className="text-[14px] text-[#666]">
                     {relativeTime(diary.createdAt)}
                   </p>
                 </div>
               </div>
 
-              <h1 className="mb-3 text-[20px] font-bold leading-[26px] tracking-tight text-[#111]">
+              <h1 className="mb-3 text-[20px] font-bold leading-[26px] tracking-[-0.5px] text-[#222]">
                 {diary.title}
               </h1>
 
@@ -259,7 +259,7 @@ function ExchangeDiaryPage() {
                 </div>
               )}
 
-              <p className="whitespace-pre-wrap text-[15px] leading-[25.5px] tracking-tight text-[#333]">
+              <p className="whitespace-pre-wrap text-[16px] leading-[25.5px] tracking-[-0.15px] text-[#333]">
                 {diary.body}
               </p>
 
@@ -287,7 +287,7 @@ function ExchangeDiaryPage() {
                       />
                     ))}
                   </div>
-                  <span className="text-[14px] text-[#999] tracking-tight">
+                  <span className="text-[14px] text-[#666] tracking-[-0.12px]">
                     {diary.viewerIds.length}명이 읽었어요
                   </span>
                 </button>
@@ -297,12 +297,12 @@ function ExchangeDiaryPage() {
 
           <div className="mx-6 border-t border-[#ececec]" />
 
-          <section className="flex flex-col gap-4 px-6 pt-4">
-            <p className="text-[13px] font-semibold text-[#888] tracking-tight">
+          <section className="flex flex-col gap-3 px-6 pt-3">
+            <p className="text-[14px] font-medium text-[#999]">
               댓글 {comments.length}
             </p>
             {rootComments.length === 0 && (
-              <p className="py-5 text-center text-[13px] tracking-tight text-[#bbb]">
+              <p className="py-5 text-center text-[14px] tracking-tight text-[#bbb]">
                 첫 댓글을 남겨보세요
               </p>
             )}
@@ -338,9 +338,13 @@ function ExchangeDiaryPage() {
           </section>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-[#f0f0f0]">
+        <div
+          className="absolute bottom-0 left-0 right-0 bg-white border-t border-[#eee] px-4 pt-5"
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)" }}
+        >
+          {/* 답글 대상 표시 */}
           {replyTo && (
-            <div className="flex items-center gap-2 px-4 py-2 bg-[#f4f6fa]">
+            <div className="flex items-center gap-2 mb-2 px-1">
               <CornerDownRight className="h-3.5 w-3.5 text-[var(--primary)] shrink-0" />
               <span className="text-[12px] text-[#666] flex-1 truncate tracking-tight">
                 {replyTo.authorName}에게 답글
@@ -350,28 +354,29 @@ function ExchangeDiaryPage() {
               </button>
             </div>
           )}
-          <div
-            className="flex items-center gap-2 px-4 pt-[11px]"
-            style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
-          >
+
+          {/* Figma: 단일 pill — input + 전송 버튼 내장 */}
+          <div className="flex h-[46px] items-center justify-between rounded-full bg-[#f5f6f8] pl-[14px] pr-[10px]">
             <input
               ref={commentInputRef}
               type="text"
               placeholder="댓글을 입력하세요..."
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
                 e.preventDefault();
                 handleSendComment();
               }}
-              className="h-[39px] flex-1 rounded-full bg-[#f4f6fa] px-4 text-[16px] text-foreground placeholder:text-[#bbb] outline-none"
+              className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-[#999] outline-none"
             />
             <button
               type="button"
               onClick={handleSendComment}
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-full transition disabled:opacity-30"
-              style={{ background: "var(--primary)" }}
+              className="grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full transition"
+              style={{ background: commentText.trim() ? "var(--primary)" : "#e0e0e0" }}
             >
-              <Send className="h-4 w-4 text-white" />
+              <ArrowUp className="h-[14px] w-[14px] text-white" strokeWidth={2.5} />
             </button>
           </div>
         </div>
@@ -497,7 +502,7 @@ function ReadersSheet({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 pt-4 pb-3 shrink-0">
-          <h3 className="text-[15px] font-bold tracking-tight text-[#222]">
+          <h3 className="text-[16px] font-bold tracking-tight text-[#222]">
             이 일기를 읽은 사람 ({diary.viewerIds.length})
           </h3>
           <button
@@ -516,7 +521,7 @@ function ReadersSheet({
             return (
               <div key={vid} className="flex items-center gap-3 py-2.5">
                 <ReaderAvatar id={vid} name={name} avatar={avatar} size={40} />
-                <span className="text-[15px] tracking-tight text-[#333]">{name}</span>
+                <span className="text-[16px] tracking-tight text-[#333]">{name}</span>
               </div>
             );
           })}
@@ -544,7 +549,7 @@ function InviteCopyPill({ diary }: { diary: ExchangeDiary }) {
     <button
       type="button"
       onClick={handleCopy}
-      className="flex h-9 items-center gap-1.5 rounded-full border border-[#e6e6e6] bg-white px-3.5 text-[13px] font-medium tracking-tight text-[var(--primary)] active:scale-[0.97] transition"
+      className="flex h-9 items-center gap-1.5 rounded-full border border-[#e6e6e6] bg-white px-3.5 text-[14px] font-medium tracking-tight text-[var(--primary)] active:scale-[0.97] transition"
     >
       {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
       {copied ? "복사됨" : "초대 링크 복사"}
@@ -566,10 +571,14 @@ function CommentItem({
   onReply?: () => void;
   onDelete: () => void;
 }) {
-  const avatarSize = isReply ? "h-6 w-6 text-[10px]" : "h-7 w-7 text-[12px]";
+  // Figma: root=28px rounded-[14px], reply=24px rounded-[12px]
+  const avatarCls = isReply
+    ? "h-6 w-6 text-[10px] rounded-[12px]"
+    : "h-7 w-7 text-[12px] rounded-[14px]";
+  const avatarBg = isReply ? "#b0b0b0" : "var(--primary)";
 
   return (
-    <div className="flex gap-2.5">
+    <div className="flex gap-[10px]">
       {comment.authorAvatar ? (
         <img
           src={comment.authorAvatar}
@@ -578,26 +587,31 @@ function CommentItem({
         />
       ) : (
         <div
-          className={`mt-0.5 grid shrink-0 place-items-center rounded-full font-bold text-white ${avatarSize}`}
-          style={{ background: isReply ? "#b0b0b0" : "var(--primary)" }}
+          className={`mt-0.5 grid shrink-0 place-items-center font-bold text-white ${avatarCls}`}
+          style={{ background: avatarBg }}
         >
           {comment.authorName.charAt(0)}
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5 mb-0.5">
-          <span className={`${isReply ? "text-[12px]" : "text-[13px]"} font-semibold text-[#222] tracking-tight`}>
+        {/* 작성자 이름 + 시간 — Figma: 16px bold #222, 14px regular #666 */}
+        <div className="flex items-center gap-[6px] py-[2px] mb-[2px]">
+          <span className="text-[16px] font-bold text-[#222] tracking-[-0.26px] whitespace-nowrap">
             {comment.authorName}
           </span>
-          <span className="text-[11px] text-[#bbb]">{relativeTime(comment.createdAt)}</span>
+          <span className="text-[14px] text-[#666]">{relativeTime(comment.createdAt)}</span>
         </div>
-        <p className="text-[13px] text-[#444] leading-[19.5px] tracking-tight break-words overflow-hidden">{comment.body}</p>
-        <div className="flex items-center gap-3 mt-1">
+        {/* 댓글 본문 — Figma: 16px regular #444, line-height 19.5px */}
+        <p className="text-[16px] text-[#444] leading-[19.5px] break-words overflow-hidden">
+          {comment.body}
+        </p>
+        {/* 액션 — Figma: 14px */}
+        <div className="flex items-center gap-3 mt-[6px]">
           {!isReply && onReply && (
             <button
               type="button"
               onClick={onReply}
-              className="text-[11px] text-[var(--primary)] tracking-tight"
+              className="text-[14px] text-[#4283f3]"
             >
               답글 달기
             </button>
@@ -606,7 +620,7 @@ function CommentItem({
             <button
               type="button"
               onClick={onDelete}
-              className="text-[11px] text-[#ccc] tracking-tight"
+              className="text-[14px] text-[#999]"
             >
               삭제
             </button>
