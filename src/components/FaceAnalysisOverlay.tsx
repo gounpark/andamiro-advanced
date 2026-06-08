@@ -1,10 +1,9 @@
 /**
  * FaceAnalysisOverlay
  * 채팅 화면 안에서 전체 오버레이로 올라오는 실시간 표정 분석 카메라 뷰.
- * "기록 완료" 탭 시 감지된 expressions + dominant + confidence를 부모로 전달.
+ * "분석 완료 →" 탭 시 감지된 expressions + dominant + confidence를 부모로 전달.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeft } from "lucide-react";
 import { ensureModelsLoaded } from "@/hooks/useFaceApi";
 import type { FaceExpression, ExpressionMap } from "@/hooks/useFaceApi";
 
@@ -138,6 +137,8 @@ export function FaceAnalysisOverlay({ onClose, onComplete }: FaceAnalysisOverlay
           setFaceDetected(true);
 
           // ── Object-cover coordinate transform ──────────────────────────────
+          // Both video and canvas have scaleX(-1), so the transforms cancel:
+          // drawing at (face-api x coords) appears correctly over the mirrored video.
           const vW  = video.videoWidth  || 640;
           const vH  = video.videoHeight || 480;
           const vAR = vW / vH;
@@ -145,10 +146,12 @@ export function FaceAnalysisOverlay({ onClose, onComplete }: FaceAnalysisOverlay
 
           let scale: number, offsetX: number, offsetY: number;
           if (vAR > cAR) {
+            // video wider than container → height fits, sides crop
             scale   = H / vH;
             offsetX = -(vW * scale - W) / 2;
             offsetY = 0;
           } else {
+            // video taller than container → width fits, top/bottom crop
             scale   = W / vW;
             offsetX = 0;
             offsetY = -(vH * scale - H) / 2;
@@ -172,10 +175,10 @@ export function FaceAnalysisOverlay({ onClose, onComplete }: FaceAnalysisOverlay
           ctx.lineCap     = "round";
 
           const corners: [number, number, number, number, number, number][] = [
-            [dx,             dy + cl,      dx,       dy,      dx + cl,       dy      ], // TL
-            [dx + dw - cl,   dy,           dx + dw,  dy,      dx + dw,       dy + cl ], // TR
-            [dx,             dy + dh - cl, dx,       dy + dh, dx + cl,       dy + dh ], // BL
-            [dx + dw - cl,   dy + dh,      dx + dw,  dy + dh, dx + dw, dy + dh - cl ], // BR
+            [dx,         dy + cl,  dx,       dy,      dx + cl,       dy      ], // TL
+            [dx + dw - cl, dy,     dx + dw,  dy,      dx + dw,       dy + cl ], // TR
+            [dx,           dy + dh - cl, dx, dy + dh, dx + cl,       dy + dh ], // BL
+            [dx + dw - cl, dy + dh, dx + dw, dy + dh, dx + dw, dy + dh - cl ], // BR
           ];
           corners.forEach(([x1, y1, x2, y2, x3, y3]) => {
             ctx.beginPath();
@@ -239,40 +242,24 @@ export function FaceAnalysisOverlay({ onClose, onComplete }: FaceAnalysisOverlay
   return (
     <div className="absolute inset-0 z-50 flex flex-col" style={{ background: "#0a0a0a" }}>
 
-      {/* ── Header: 백버튼(좌) + REC 필(우) ── */}
+      {/* ── Header ── */}
       <div
-        className="flex items-center justify-between px-3 shrink-0"
+        className="flex items-center justify-between px-4 shrink-0"
         style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 14px)", paddingBottom: "10px" }}
       >
-        {/* 백버튼 */}
-        <button
-          type="button"
-          onClick={handleClose}
-          className="flex items-center justify-center w-11 h-11 rounded-full shrink-0"
-          style={{ background: "rgba(0,0,0,0.45)" }}
-        >
-          <ChevronLeft className="text-white" size={22} />
-        </button>
-
-        {/* REC 타이머 필 — 카메라 준비 후 표시 */}
-        {streamReady && (
-          <div
-            className="flex items-center gap-[5px] px-[13px] py-[7px] rounded-full"
-            style={{
-              background: "rgba(0,0,0,0.60)",
-              border: "1px solid rgba(255,255,255,0.10)",
-              backdropFilter: "blur(4px)",
-            }}
-          >
-            <span
-              className="rounded-[4px] bg-red-500 animate-pulse"
-              style={{ width: "7.7px", height: "7.7px" }}
-            />
-            <span className="text-white font-bold text-[12.5px] tabular-nums leading-none">
-              {formatSec(recSec)}
-            </span>
-          </div>
-        )}
+        <div className="flex items-center gap-2 h-6">
+          {streamReady && (
+            <>
+              <span className="h-[7px] w-[7px] rounded-full bg-red-500 animate-pulse" />
+              <span className="text-white text-[13px] font-semibold tabular-nums">
+                REC {formatSec(recSec)}
+              </span>
+            </>
+          )}
+        </div>
+        <span className="text-white/70 text-[13px] font-medium">
+          {faceDetected ? "얼굴 1명 감지" : streamReady ? "얼굴 인식 중..." : ""}
+        </span>
       </div>
 
       {/* ── Camera + Canvas ── */}
@@ -325,49 +312,24 @@ export function FaceAnalysisOverlay({ onClose, onComplete }: FaceAnalysisOverlay
           style={{ transform: "scaleX(-1)" }}
         />
 
-        {/* AI 분석 중 배지 — 얼굴 감지 시 우상단 표시 */}
-        {faceDetected && (
-          <div
-            className="absolute top-4 right-4 z-10 flex items-center gap-[6px] px-3 py-[6px] rounded-full"
-            style={{
-              background: "rgba(0,0,0,0.55)",
-              backdropFilter: "blur(4px)",
-            }}
-          >
-            <span
-              className="rounded-[3px] bg-cyan-400"
-              style={{ width: "5.8px", height: "5.8px" }}
-            />
-            <span className="text-cyan-300 font-medium text-[10.5px] leading-none whitespace-nowrap">
-              AI 분석 중
-            </span>
-          </div>
-        )}
-
         {/* Expression bars overlay (bottom of video) */}
         {expressions && (
           <div
-            className="absolute bottom-0 left-0 right-0 px-6 pt-5 pb-5 rounded-b-[20px]"
+            className="absolute bottom-0 left-0 right-0 px-4 pt-4 pb-4 rounded-b-[20px]"
             style={{
               background:
-                "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.60) 65%, transparent 100%)",
+                "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.55) 70%, transparent 100%)",
             }}
           >
-            <p
-              className="text-[10px] font-semibold mb-[10px] uppercase"
-              style={{ color: "rgba(255,255,255,0.50)", letterSpacing: "0.09em" }}
-            >
+            <p className="text-white/45 text-[10px] font-semibold tracking-widest mb-2.5">
               실시간 표정 분석
             </p>
-            <div className="flex flex-col gap-[8px]">
+            <div className="flex flex-col gap-[7px]">
               {EXPR_ROWS.map(({ key, label, color }) => {
                 const val = Math.round((expressions[key] ?? 0) * 100);
                 return (
-                  <div key={key} className="flex items-center gap-[8px]">
-                    <span
-                      className="text-[11px] shrink-0 tracking-tight"
-                      style={{ color: "rgba(255,255,255,0.75)", width: "40px" }}
-                    >
+                  <div key={key} className="flex items-center gap-2">
+                    <span className="text-white/75 text-[11px] w-10 shrink-0 tracking-tight">
                       {label}
                     </span>
                     <div
@@ -379,10 +341,7 @@ export function FaceAnalysisOverlay({ onClose, onComplete }: FaceAnalysisOverlay
                         style={{ width: `${val}%`, background: color }}
                       />
                     </div>
-                    <span
-                      className="text-[11px] text-right tabular-nums font-medium"
-                      style={{ color: "rgba(255,255,255,0.62)", width: "28px" }}
-                    >
+                    <span className="text-white/65 text-[11px] w-7 text-right tabular-nums font-medium">
                       {val}%
                     </span>
                   </div>
@@ -393,34 +352,42 @@ export function FaceAnalysisOverlay({ onClose, onComplete }: FaceAnalysisOverlay
         )}
       </div>
 
-      {/* ── 버튼 영역 — Figma: 다시 녹화(frosted glass) + 기록 완료(blue) ── */}
-      <div
-        className="flex gap-[10px] px-6 py-5 shrink-0"
-        style={{ background: "#000000" }}
-      >
-        {/* 다시 녹화 — frosted glass */}
+      {/* ── Status line ── */}
+      <div className="flex items-center justify-center gap-2 py-3 shrink-0">
+        <span
+          className={`h-1.5 w-1.5 rounded-full transition-colors ${
+            faceDetected ? "bg-green-400" : "bg-yellow-400 animate-pulse"
+          }`}
+        />
+        <span className="text-white/50 text-[13px] tracking-tight">
+          {faceDetected
+            ? "얼굴 감지됨 · 표정 분석 중"
+            : "얼굴을 카메라에 가까이 해주세요"}
+        </span>
+      </div>
+
+      {/* ── Buttons ── */}
+      <div className="flex gap-3 px-4 pb-6 shrink-0">
         <button
           type="button"
           onClick={handleClose}
-          className="flex-1 h-[52px] rounded-[12px] text-white font-medium text-[16px] tracking-[-0.48px]"
+          className="flex-1 h-[52px] rounded-2xl font-semibold text-[15px] tracking-tight"
           style={{
-            background: "rgba(255,255,255,0.15)",
-            border: "1px solid rgba(255,255,255,0.20)",
-            backdropFilter: "blur(4px)",
+            background: "rgba(239,68,68,0.13)",
+            color: "#f87171",
+            border: "1px solid rgba(239,68,68,0.25)",
           }}
         >
-          다시 녹화
+          취소
         </button>
-
-        {/* 기록 완료 — blue */}
         <button
           type="button"
           onClick={handleComplete}
           disabled={!expressions}
-          className="flex-1 h-[52px] rounded-[12px] text-white font-medium text-[16px] tracking-[-0.48px] transition disabled:opacity-35"
-          style={{ background: "#4283f3" }}
+          className="flex-1 h-[52px] rounded-2xl text-white font-bold text-[15px] tracking-tight transition disabled:opacity-35"
+          style={{ background: "var(--primary)" }}
         >
-          기록 완료
+          분석 완료 →
         </button>
       </div>
     </div>

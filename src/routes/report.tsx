@@ -359,7 +359,7 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
   return (
     <div className="app-shell">
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
-        <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide pb-32">
           {/* 상단 블루 헤더 */}
           <div className="relative bg-[#3d78f3] text-white px-6 pb-8" style={fadeIn(1)}>
             <PageHeader

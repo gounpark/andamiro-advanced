@@ -236,33 +236,64 @@ function computeAnalysisFromRecord(record: VideoRecord): DailyData {
   const conf = record.aiConfidence ?? 0.5;
   const aiMood = (record.aiMood ?? "okay") as string;
 
-  // 기본 점수 (aiMood + 신뢰도)
+  // 총합 점수
   const BASE: Record<string, number> = { best: 92, good: 82, okay: 70, bad: 54, worst: 40 };
   const baseScore = BASE[aiMood] ?? 70;
   const score = Math.round(Math.min(100, Math.max(30, baseScore * 0.78 + conf * 22)));
 
-  // 타임라인 감정 평균
-  let sumH = 0,
-    sumN = 0,
-    sumAngry = 0,
-    sumFear = 0;
-  for (const s of timeline) {
-    sumH += s.expressions.happy ?? 0;
-    sumN += s.expressions.neutral ?? 0;
-    sumAngry += s.expressions.angry ?? 0;
-    sumFear += s.expressions.fearful ?? 0;
+  // 무드별 지표 기저값 [에너지, 안정감, 집중력, 긍정성]
+  // 각 무드의 특성을 반영: 예) okay=평온함 → 안정감↑ 에너지↓
+  const MOOD_PROFILE: Record<string, [number, number, number, number]> = {
+    best:  [ 88, 70, 72, 92 ],
+    good:  [ 78, 75, 70, 82 ],
+    okay:  [ 58, 84, 65, 60 ],
+    bad:   [ 45, 46, 58, 40 ],
+    worst: [ 36, 32, 44, 34 ],
+  };
+  const [eBase, cBase, fBase, pBase] = MOOD_PROFILE[aiMood] ?? MOOD_PROFILE.okay;
+
+  // conf 보정: 각 지표마다 다른 가중치로 적용 (±9 범위)
+  const confAdj = (conf - 0.5) * 18;
+
+  const clamp = (v: number) => Math.round(Math.min(100, Math.max(30, v)));
+
+  // 타임라인 표정 데이터 기반 보정값
+  let energyAdj = 0, calmAdj = 0, focusAdj = 0, posiAdj = 0;
+
+  if (timeline.length >= 3) {
+    let sumH = 0, sumN = 0, sumAngry = 0, sumFear = 0, sumSad = 0;
+    for (const s of timeline) {
+      sumH    += s.expressions.happy    ?? 0;
+      sumN    += s.expressions.neutral  ?? 0;
+      sumAngry += s.expressions.angry   ?? 0;
+      sumFear += s.expressions.fearful  ?? 0;
+      sumSad  += s.expressions.sad      ?? 0;
+    }
+    const n = timeline.length;
+    const avgH = sumH / n, avgN = sumN / n;
+    const avgAngry = sumAngry / n, avgFear = sumFear / n, avgSad = sumSad / n;
+
+    // 에너지: 기쁨 많을수록↑, 무표정 많을수록↓
+    energyAdj = (avgH - avgN * 0.4) * 28;
+    // 안정감: 부정 감정(긴장·두려움·슬픔) 적을수록↑
+    calmAdj = -(avgAngry + avgFear + avgSad) * 55 + avgN * 12;
+    // 집중력: 표정 변화가 일정(적)할수록↑ (일관성 = 몰입)
+    let changeSum = 0;
+    for (let i = 1; i < timeline.length; i++) {
+      const prev = timeline[i - 1].expressions;
+      const curr = timeline[i].expressions;
+      for (const k of Object.keys(curr)) changeSum += Math.abs((curr[k] ?? 0) - (prev[k] ?? 0));
+    }
+    focusAdj = (0.25 - changeSum / (timeline.length - 1)) * 35;
+    // 긍정성: 기쁨 비율 높을수록↑, 슬픔·분노 높을수록↓
+    posiAdj = (avgH * 0.55 - avgSad - avgAngry * 0.5) * 30;
   }
-  const n = timeline.length || 1;
-  const avgH = sumH / n,
-    avgN = sumN / n,
-    avgNeg = (sumAngry + sumFear) / n;
-  const clamp = (v: number) => Math.round(Math.min(100, Math.max(35, v)));
 
   const metrics: Metric[] = [
-    { label: "에너지", value: clamp((1 - avgN * 0.65) * 100 * 0.55 + conf * 45) },
-    { label: "안정감", value: clamp(avgN * 60 + (1 - avgNeg * 4) * 40 + 20) },
-    { label: "집중력", value: clamp(baseScore * 0.62 + conf * 38) },
-    { label: "긍정성", value: clamp(avgH * 120 + baseScore * 0.38) },
+    { label: "에너지", value: clamp(eBase + confAdj * 0.9 + energyAdj) },
+    { label: "안정감", value: clamp(cBase + confAdj * 0.3 + calmAdj) },
+    { label: "집중력", value: clamp(fBase + confAdj * 0.5 + focusAdj) },
+    { label: "긍정성", value: clamp(pBase + confAdj * 1.1 + posiAdj) },
   ];
 
   // 요약 템플릿

@@ -144,7 +144,7 @@ function MyPage() {
   return (
     <div className="app-shell">
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
-        <div className="flex-1 overflow-y-auto scrollbar-hide">
+        <div className="absolute inset-0 overflow-y-auto pb-[126px]">
           {/* 그라디언트 헤더 */}
           <div
             className="relative overflow-hidden pb-20"

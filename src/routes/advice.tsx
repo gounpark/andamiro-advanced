@@ -132,7 +132,7 @@ function AdviceWithData() {
           }
         />
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide bg-white">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide pb-32 bg-white">
           {/* 포춘쿠키 알림 배너 */}
           <div style={fadeIn(1)}>
             <Link
