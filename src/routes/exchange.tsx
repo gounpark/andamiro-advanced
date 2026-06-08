@@ -298,7 +298,7 @@ function EmptyMy() {
       <div className="grid h-20 w-20 place-items-center rounded-full bg-[var(--primary)]/10 mb-5">
         <BookOpen className="h-9 w-9 text-[var(--primary)]" strokeWidth={1.9} />
       </div>
-      <p className="text-[17px] font-bold text-foreground tracking-tight mb-2">
+      <p className="text-[18px] font-bold text-foreground tracking-tight mb-2">
         아직 공유한 일기가 없어요
       </p>
       <p className="text-[13px] text-[#aaa] tracking-tight leading-relaxed mb-8">
@@ -316,7 +316,7 @@ function EmptyShared() {
       <div className="grid h-20 w-20 place-items-center rounded-full bg-[#f4f6fa] mb-5">
         <BookOpen className="h-9 w-9 text-[#bbb]" strokeWidth={1.9} />
       </div>
-      <p className="text-[17px] font-bold text-foreground tracking-tight mb-2">
+      <p className="text-[18px] font-bold text-foreground tracking-tight mb-2">
         아직 공유받은 일기가 없어요
       </p>
       <p className="text-[13px] text-[#aaa] tracking-tight leading-relaxed">

@@ -144,7 +144,7 @@ function MyPage() {
   return (
     <div className="app-shell">
       <div className="app-frame flex flex-col" style={{ background: "#f5f6f8" }}>
-        <div className="absolute inset-0 overflow-y-auto pb-[126px]">
+        <div className="flex-1 overflow-y-auto scrollbar-hide">
           {/* 그라디언트 헤더 */}
           <div
             className="relative overflow-hidden pb-20"
@@ -269,7 +269,7 @@ function MyPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-bold text-foreground text-[17px] tracking-tight">닉네임 변경</h3>
+                <h3 className="font-bold text-foreground text-[18px] tracking-tight">닉네임 변경</h3>
                 <button type="button" onClick={() => setEditingName(false)}>
                   <X className="h-5 w-5 text-[#999]" />
                 </button>

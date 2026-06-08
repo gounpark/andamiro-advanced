@@ -146,16 +146,16 @@ const COVER_COLORS = [
    타이포그래피
    ───────────────────────────────────────────────────────────── */
 const TYPE_SCALE = [
-  { name: "Display",       size: 28, weight: 700, lh: 1.25, ls: "-0.03em", usage: "온보딩·빈 상태 헤드라인" },
-  { name: "Title 1",       size: 22, weight: 700, lh: 1.30, ls: "-0.025em", usage: "일기 제목·모달 헤드라인" },
-  { name: "Title 2",       size: 18, weight: 700, lh: 1.35, ls: "-0.02em", usage: "페이지 헤더" },
-  { name: "Body Strong",   size: 16, weight: 600, lh: 1.40, ls: "-0.02em", usage: "버튼·탭 레이블" },
-  { name: "Body Semi",     size: 15, weight: 600, lh: 1.40, ls: "-0.018em", usage: "카드 제목·리스트 아이템" },
-  { name: "Body",          size: 15, weight: 400, lh: 1.70, ls: "-0.01em", usage: "본문 텍스트·댓글" },
-  { name: "Caption Strong",size: 14, weight: 500, lh: 1.40, ls: "-0.01em", usage: "배지·칩·레이블" },
-  { name: "Caption",       size: 13, weight: 400, lh: 1.45, ls: "0em",     usage: "서브타이틀·설명" },
-  { name: "Micro",         size: 12, weight: 400, lh: 1.45, ls: "0em",     usage: "타임스탬프·메타" },
-  { name: "Micro Bold",    size: 11, weight: 700, lh: 1.30, ls: "0.06em",  usage: "배지 레이블·CAPS 섹션명" },
+  { name: "Display",        size: 28, weight: 700, lh: 1.25, ls: "-0.03em",  usage: "온보딩·빈 상태 헤드라인", files: ["record", "analysis"] },
+  { name: "Title 1",        size: 22, weight: 700, lh: 1.30, ls: "-0.025em", usage: "일기 제목·모달 헤드라인",  files: ["index", "exchange", "exchange.$roomId", "video-record", "backup", "report", "my"] },
+  { name: "Title 2",        size: 18, weight: 700, lh: 1.35, ls: "-0.02em",  usage: "페이지 헤더·섹션 제목",    files: ["index", "record", "exchange", "exchange.create", "video-record", "advice", "exchange.$roomId", "my", "analysis", "BottomSheet"] },
+  { name: "Body Strong",    size: 16, weight: 600, lh: 1.40, ls: "-0.02em",  usage: "버튼·탭 레이블",           files: ["analysis", "exchange.$roomId", "video-record", "backup", "exchange.create", "my", "login", "Splash", "EmptyDiaryState", "PageHeader", "BottomSheet", "FaceAnalysisOverlay"] },
+  { name: "Body Semi",      size: 15, weight: 600, lh: 1.40, ls: "-0.018em", usage: "카드 제목·리스트 아이템",  files: ["index", "record", "exchange", "exchange.create", "exchange.$roomId", "video-record", "diary", "fortune", "backup", "analysis", "my"] },
+  { name: "Body",           size: 15, weight: 400, lh: 1.70, ls: "-0.01em",  usage: "본문 텍스트·댓글",         files: ["index", "record", "exchange", "exchange.create", "exchange.$roomId", "video-record", "diary", "fortune", "backup", "analysis", "my"] },
+  { name: "Caption Strong", size: 14, weight: 500, lh: 1.40, ls: "-0.01em",  usage: "배지·칩·레이블",           files: ["index", "exchange", "exchange.$roomId", "video-record", "fortune", "advice", "chat", "login", "report", "analysis", "my", "backup", "BottomSheet", "EmptyDiaryState", "EmptyState", "FaceAnalysisOverlay", "LoadingScreen"] },
+  { name: "Caption",        size: 13, weight: 400, lh: 1.45, ls: "0em",      usage: "서브타이틀·설명",          files: ["index", "exchange", "exchange.$roomId", "video-record", "fortune", "advice", "diary", "chat", "report", "analysis", "my", "BottomSheet", "EmptyDiaryState", "EmptyState", "FaceAnalysisOverlay"] },
+  { name: "Micro",          size: 12, weight: 400, lh: 1.45, ls: "0em",      usage: "타임스탬프·메타",          files: ["index", "record", "exchange", "exchange.create", "exchange.$roomId", "video-record", "advice", "diary", "chat", "report", "analysis", "my", "backup"] },
+  { name: "Micro Bold",     size: 11, weight: 700, lh: 1.30, ls: "0.06em",   usage: "배지 레이블·CAPS 섹션명",  files: ["analysis", "video-record", "diary", "advice", "report", "my", "BottomNav", "FaceAnalysisOverlay"] },
 ];
 
 const TYPE_SAMPLES: Record<string, string> = {
@@ -587,13 +587,13 @@ export default function DesignPage() {
 
             <div className="rounded-2xl bg-white border border-[#F3F4F6] overflow-hidden shadow-sm">
               <div className="hidden md:grid grid-cols-[160px_1fr_80px_80px_80px_80px_180px] gap-4 border-b border-[#F9FAFB] px-6 py-3 bg-[#FAFBFC]">
-                {["스타일","미리보기","크기","굵기","행간","자간","사용처"].map(h => (
+                {["스타일","미리보기","크기","굵기","행간","자간","사용처 / 사용 파일"].map(h => (
                   <p key={h} className="text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF]">{h}</p>
                 ))}
               </div>
               {TYPE_SCALE.map((row, i) => (
                 <div key={row.name}
-                  className={`flex flex-col md:grid md:grid-cols-[160px_1fr_80px_80px_80px_80px_180px] gap-2 md:gap-4 items-start md:items-center px-6 py-4 ${i !== TYPE_SCALE.length - 1 ? "border-b border-[#F9FAFB]" : ""}`}>
+                  className={`flex flex-col md:grid md:grid-cols-[160px_1fr_80px_80px_80px_80px_1fr] gap-2 md:gap-4 items-start md:items-center px-6 py-4 ${i !== TYPE_SCALE.length - 1 ? "border-b border-[#F9FAFB]" : ""}`}>
                   <div>
                     <p className="text-[13px] font-bold text-[#111]">{row.name}</p>
                   </div>
@@ -604,7 +604,14 @@ export default function DesignPage() {
                   <p className="font-mono text-[12px] text-[#6B7280]">{row.weight}</p>
                   <p className="font-mono text-[12px] text-[#6B7280]">{row.lh}</p>
                   <p className="font-mono text-[12px] text-[#6B7280]">{row.ls}</p>
-                  <p className="text-[12px] text-[#9CA3AF]">{row.usage}</p>
+                  <div>
+                    <p className="text-[11px] text-[#9CA3AF] mb-1.5">{row.usage}</p>
+                    <div className="flex flex-wrap gap-1">
+                      {row.files.map(f => (
+                        <span key={f} className="rounded-full border border-[#F3F4F6] bg-[#F9FAFB] px-2 py-0.5 text-[10px] text-[#6B7280]">{f}</span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

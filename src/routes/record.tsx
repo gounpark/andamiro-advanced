@@ -346,7 +346,7 @@ function RecordPage() {
               </svg>
             )}
             <p className="text-[12px] text-[#9a9aa3] tracking-tight">오늘의 감정톡</p>
-            <h2 className="mt-1 font-bold text-foreground text-[17px] leading-snug tracking-tight">
+            <h2 className="mt-1 font-bold text-foreground text-[18px] leading-snug tracking-tight">
               {current ? current.cta : "감정 선택하고 대화 시작하기"}
             </h2>
 

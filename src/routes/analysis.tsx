@@ -617,7 +617,7 @@ function AnalysisPage() {
           >
             <div className="flex flex-col items-center">
               <img src={iconChat} alt="" className="h-[52px] w-[52px] object-contain" />
-              <h3 className="mt-2 font-bold text-foreground text-[17px] tracking-tight">
+              <h3 className="mt-2 font-bold text-foreground text-[18px] tracking-tight">
                 {summaryTitle}
               </h3>
             </div>
@@ -643,7 +643,7 @@ function AnalysisPage() {
           >
             <div className="flex flex-col items-center">
               <img src={iconAiBook} alt="" className="h-[52px] w-[52px] object-contain" />
-              <h3 className="mt-2 font-bold text-foreground text-[17px] tracking-tight">
+              <h3 className="mt-2 font-bold text-foreground text-[18px] tracking-tight">
                 내일은 이렇게 준비해보세요!
               </h3>
             </div>
@@ -976,7 +976,7 @@ function EmotionGraph({ timeline }: { timeline: EmotionSnapshot[] }) {
       {/* X축 시간 레이블 */}
       <div className="flex justify-between px-2 -mt-1">
         {ticks.map((t) => (
-          <span key={t} className="text-[9px] text-[#bbb]">
+          <span key={t} className="text-[10px] text-[#bbb]">
             {formatSec(t)}
           </span>
         ))}
@@ -1557,7 +1557,7 @@ function MoodSelectionStep({
               </svg>
             )}
             <p className="text-[12px] text-[#9a9aa3] tracking-tight">오늘의 감정 기록</p>
-            <h2 className="mt-1 font-bold text-foreground text-[17px] leading-snug tracking-tight">
+            <h2 className="mt-1 font-bold text-foreground text-[18px] leading-snug tracking-tight">
               {current
                 ? `${current.label} 기분이었군요! 기록해볼게요.`
                 : "감정을 선택하고 기록 완료하기"}
