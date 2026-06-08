@@ -67,70 +67,70 @@ const COLORS: ColorToken[] = [
     key: "primary", label: "Primary", hex: "#4B82F5",
     oklch: "oklch(0.624 0.197 263.5)",
     description: "브랜드의 핵심 색상. 모든 주요 인터랙션에 사용됩니다.",
-    usage: ["CTA 버튼", "탭 인디케이터", "링크", "진행 바"],
+    usage: ["index", "record", "analysis", "diary", "chat", "advice", "exchange", "exchange.create", "exchange.$roomId", "fortune", "login", "my", "video-record", "BottomNav", "BottomSheet", "Splash"],
     group: "brand",
   },
   {
     key: "primary-light", label: "Primary Light", hex: "#A4C1FA",
     oklch: "oklch(0.81 0.087 263.5)",
     description: "Primary의 밝은 변형. 배경 강조에 사용됩니다.",
-    usage: ["선택 상태 배경", "배지", "호버 오버레이"],
+    usage: [],
     group: "brand",
   },
   {
     key: "brand-clover-active", label: "Clover Active", hex: "#F9B602",
     oklch: "oklch(0.83 0.17 84)",
-    description: "채워진 클로버 리프. 성취와 활성 상태를 표현합니다.",
-    usage: ["클로버 채움", "골든 포인트", "성취 뱃지"],
+    description: "채워진 클로버 리프. 기록이 있는 날짜에 사용됩니다.",
+    usage: ["index", "my", "HomeScene", "FortuneScene", "OutroScene"],
     group: "brand",
   },
   {
     key: "brand-clover-special", label: "Clover Special", hex: "#009A51",
     oklch: "oklch(0.62 0.17 155)",
-    description: "스페셜 클로버. 특별한 달성 상태를 나타냅니다.",
-    usage: ["스페셜 리프", "완료 상태"],
+    description: "오늘 날짜 클로버. 현재 날짜를 강조합니다.",
+    usage: ["index", "my", "HomeScene", "FortuneScene", "OutroScene"],
     group: "brand",
   },
   {
-    key: "brand-clover-empty", label: "App Shell BG", hex: "#E9EBEE",
+    key: "brand-clover-empty", label: "Clover Empty", hex: "#E9EBEE",
     oklch: "oklch(0.94 0.005 250)",
-    description: "앱 외부 배경. 카드 사이 공간과 비활성 클로버에 사용됩니다.",
-    usage: ["app-shell 배경", "빈 클로버", "섹션 구분"],
+    description: "빈 클로버 및 앱 외부 배경.",
+    usage: ["index", "my", "HomeScene", "FortuneScene", "OutroScene"],
     group: "brand",
   },
   {
     key: "destructive", label: "Destructive", hex: "#E7000B",
     oklch: "oklch(0.577 0.245 27.325)",
     description: "위험·삭제·오류 전용 색상. 남용하지 않습니다.",
-    usage: ["삭제 버튼", "오류 메시지", "경고 상태"],
+    usage: ["__root"],
     group: "semantic",
   },
   {
     key: "foreground", label: "Foreground", hex: "#020618",
     oklch: "oklch(0.129 0.042 264.695)",
     description: "기본 텍스트 색상. 최고 대비율로 가독성을 보장합니다.",
-    usage: ["본문 텍스트", "제목", "아이콘"],
+    usage: ["index", "record", "analysis", "diary", "chat", "advice", "exchange", "exchange.$roomId", "fortune", "login", "my", "report", "backup", "PageHeader", "EmptyState", "EmptyDiaryState"],
     group: "neutral",
   },
   {
     key: "muted-foreground", label: "Muted", hex: "#62748E",
     oklch: "oklch(0.554 0.046 257.417)",
     description: "보조 텍스트. 메타 정보와 설명에 사용됩니다.",
-    usage: ["타임스탬프", "플레이스홀더", "서브텍스트"],
+    usage: ["index", "__root"],
     group: "neutral",
   },
   {
     key: "background", label: "Background", hex: "#FFFFFF",
     oklch: "oklch(1 0 0)",
     description: "카드·모달·시트 배경색.",
-    usage: ["카드 배경", "모달", "바텀시트", "입력 필드"],
+    usage: ["__root", "ui/switch"],
     group: "neutral",
   },
   {
     key: "border", label: "Border", hex: "#E1E8F0",
     oklch: "oklch(0.929 0.013 255.508)",
     description: "구분선 및 외곽선.",
-    usage: ["카드 테두리", "구분선", "입력 필드 경계"],
+    usage: ["analysis", "my", "__root"],
     group: "neutral",
   },
 ];
@@ -521,7 +521,9 @@ export default function DesignPage() {
                             <p className="font-mono text-[11px] font-semibold text-[#374151] mb-2">{hex.toUpperCase()}</p>
                             <p className="text-[11px] text-[#6B7280] leading-relaxed mb-2">{token.description}</p>
                             <div className="flex flex-wrap gap-1">
-                              {token.usage.map(u => (
+                              {token.usage.length === 0 ? (
+                                <span className="rounded-full border border-[#FEE2E2] bg-[#FFF5F5] px-2 py-0.5 text-[10px] text-[#F87171]">미사용</span>
+                              ) : token.usage.map(u => (
                                 <span key={u} className="rounded-full border border-[#F3F4F6] bg-[#F9FAFB] px-2 py-0.5 text-[10px] text-[#6B7280]">{u}</span>
                               ))}
                             </div>
