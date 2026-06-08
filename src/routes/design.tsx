@@ -59,21 +59,29 @@ function hexToOklch(hex: string): [number, number, number] {
 interface ColorToken {
   key: string; label: string; hex: string;
   oklch: string; description: string; usage: string[];
-  group: "brand" | "semantic" | "neutral";
+  group: "brand" | "semantic" | "neutral" | "chart";
 }
 
 const COLORS: ColorToken[] = [
+  /* ── 브랜드 ── */
   {
     key: "primary", label: "Primary", hex: "#4B82F5",
     oklch: "oklch(0.624 0.197 263.5)",
-    description: "브랜드의 핵심 색상. 모든 주요 인터랙션에 사용됩니다.",
+    description: "브랜드 핵심 색상. 모든 주요 인터랙션에 사용됩니다.",
     usage: ["index", "record", "analysis", "diary", "chat", "advice", "exchange", "exchange.create", "exchange.$roomId", "fortune", "login", "my", "video-record", "BottomNav", "BottomSheet", "Splash"],
+    group: "brand",
+  },
+  {
+    key: "primary-foreground", label: "Primary Foreground", hex: "#F8FAFF",
+    oklch: "oklch(0.984 0.003 247.858)",
+    description: "Primary 배경 위 텍스트. 버튼 안의 흰 글자색입니다.",
+    usage: ["__root"],
     group: "brand",
   },
   {
     key: "primary-light", label: "Primary Light", hex: "#A4C1FA",
     oklch: "oklch(0.81 0.087 263.5)",
-    description: "Primary의 밝은 변형. 배경 강조에 사용됩니다.",
+    description: "Primary의 밝은 변형. 배경 강조·그라디언트 끝색에 사용됩니다.",
     usage: [],
     group: "brand",
   },
@@ -87,17 +95,26 @@ const COLORS: ColorToken[] = [
   {
     key: "brand-clover-special", label: "Clover Special", hex: "#009A51",
     oklch: "oklch(0.62 0.17 155)",
-    description: "오늘 날짜 클로버. 현재 날짜를 강조합니다.",
+    description: "오늘 날짜 클로버. 현재 날짜를 가장 강하게 강조합니다.",
     usage: ["index", "my", "HomeScene", "FortuneScene", "OutroScene"],
     group: "brand",
   },
   {
     key: "brand-clover-empty", label: "Clover Empty", hex: "#E9EBEE",
     oklch: "oklch(0.94 0.005 250)",
-    description: "빈 클로버 및 앱 외부 배경.",
+    description: "기록 없는 날짜의 빈 클로버 및 앱 외부 배경.",
     usage: ["index", "my", "HomeScene", "FortuneScene", "OutroScene"],
     group: "brand",
   },
+  {
+    key: "brand-day-muted", label: "Day Muted", hex: "#8B95AC",
+    oklch: "oklch(0.66 0.015 270)",
+    description: "달력 미래 날짜 숫자 색상. 아직 도래하지 않은 날짜를 흐리게 표현합니다.",
+    usage: ["index"],
+    group: "brand",
+  },
+
+  /* ── 시맨틱 ── */
   {
     key: "destructive", label: "Destructive", hex: "#E7000B",
     oklch: "oklch(0.577 0.245 27.325)",
@@ -105,6 +122,8 @@ const COLORS: ColorToken[] = [
     usage: ["__root"],
     group: "semantic",
   },
+
+  /* ── 뉴트럴 ── */
   {
     key: "foreground", label: "Foreground", hex: "#020618",
     oklch: "oklch(0.129 0.042 264.695)",
@@ -113,17 +132,52 @@ const COLORS: ColorToken[] = [
     group: "neutral",
   },
   {
-    key: "muted-foreground", label: "Muted", hex: "#62748E",
+    key: "muted-foreground", label: "Muted Foreground", hex: "#62748E",
     oklch: "oklch(0.554 0.046 257.417)",
-    description: "보조 텍스트. 메타 정보와 설명에 사용됩니다.",
+    description: "보조 텍스트. 메타 정보·설명·플레이스홀더에 사용됩니다.",
     usage: ["index", "__root"],
     group: "neutral",
   },
   {
     key: "background", label: "Background", hex: "#FFFFFF",
     oklch: "oklch(1 0 0)",
-    description: "카드·모달·시트 배경색.",
+    description: "앱 전체 기본 배경색. 카드·모달·시트에도 사용됩니다.",
     usage: ["__root", "ui/switch"],
+    group: "neutral",
+  },
+  {
+    key: "card", label: "Card", hex: "#FFFFFF",
+    oklch: "oklch(1 0 0)",
+    description: "카드 컴포넌트 배경. Background와 동일하나 컴포넌트 의미론적 구분용.",
+    usage: [],
+    group: "neutral",
+  },
+  {
+    key: "secondary", label: "Secondary", hex: "#F1F3F9",
+    oklch: "oklch(0.968 0.007 247.896)",
+    description: "보조 버튼·배경. 살짝 파란기가 도는 밝은 회색입니다.",
+    usage: [],
+    group: "neutral",
+  },
+  {
+    key: "muted", label: "Muted Surface", hex: "#F1F3F9",
+    oklch: "oklch(0.968 0.007 247.896)",
+    description: "흐린 배경 표면. 코드 블록·비활성 영역·에러 페이지 배경에 사용됩니다.",
+    usage: ["router"],
+    group: "neutral",
+  },
+  {
+    key: "accent", label: "Accent", hex: "#F1F3F9",
+    oklch: "oklch(0.968 0.007 247.896)",
+    description: "hover 상태 배경. 버튼·리스트 항목의 인터랙티브 hover 표면입니다.",
+    usage: ["router"],
+    group: "neutral",
+  },
+  {
+    key: "input", label: "Input", hex: "#E1E8F0",
+    oklch: "oklch(0.929 0.013 255.508)",
+    description: "입력 필드 테두리 색상. Border와 동일한 값이지만 입력 전용 의미 토큰입니다.",
+    usage: ["router", "ui/switch"],
     group: "neutral",
   },
   {
@@ -132,6 +186,50 @@ const COLORS: ColorToken[] = [
     description: "구분선 및 외곽선.",
     usage: ["analysis", "my", "__root"],
     group: "neutral",
+  },
+  {
+    key: "ring", label: "Ring", hex: "#8A9AB8",
+    oklch: "oklch(0.704 0.04 256.788)",
+    description: "포커스 링 색상. 접근성을 위한 키보드 포커스 테두리에 사용됩니다.",
+    usage: ["ui/switch", "exchange.create"],
+    group: "neutral",
+  },
+
+  /* ── 차트 ── */
+  {
+    key: "chart-1", label: "Chart 1", hex: "#E8713B",
+    oklch: "oklch(0.646 0.222 41.116)",
+    description: "차트 첫 번째 시리즈 색상. 따뜻한 오렌지 계열.",
+    usage: [],
+    group: "chart",
+  },
+  {
+    key: "chart-2", label: "Chart 2", hex: "#3AAFA0",
+    oklch: "oklch(0.6 0.118 184.704)",
+    description: "차트 두 번째 시리즈 색상. 청록 계열.",
+    usage: [],
+    group: "chart",
+  },
+  {
+    key: "chart-3", label: "Chart 3", hex: "#3A5875",
+    oklch: "oklch(0.398 0.07 227.392)",
+    description: "차트 세 번째 시리즈 색상. 짙은 스틸 블루.",
+    usage: [],
+    group: "chart",
+  },
+  {
+    key: "chart-4", label: "Chart 4", hex: "#F0C040",
+    oklch: "oklch(0.828 0.189 84.429)",
+    description: "차트 네 번째 시리즈 색상. 밝은 골든 옐로우.",
+    usage: [],
+    group: "chart",
+  },
+  {
+    key: "chart-5", label: "Chart 5", hex: "#F0A830",
+    oklch: "oklch(0.769 0.188 70.08)",
+    description: "차트 다섯 번째 시리즈 색상. 앰버 오렌지.",
+    usage: [],
+    group: "chart",
   },
 ];
 
@@ -355,8 +453,28 @@ const USAGE_NOTES: Record<string, Record<string, string[]>> = {
     "my":       ["리스트 아이템 구분선", "설정 섹션 테두리"],
     "__root":   ["전역 border 기본값 (앱 전체 적용)"],
   },
+  "primary-foreground": {
+    "__root": ["Primary 버튼 위 텍스트 색상 (흰색에 가까운 아이보리)", "에러 페이지 '홈으로' 버튼 텍스트"],
+  },
+  "brand-day-muted": {
+    "index": ["미래 날짜 숫자 색상 (클로버 없이 숫자만 표시되는 날짜)"],
+  },
   "destructive": {
     "__root": ["삭제 버튼 배경", "오류 상태 텍스트 (전역 기본값)"],
+  },
+  "muted": {
+    "router": ["에러 페이지 — 오류 코드 블록 배경 (bg-muted)"],
+  },
+  "accent": {
+    "router": ["에러 페이지 — '다시 시도' 버튼 hover 배경 (hover:bg-accent)"],
+  },
+  "input": {
+    "router":    ["에러 페이지 버튼 테두리 (border-input)"],
+    "ui/switch": ["스위치 비활성 상태 배경 (data-[state=unchecked]:bg-input)"],
+  },
+  "ring": {
+    "ui/switch":       ["스위치 포커스 링 (focus-visible:ring-ring)"],
+    "exchange.create": ["제목·본문·비밀번호 입력 필드 포커스 링 (focus:ring-[var(--ring)])"],
   },
 
   /* ── 타이포그래피 토큰 ── */
@@ -718,9 +836,9 @@ export default function DesignPage() {
               value={editKey ? (hexMap[editKey] ?? "#000") : "#000"}
               onChange={e => { if (editKey) handleColor(editKey, e.target.value); }} />
 
-            {(["brand","semantic","neutral"] as const).map(group => {
+            {(["brand","semantic","neutral","chart"] as const).map(group => {
               const tokens = COLORS.filter(t => t.group === group);
-              const labels = { brand: "브랜드", semantic: "시맨틱", neutral: "뉴트럴" };
+              const labels = { brand: "브랜드", semantic: "시맨틱", neutral: "뉴트럴", chart: "차트" };
               return (
                 <div key={group} className="mb-12">
                   <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.12em] text-[#9CA3AF]">{labels[group]}</p>
