@@ -244,28 +244,31 @@ const COVER_COLORS = [
    타이포그래피
    ───────────────────────────────────────────────────────────── */
 const TYPE_SCALE = [
-  { name: "Display",        size: 28, weight: 700, lh: 1.25, ls: "0", usage: "온보딩·빈 상태 헤드라인", files: ["record", "analysis"] },
-  { name: "Title 1",        size: 22, weight: 700, lh: 1.30, ls: "0", usage: "일기 제목·모달 헤드라인",  files: ["index", "exchange", "exchange.$roomId", "video-record", "backup", "report", "my"] },
-  { name: "Title 2",        size: 18, weight: 700, lh: 1.35, ls: "0", usage: "페이지 헤더·섹션 제목",    files: ["index", "record", "exchange", "exchange.create", "video-record", "advice", "exchange.$roomId", "my", "analysis", "BottomSheet"] },
-  { name: "Body Strong",    size: 16, weight: 600, lh: 1.40, ls: "0", usage: "버튼·카드 제목·리스트",    files: ["index", "record", "exchange", "exchange.create", "exchange.$roomId", "video-record", "diary", "fortune", "backup", "analysis", "my", "login", "Splash", "EmptyDiaryState", "PageHeader", "BottomSheet", "FaceAnalysisOverlay"] },
-  { name: "Body",           size: 16, weight: 400, lh: 1.70, ls: "0", usage: "본문 텍스트·댓글",         files: ["index", "record", "exchange", "exchange.create", "exchange.$roomId", "video-record", "diary", "fortune", "backup", "analysis", "my"] },
-  { name: "Caption Strong", size: 14, weight: 500, lh: 1.40, ls: "0", usage: "배지·칩·레이블",           files: ["index", "exchange", "exchange.$roomId", "video-record", "fortune", "advice", "chat", "login", "report", "analysis", "my", "backup", "BottomSheet", "EmptyDiaryState", "EmptyState", "FaceAnalysisOverlay", "LoadingScreen"] },
-  { name: "Caption",        size: 14, weight: 400, lh: 1.45, ls: "0", usage: "서브타이틀·설명",          files: ["index", "exchange", "exchange.$roomId", "video-record", "fortune", "advice", "diary", "chat", "report", "analysis", "my", "BottomSheet", "EmptyDiaryState", "EmptyState", "FaceAnalysisOverlay"] },
-  { name: "Micro Bold",     size: 12, weight: 700, lh: 1.30, ls: "0", usage: "배지 레이블·CAPS 섹션명",  files: ["analysis", "video-record", "diary", "advice", "report", "my", "BottomNav", "FaceAnalysisOverlay"] },
-  { name: "Micro",          size: 12, weight: 400, lh: 1.45, ls: "0", usage: "타임스탬프·메타 (최솟값)", files: ["index", "record", "exchange", "exchange.create", "exchange.$roomId", "video-record", "advice", "diary", "chat", "report", "analysis", "my", "backup"] },
+  { name: "Display",        size: 28, weight: 700, lh: 1.25, ls: "0", usage: "온보딩·빈 상태 헤드라인",           files: ["record", "analysis"] },
+  { name: "Title 1",        size: 22, weight: 700, lh: 1.30, ls: "0", usage: "일기 제목·모달 헤드라인",           files: ["index", "exchange", "exchange.$roomId", "video-record", "backup", "report", "my"] },
+  { name: "Title 2",        size: 20, weight: 700, lh: 1.30, ls: "0", usage: "섹션 헤딩·빈 상태 제목·프로필 이름", files: ["index", "analysis", "report", "exchange.$roomId", "my", "chat", "EmptyDiaryState", "EmptyState"] },
+  { name: "Title 3",        size: 18, weight: 700, lh: 1.35, ls: "0", usage: "페이지 헤더·서브 섹션 제목",         files: ["index", "record", "exchange", "exchange.create", "video-record", "advice", "exchange.$roomId", "my", "analysis", "BottomSheet"] },
+  { name: "Body Strong",    size: 16, weight: 600, lh: 1.40, ls: "0", usage: "버튼·카드 제목·리스트",              files: ["index", "record", "exchange", "exchange.create", "exchange.$roomId", "video-record", "diary", "fortune", "backup", "analysis", "my", "login", "Splash", "EmptyDiaryState", "PageHeader", "BottomSheet", "FaceAnalysisOverlay"] },
+  { name: "Body",           size: 16, weight: 400, lh: 1.70, ls: "0", usage: "본문 텍스트·댓글",                  files: ["index", "record", "exchange", "exchange.create", "exchange.$roomId", "video-record", "diary", "fortune", "backup", "analysis", "my"] },
+  { name: "Caption Strong", size: 14, weight: 500, lh: 1.40, ls: "0", usage: "배지·칩·레이블",                    files: ["index", "exchange", "exchange.$roomId", "video-record", "fortune", "advice", "chat", "login", "report", "analysis", "my", "backup", "BottomSheet", "EmptyDiaryState", "EmptyState", "FaceAnalysisOverlay", "LoadingScreen"] },
+  { name: "Caption",        size: 14, weight: 400, lh: 1.45, ls: "0", usage: "서브타이틀·설명",                   files: ["index", "exchange", "exchange.$roomId", "video-record", "fortune", "advice", "diary", "chat", "report", "analysis", "my", "BottomSheet", "EmptyDiaryState", "EmptyState", "FaceAnalysisOverlay"] },
+  { name: "Micro Bold",     size: 12, weight: 700, lh: 1.30, ls: "0", usage: "배지 레이블·CAPS 섹션명",           files: ["analysis", "video-record", "diary", "advice", "report", "my", "BottomNav", "FaceAnalysisOverlay"] },
+  { name: "Micro",          size: 12, weight: 400, lh: 1.45, ls: "0", usage: "타임스탬프·메타 (최솟값)",          files: ["index", "record", "exchange", "exchange.create", "exchange.$roomId", "video-record", "advice", "diary", "chat", "report", "analysis", "my", "backup"] },
+  { name: "Nano",           size: 10, weight: 400, lh: 1.40, ls: "0", usage: "⚠ 예외 — 배지·차트 주석 (최솟값 미만)", files: ["diary", "analysis", "exchange.$roomId", "FaceAnalysisOverlay"] },
 ];
 
 const TYPE_SAMPLES: Record<string, string> = {
-  "Display": "말하지 못한 것들에 대하여",
-  "Title 1": "봄날의 산책 일기",
-  "Title 2": "교환일기",
-  "Body Strong": "Google 로 로그인",
-  "Body Semi": "말하지 못한 것들에 대하여",
-  "Body": "오늘은 유난히 봄바람이 따뜻했다. 점심을 먹고 나서 공원을 한 바퀴 돌았는데 벚꽃이 한창이었다.",
+  "Display":        "말하지 못한 것들에 대하여",
+  "Title 1":        "봄날의 산책 일기",
+  "Title 2":        "이번 달 감정 리포트",
+  "Title 3":        "교환일기",
+  "Body Strong":    "Google 로 로그인",
+  "Body":           "오늘은 유난히 봄바람이 따뜻했다. 점심을 먹고 나서 공원을 한 바퀴 돌았는데 벚꽃이 한창이었다.",
   "Caption Strong": "3명이 읽었어요",
-  "Caption": "AI 감정일기 & 교환일기",
-  "Micro": "방금 전 · 댓글 2개",
-  "Micro Bold": "브랜드 COLOR",
+  "Caption":        "AI 감정일기 & 교환일기",
+  "Micro Bold":     "브랜드 COLOR",
+  "Micro":          "방금 전 · 댓글 2개",
+  "Nano":           "AI 추정값 · /100점",
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -492,6 +495,16 @@ const USAGE_NOTES: Record<string, Record<string, string[]>> = {
     "my":               ["프로필 이름 텍스트"],
   },
   "type:Title 2": {
+    "index":            ["홈 빈 상태 또는 섹션 헤딩 (h2)"],
+    "analysis":         ["감정 분석 섹션 헤딩 (에너지·안정감 카드 상단)"],
+    "report":           ["리포트 섹션 헤딩 (요일별 에너지, 패턴 인사이트)"],
+    "exchange.$roomId": ["공유 일기 서브 제목 (h1 with 20px)"],
+    "my":               ["프로필 카드 이름 텍스트 (흰 글자)"],
+    "chat":             ["채팅 헤딩"],
+    "EmptyDiaryState":  ["일기 없음 빈 상태 메인 제목"],
+    "EmptyState":       ["목록 없음 빈 상태 메인 제목"],
+  },
+  "type:Title 3": {
     "index":            ["섹션 소제목"],
     "record":           ["기록 폼 섹션 제목"],
     "exchange":         ["탭 섹션 레이블"],
@@ -580,6 +593,12 @@ const USAGE_NOTES: Record<string, Record<string, string[]>> = {
     "my":               ["설정 그룹 CAPS 헤더"],
     "BottomNav":        ["탭 이름 텍스트 (홈·기록·교환·마이)"],
     "FaceAnalysisOverlay": ["촬영 중 REC 배지 텍스트"],
+  },
+  "type:Nano": {
+    "diary":            ["일기 상태 배지 텍스트 (공개·비공개·잠금 칩)"],
+    "analysis":         ["/100점 단위 표기, 차트 축 세부 주석, 태그 레이블"],
+    "exchange.$roomId": ["아바타 크기 레이블 (h-6 w-6 내 이니셜)"],
+    "FaceAnalysisOverlay": ["얼굴 분석 오버레이 소형 상태 레이블"],
   },
   "type:Micro": {
     "index":            ["미래 날짜 숫자 (옅은 회색 표시)"],
@@ -975,11 +994,14 @@ export default function DesignPage() {
                   <p key={h} className="text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF]">{h}</p>
                 ))}
               </div>
-              {TYPE_SCALE.map((row, i) => (
+              {TYPE_SCALE.map((row, i) => {
+                const isException = row.name === "Nano";
+                return (
                 <div key={row.name}
-                  className={`flex flex-col md:grid md:grid-cols-[160px_1fr_80px_80px_80px_80px_1fr] gap-2 md:gap-4 items-start md:items-center px-6 py-4 ${i !== TYPE_SCALE.length - 1 ? "border-b border-[#F9FAFB]" : ""}`}>
+                  className={`flex flex-col md:grid md:grid-cols-[160px_1fr_80px_80px_80px_80px_1fr] gap-2 md:gap-4 items-start md:items-center px-6 py-4 ${i !== TYPE_SCALE.length - 1 ? "border-b border-[#F9FAFB]" : ""} ${isException ? "bg-[#FFFBEB]" : ""}`}>
                   <div>
-                    <p className="text-[13px] font-bold text-[#111]">{row.name}</p>
+                    <p className={`text-[13px] font-bold ${isException ? "text-[#B45309]" : "text-[#111]"}`}>{row.name}</p>
+                    {isException && <span className="text-[9px] font-bold text-[#D97706] uppercase tracking-wide">예외 토큰</span>}
                   </div>
                   <p className="min-w-0 overflow-hidden" style={{ fontSize: row.size, fontWeight: row.weight, lineHeight: row.lh, letterSpacing: row.ls, color: "#111827", maxHeight: "3.5em" }}>
                     {TYPE_SAMPLES[row.name] ?? row.name}
@@ -1001,7 +1023,8 @@ export default function DesignPage() {
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </section>
 
