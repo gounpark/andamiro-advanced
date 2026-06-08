@@ -280,6 +280,206 @@ const ROUTE_MAP: Record<string, { path: string; label: string }> = {
   "ui/switch":           { path: "/my",             label: "마이 (스위치)" },
 };
 
+/* ─────────────────────────────────────────────────────────────
+   토큰 사용 위치 — 토큰ID → 파일 → 구체적 요소 목록
+   ───────────────────────────────────────────────────────────── */
+const USAGE_NOTES: Record<string, Record<string, string[]>> = {
+  /* ── 컬러 토큰 ── */
+  "primary": {
+    "index":            ["홈 헤더 배경 그라디언트", "오늘 기록하기 CTA 버튼 배경", "BottomNav 활성 탭 아이콘·텍스트"],
+    "record":           ["AI 촬영 시작 버튼 배경", "감정 저장 버튼 배경"],
+    "analysis":         ["차트 진행 바 색상", "섹션 강조 텍스트"],
+    "diary":            ["공유·메뉴 아이콘 강조색"],
+    "chat":             ["메시지 전송 버튼 배경", "내 말풍선 배경"],
+    "advice":           ["조언 강조 텍스트 색상"],
+    "exchange":         ["탭 활성 인디케이터 하단 라인", "공유 아이콘 강조"],
+    "exchange.create":  ["만들기 버튼 배경"],
+    "exchange.$roomId": ["댓글 전송 버튼 배경", "내 댓글 배경색"],
+    "fortune":          ["운세 강조 포인트 색상"],
+    "login":            ["온보딩 포인트 색상", "Google 로그인 버튼 보조"],
+    "my":               ["설정 토글 활성 색상", "프로필 수정 버튼"],
+    "video-record":     ["촬영 버튼 배경", "진행 인디케이터"],
+    "BottomNav":        ["활성 탭 아이콘 + 레이블 텍스트 색상"],
+    "BottomSheet":      ["액션 아이템 아이콘 배경 원"],
+    "Splash":           ["앱 로고 배경 원"],
+  },
+  "brand-clover-active": {
+    "index":       ["기록 있는 날짜 — 클로버 잎 + 줄기 색상 (노란색)"],
+    "my":          ["달력 기록 날짜 클로버 색상"],
+    "HomeScene":   ["3D 홈 씬 채워진 클로버 리프 색상"],
+    "FortuneScene":["3D 포춘 씬 클로버 장식"],
+    "OutroScene":  ["성취 아웃트로 클로버 연출"],
+  },
+  "brand-clover-special": {
+    "index":       ["오늘 날짜 — 클로버 색상 (녹색, 가장 강조)"],
+    "my":          ["오늘 날짜 클로버 강조"],
+    "HomeScene":   ["3D 씬 오늘 날짜 클로버"],
+    "FortuneScene":["3D 포춘 씬 특별 날짜 클로버"],
+    "OutroScene":  ["성취 아웃트로 특별 클로버"],
+  },
+  "brand-clover-empty": {
+    "index":       ["기록 없는 날짜 빈 클로버 (회색)", "달력 외부 앱 배경색"],
+    "my":          ["기록 없는 날짜 빈 클로버"],
+    "HomeScene":   ["3D 씬 빈 클로버 리프"],
+    "FortuneScene":["3D 포춘 씬 배경 클로버"],
+    "OutroScene":  ["아웃트로 배경 클로버"],
+  },
+  "foreground": {
+    "index":            ["달력 날짜 숫자", "월·년 헤더 텍스트 '2026. 06'"],
+    "record":           ["일기 본문 입력 텍스트", "제목 입력 필드"],
+    "analysis":         ["분석 수치 텍스트", "카드 헤더"],
+    "diary":            ["일기 내용 텍스트", "날짜 표시"],
+    "chat":             ["채팅 메시지 텍스트"],
+    "advice":           ["조언 본문 텍스트"],
+    "exchange":         ["교환일기 목록 제목"],
+    "exchange.$roomId": ["일기 본문", "댓글 텍스트"],
+    "fortune":          ["운세 내용 텍스트"],
+    "login":            ["환영 헤드라인 텍스트"],
+    "my":               ["설정 항목 텍스트", "프로필 이름"],
+    "report":           ["리포트 본문 텍스트"],
+    "backup":           ["백업 안내 텍스트"],
+    "PageHeader":       ["페이지 제목 텍스트"],
+    "EmptyState":       ["빈 상태 안내 텍스트"],
+    "EmptyDiaryState":  ["일기 없음 안내 텍스트"],
+  },
+  "muted-foreground": {
+    "index":  ["요일 헤더(일·월·화·수·목·금·토)", "보조 안내 문구"],
+    "__root": ["전역 서브텍스트 기본값 (앱 전체 적용)"],
+  },
+  "background": {
+    "__root":    ["앱 전체 배경 + 카드·모달 배경 (전역 기본값)"],
+    "ui/switch": ["스위치 컴포넌트 활성 배경"],
+  },
+  "border": {
+    "analysis": ["분석 카드 구분선", "섹션 경계선"],
+    "my":       ["리스트 아이템 구분선", "설정 섹션 테두리"],
+    "__root":   ["전역 border 기본값 (앱 전체 적용)"],
+  },
+  "destructive": {
+    "__root": ["삭제 버튼 배경", "오류 상태 텍스트 (전역 기본값)"],
+  },
+
+  /* ── 타이포그래피 토큰 ── */
+  "type:Display": {
+    "record":   ["기록 화면 빈 상태 헤드라인 '오늘의 감정을 기록해보세요'"],
+    "analysis": ["감정 분석 결과 메인 헤드라인"],
+  },
+  "type:Title 1": {
+    "index":            ["월·년 헤더 '2026. 06'"],
+    "exchange":         ["교환일기 목록 페이지 헤더"],
+    "exchange.$roomId": ["공유 일기 제목"],
+    "video-record":     ["영상 기록 결과 제목"],
+    "backup":           ["백업 페이지 헤더"],
+    "report":           ["감정 리포트 헤더"],
+    "my":               ["프로필 이름 텍스트"],
+  },
+  "type:Title 2": {
+    "index":            ["섹션 소제목"],
+    "record":           ["기록 폼 섹션 제목"],
+    "exchange":         ["탭 섹션 레이블"],
+    "exchange.create":  ["교환일기 만들기 폼 제목"],
+    "video-record":     ["촬영 섹션 레이블"],
+    "advice":           ["조언 카드 제목"],
+    "exchange.$roomId": ["날짜 그룹 헤더"],
+    "my":               ["설정 섹션 그룹 제목"],
+    "analysis":         ["분석 카테고리 제목 (에너지·안정감·집중력·긍정성)"],
+    "BottomSheet":      ["바텀시트 상단 일기 제목"],
+  },
+  "type:Body Strong": {
+    "index":            ["오늘 기록하기 CTA 버튼 텍스트"],
+    "record":           ["저장 버튼, 감정 선택 항목"],
+    "exchange":         ["공유 버튼, 탭 레이블"],
+    "exchange.create":  ["입력 레이블, 확인 버튼"],
+    "exchange.$roomId": ["작성자 이름"],
+    "video-record":     ["촬영 버튼 레이블"],
+    "diary":            ["일기 제목 텍스트"],
+    "fortune":          ["운세 강조 문구"],
+    "backup":           ["백업 버튼 텍스트"],
+    "analysis":         ["수치 강조 텍스트 (예: 72/100)"],
+    "my":               ["메뉴 항목 텍스트"],
+    "login":            ["로그인 버튼 레이블"],
+    "Splash":           ["앱 이름 'ANDAMIRO'"],
+    "EmptyDiaryState":  ["빈 상태 CTA 버튼"],
+    "PageHeader":       ["페이지 타이틀"],
+    "BottomSheet":      ["액션 항목 레이블 (공유하기, 삭제 등)"],
+    "FaceAnalysisOverlay": ["분석 중 안내 텍스트"],
+  },
+  "type:Body": {
+    "index":            ["날짜별 일기 미리보기 텍스트"],
+    "record":           ["일기 본문 입력 텍스트"],
+    "exchange":         ["공지·안내 텍스트"],
+    "exchange.create":  ["안내 설명 텍스트"],
+    "exchange.$roomId": ["댓글 본문"],
+    "video-record":     ["안내 텍스트"],
+    "diary":            ["일기 본문 내용"],
+    "fortune":          ["운세 본문 텍스트"],
+    "backup":           ["백업 설명 텍스트"],
+    "analysis":         ["분석 설명 텍스트"],
+    "my":               ["설정 설명 텍스트"],
+  },
+  "type:Caption Strong": {
+    "index":            ["날짜 숫자 (클로버 위)"],
+    "exchange":         ["읽음 표시 '3명이 읽었어요'"],
+    "exchange.$roomId": ["댓글 수·조회 수 배지"],
+    "video-record":     ["촬영 힌트 레이블"],
+    "fortune":          ["운세 카테고리 레이블"],
+    "advice":           ["조언 태그 배지"],
+    "chat":             ["채팅 상태 표시"],
+    "login":            ["약관 동의 레이블"],
+    "report":           ["리포트 항목 레이블"],
+    "analysis":         ["지표 이름 레이블 (에너지, 집중력 등)"],
+    "my":               ["설정 항목 서브 레이블"],
+    "backup":           ["백업 상태 레이블"],
+    "BottomSheet":      ["시트 아이템 설명 텍스트"],
+    "EmptyDiaryState":  ["빈 상태 서브 텍스트"],
+    "EmptyState":       ["빈 상태 설명 텍스트"],
+    "FaceAnalysisOverlay": ["분석 진행 안내 텍스트"],
+    "LoadingScreen":    ["로딩 중 안내 텍스트"],
+  },
+  "type:Caption": {
+    "index":            ["달력 날짜 아래 보조 텍스트"],
+    "exchange":         ["일기 작성 날짜, 보조 설명"],
+    "exchange.$roomId": ["댓글 시간, 작성자 보조 정보"],
+    "video-record":     ["촬영 설명 텍스트"],
+    "fortune":          ["운세 날짜 정보"],
+    "advice":           ["조언 출처·날짜"],
+    "diary":            ["일기 메타 정보"],
+    "chat":             ["메시지 시간 표시"],
+    "report":           ["리포트 기간 정보"],
+    "analysis":         ["분석 보조 설명"],
+    "my":               ["설정 항목 설명 텍스트"],
+    "BottomSheet":      ["시트 아이템 부제목"],
+    "EmptyDiaryState":  ["빈 상태 안내 설명"],
+    "EmptyState":       ["빈 목록 안내 설명"],
+    "FaceAnalysisOverlay": ["분석 부가 텍스트"],
+  },
+  "type:Micro Bold": {
+    "analysis":         ["차트 축 레이블, 수치 단위 (예: /100)"],
+    "video-record":     ["타임코드 레이블"],
+    "diary":            ["날짜 배지"],
+    "advice":           ["조언 태그 CAPS"],
+    "report":           ["섹션명 CAPS 레이블"],
+    "my":               ["설정 그룹 CAPS 헤더"],
+    "BottomNav":        ["탭 이름 텍스트 (홈·기록·교환·마이)"],
+    "FaceAnalysisOverlay": ["촬영 중 REC 배지 텍스트"],
+  },
+  "type:Micro": {
+    "index":            ["미래 날짜 숫자 (옅은 회색 표시)"],
+    "record":           ["입력 힌트, 글자 수 카운터"],
+    "exchange":         ["목록 날짜 타임스탬프"],
+    "exchange.create":  ["입력 가이드 텍스트"],
+    "exchange.$roomId": ["댓글 타임스탬프 '방금 전'"],
+    "video-record":     ["촬영 시간 표시"],
+    "advice":           ["출처 날짜"],
+    "diary":            ["작성 시간 타임스탬프"],
+    "chat":             ["읽음 확인 타임스탬프"],
+    "report":           ["기간 날짜 텍스트"],
+    "analysis":         ["차트 하단 날짜 레이블"],
+    "my":               ["최근 업데이트 날짜"],
+    "backup":           ["백업 날짜 타임스탬프"],
+  },
+};
+
 const DURATIONS = [100, 150, 200, 300, 500];
 const EASINGS = [
   { name: "ease-out", value: "cubic-bezier(0, 0, 0.2, 1)", usage: "대부분의 UI 전환" },
@@ -327,10 +527,10 @@ export default function DesignPage() {
 
   /* 화면 미리보기 드로어 */
   const [drawer, setDrawer] = useState<{
-    name: string; desc?: string; color?: string; files: string[];
+    name: string; desc?: string; color?: string; files: string[]; tokenId: string;
   } | null>(null);
   const [drawerFile, setDrawerFile] = useState("");
-  const openDrawer = (token: { name: string; desc?: string; color?: string; files: string[] }, file?: string) => {
+  const openDrawer = (token: { name: string; desc?: string; color?: string; files: string[]; tokenId: string }, file?: string) => {
     if (!token.files.length) return;
     setDrawer(token);
     setDrawerFile(file ?? token.files[0]);
@@ -580,7 +780,7 @@ export default function DesignPage() {
                                 <span className="rounded-full border border-[#FEE2E2] bg-[#FFF5F5] px-2 py-0.5 text-[10px] text-[#F87171]">미사용</span>
                               ) : token.usage.map(u => (
                                 <button key={u} type="button"
-                                  onClick={() => openDrawer({ name: token.label, desc: token.description, color: hexMap[token.key] ?? token.hex, files: token.usage }, u)}
+                                  onClick={() => openDrawer({ name: token.label, desc: token.description, color: hexMap[token.key] ?? token.hex, files: token.usage, tokenId: token.key }, u)}
                                   className="rounded-full border border-[#F3F4F6] bg-[#F9FAFB] px-2 py-0.5 text-[10px] text-[#6B7280] hover:border-[var(--primary,#4B82F5)] hover:text-[var(--primary,#4B82F5)] hover:bg-[#EEF4FF] transition cursor-pointer">
                                   {u}
                                 </button>
@@ -588,7 +788,7 @@ export default function DesignPage() {
                             </div>
                             {hasScreens && (
                               <button type="button"
-                                onClick={() => openDrawer({ name: token.label, desc: token.description, color: hexMap[token.key] ?? token.hex, files: token.usage })}
+                                onClick={() => openDrawer({ name: token.label, desc: token.description, color: hexMap[token.key] ?? token.hex, files: token.usage, tokenId: token.key })}
                                 className="mt-2.5 w-full flex items-center justify-center gap-1 rounded-lg border border-[#F3F4F6] py-1.5 text-[11px] font-medium text-[#9CA3AF] hover:border-[var(--primary,#4B82F5)] hover:text-[var(--primary,#4B82F5)] hover:bg-[#EEF4FF] transition">
                                 <Eye size={11} /> 화면 보기
                               </button>
@@ -675,7 +875,7 @@ export default function DesignPage() {
                     <div className="flex flex-wrap gap-1">
                       {row.files.map(f => (
                         <button key={f} type="button"
-                          onClick={() => openDrawer({ name: row.name, desc: row.usage, files: row.files }, f)}
+                          onClick={() => openDrawer({ name: row.name, desc: row.usage, files: row.files, tokenId: `type:${row.name}` }, f)}
                           className="rounded-full border border-[#F3F4F6] bg-[#F9FAFB] px-2 py-0.5 text-[10px] text-[#6B7280] hover:border-[var(--primary,#4B82F5)] hover:text-[var(--primary,#4B82F5)] hover:bg-[#EEF4FF] transition cursor-pointer">
                           {f}
                         </button>
@@ -1188,19 +1388,20 @@ function TokenDrawer({
   onFileChange,
   onClose,
 }: {
-  token: { name: string; desc?: string; color?: string; files: string[] };
+  token: { name: string; desc?: string; color?: string; files: string[]; tokenId: string };
   activeFile: string;
   onFileChange: (f: string) => void;
   onClose: () => void;
 }) {
-  /* 앱 베이스 URL — /design 이전 경로 */
   const appBase = typeof window !== "undefined"
     ? window.location.href.split("/design")[0].replace(/\/$/, "")
     : "";
   const routeInfo = ROUTE_MAP[activeFile];
   const iframeSrc = routeInfo ? appBase + routeInfo.path : appBase + "/";
 
-  /* 키보드 닫기 */
+  /* 현재 선택된 파일의 사용 위치 노트 */
+  const notes: string[] = USAGE_NOTES[token.tokenId]?.[activeFile] ?? [];
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
@@ -1209,14 +1410,10 @@ function TokenDrawer({
 
   return (
     <div className="fixed inset-0 z-[100] flex justify-end">
-      {/* 오버레이 */}
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose} />
 
-      {/* 패널 */}
-      <div className="relative flex h-full w-[440px] flex-col bg-white shadow-2xl">
+      {/* 패널 — 넓이 520px */}
+      <div className="relative flex h-full w-[520px] flex-col bg-white shadow-2xl">
 
         {/* 헤더 */}
         <div className="flex items-start justify-between border-b border-[#F3F4F6] px-5 py-4 shrink-0">
@@ -1228,7 +1425,7 @@ function TokenDrawer({
             <div>
               <p className="text-[15px] font-bold text-[#111]">{token.name}</p>
               {token.desc && (
-                <p className="text-[12px] text-[#9CA3AF] mt-0.5 leading-snug max-w-[300px]">{token.desc}</p>
+                <p className="text-[12px] text-[#9CA3AF] mt-0.5 leading-snug max-w-[360px]">{token.desc}</p>
               )}
             </div>
           </div>
@@ -1238,39 +1435,80 @@ function TokenDrawer({
           </button>
         </div>
 
-        {/* 파일 탭 */}
+        {/* 화면 탭 */}
         <div className="border-b border-[#F9FAFB] px-5 py-3 shrink-0">
           <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[#C5CAD3]">사용 화면</p>
           <div className="flex flex-wrap gap-1.5">
             {token.files.map(f => {
               const label = ROUTE_MAP[f]?.label ?? f;
               const isActive = f === activeFile;
+              const hasNote = !!USAGE_NOTES[token.tokenId]?.[f];
               return (
                 <button key={f} type="button" onClick={() => onFileChange(f)}
-                  className="rounded-full px-3 py-1 text-[11px] font-medium transition"
+                  className="relative rounded-full px-3 py-1 text-[11px] font-medium transition"
                   style={isActive
                     ? { background: "var(--primary,#4B82F5)", color: "#fff" }
                     : { background: "#F3F4F6", color: "#6B7280" }}>
                   {label}
+                  {/* 노트 있는 탭에 점 표시 */}
+                  {hasNote && !isActive && (
+                    <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-[var(--primary,#4B82F5)] border border-white" />
+                  )}
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* 폰 프레임 */}
-        <div className="flex flex-1 items-center justify-center overflow-auto bg-[#F7F8FA] p-6">
-          <PhoneFrame src={iframeSrc} label={routeInfo?.label ?? activeFile} />
-        </div>
+        {/* 본문: 좌(노트) + 우(폰 프레임) */}
+        <div className="flex flex-1 min-h-0 overflow-hidden">
 
-        {/* 하단 경로 표시 */}
-        <div className="border-t border-[#F3F4F6] px-5 py-3 shrink-0 flex items-center gap-2">
-          <span className="text-[10px] text-[#C5CAD3] font-medium">경로</span>
-          <code className="flex-1 text-[11px] font-mono text-[#9CA3AF] truncate">{routeInfo?.path ?? "/"}</code>
-          <a href={appBase + (routeInfo?.path ?? "/")} target="_blank" rel="noreferrer"
-            className="flex items-center gap-1 text-[11px] font-medium text-[var(--primary,#4B82F5)] hover:underline shrink-0">
-            새 탭 <Share2 size={10} />
-          </a>
+          {/* 왼쪽 — 사용 위치 노트 */}
+          <div className="flex w-[200px] shrink-0 flex-col border-r border-[#F3F4F6] overflow-y-auto">
+            <div className="px-4 py-4">
+              {/* 화면 이름 */}
+              <div className="flex items-center gap-1.5 mb-3">
+                <div className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: "var(--primary,#4B82F5)" }} />
+                <p className="text-[12px] font-bold text-[#111]">
+                  {routeInfo?.label ?? activeFile}
+                </p>
+              </div>
+
+              {/* 사용 위치 목록 */}
+              {notes.length > 0 ? (
+                <>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#C5CAD3] mb-2">사용된 요소</p>
+                  <ul className="space-y-2">
+                    {notes.map((note, i) => (
+                      <li key={i} className="flex items-start gap-1.5">
+                        <span className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-[#CBD5E1]" />
+                        <span className="text-[12px] leading-snug text-[#374151]">{note}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <p className="text-[11px] text-[#C5CAD3] italic leading-snug">
+                  세부 위치 정보 없음
+                </p>
+              )}
+
+              {/* 경로 */}
+              <div className="mt-5 pt-4 border-t border-[#F9FAFB]">
+                <p className="text-[9px] font-bold uppercase tracking-widest text-[#C5CAD3] mb-1.5">경로</p>
+                <code className="block text-[10px] font-mono text-[#9CA3AF] break-all">{routeInfo?.path ?? "/"}</code>
+                <a href={appBase + (routeInfo?.path ?? "/")} target="_blank" rel="noreferrer"
+                  className="mt-2 inline-flex items-center gap-1 text-[10px] font-medium text-[var(--primary,#4B82F5)] hover:underline">
+                  새 탭에서 열기 <Share2 size={9} />
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* 오른쪽 — 폰 프레임 */}
+          <div className="flex flex-1 items-center justify-center overflow-auto bg-[#F7F8FA] p-5">
+            <PhoneFrame src={iframeSrc} label={routeInfo?.label ?? activeFile} />
+          </div>
         </div>
       </div>
     </div>
