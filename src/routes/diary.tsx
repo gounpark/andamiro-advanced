@@ -77,15 +77,15 @@ function DiaryPage() {
           {grouped.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full pt-32 gap-3">
               <p className="text-[32px]">📭</p>
-              <p className="text-[16px] font-semibold text-foreground/60 tracking-tight">
+              <p className="text-[16px] font-semibold text-foreground/60">
                 아직 기록이 없어요
               </p>
-              <p className="text-[14px] text-foreground/40 tracking-tight">
+              <p className="text-[14px] text-foreground/40">
                 영상으로 기록하기를 사용해보세요
               </p>
               <Link
                 to="/record"
-                className="mt-4 rounded-full bg-[var(--primary)] px-5 py-2.5 text-white text-[14px] font-semibold tracking-tight"
+                className="mt-4 rounded-full bg-[var(--primary)] px-5 py-2.5 text-white text-[14px] font-semibold"
               >
                 기록하러 가기
               </Link>
@@ -95,7 +95,7 @@ function DiaryPage() {
               {grouped.map(({ date, items }) => (
                 <div key={date}>
                   {/* 날짜 헤더 */}
-                  <p className="text-[12px] font-semibold text-[#9a9aa3] mb-2 tracking-tight">
+                  <p className="text-[12px] font-semibold text-[#9a9aa3] mb-2">
                     {formatDate(date)}
                   </p>
                   <div className="flex flex-col gap-3">
@@ -137,7 +137,7 @@ function EntryCard({ entry, onDelete }: { entry: DiaryEntry; onDelete: () => voi
         <img src={meta.thumb} alt={meta.label} className="h-11 w-11 object-contain shrink-0" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="font-bold text-foreground text-[16px] tracking-tight">
+            <span className="font-bold text-foreground text-[16px]">
               {meta.emoji} {meta.label}
             </span>
             {entry.hasVideo && (
@@ -151,7 +151,7 @@ function EntryCard({ entry, onDelete }: { entry: DiaryEntry; onDelete: () => voi
               </span>
             )}
           </div>
-          <p className="text-[12px] text-[#9a9aa3] mt-0.5 tracking-tight">
+          <p className="text-[12px] text-[#9a9aa3] mt-0.5">
             {formatTime(entry.createdAt)}
             {entry.aiMood && entry.aiMood !== "surprised" && (
               <span className="ml-2 text-cyan-500">· AI: {entry.aiMoodLabel}</span>
@@ -167,10 +167,10 @@ function EntryCard({ entry, onDelete }: { entry: DiaryEntry; onDelete: () => voi
           {/* AI vs 사용자 감정 */}
           <div className="flex gap-2 mt-3">
             <div className="flex-1 rounded-xl bg-cyan-50 border border-cyan-100 px-3 py-2.5">
-              <p className="text-[10px] font-semibold text-cyan-600 tracking-tight mb-0.5">
+              <p className="text-[10px] font-semibold text-cyan-600 mb-0.5">
                 🤖 AI 분석
               </p>
-              <p className="font-bold text-foreground text-[14px] tracking-tight">
+              <p className="font-bold text-foreground text-[14px]">
                 {entry.aiMood === "surprised"
                   ? "😮 놀람"
                   : entry.aiMood
@@ -184,10 +184,10 @@ function EntryCard({ entry, onDelete }: { entry: DiaryEntry; onDelete: () => voi
               )}
             </div>
             <div className="flex-1 rounded-xl bg-[var(--primary)]/5 border border-[var(--primary)]/15 px-3 py-2.5">
-              <p className="text-[10px] font-semibold text-[var(--primary)] tracking-tight mb-0.5">
+              <p className="text-[10px] font-semibold text-[var(--primary)] mb-0.5">
                 👤 내 선택
               </p>
-              <p className="font-bold text-foreground text-[14px] tracking-tight">
+              <p className="font-bold text-foreground text-[14px]">
                 {entry.userMoodLabel}
               </p>
             </div>
@@ -197,7 +197,7 @@ function EntryCard({ entry, onDelete }: { entry: DiaryEntry; onDelete: () => voi
           {entry.transcript && (
             <div className="mt-3 rounded-xl bg-[#f7f7f9] px-3.5 py-3">
               <p className="text-[12px] font-semibold text-[#666] mb-1.5">🎙 음성 기록</p>
-              <p className="text-[14px] leading-relaxed text-foreground/85 tracking-tight">
+              <p className="text-[14px] leading-relaxed text-foreground/85">
                 {entry.transcript}
               </p>
             </div>
@@ -207,7 +207,7 @@ function EntryCard({ entry, onDelete }: { entry: DiaryEntry; onDelete: () => voi
           <button
             type="button"
             onClick={confirmDelete}
-            className="mt-3 flex items-center gap-1.5 text-[12px] text-red-400 font-medium tracking-tight"
+            className="mt-3 flex items-center gap-1.5 text-[12px] text-red-400 font-medium"
           >
             <Trash2 className="h-3.5 w-3.5" />
             기록 삭제

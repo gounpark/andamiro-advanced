@@ -24,7 +24,7 @@ export function EmptyDiaryState({ title, activeTab }: Props) {
           >
             <ChevronLeft className="h-6 w-6" strokeWidth={2.2} />
           </Link>
-          <h1 className="font-semibold text-foreground text-[16px] tracking-tight">{title}</h1>
+          <h1 className="font-semibold text-foreground text-[16px]">{title}</h1>
         </header>
 
         {/* 본문 */}
@@ -40,18 +40,18 @@ export function EmptyDiaryState({ title, activeTab }: Props) {
             height={272}
             className="h-[220px] w-[220px] object-contain"
           />
-          <h2 className="mt-6 text-center font-bold text-foreground text-[20px] leading-[1.4] tracking-tight">
+          <h2 className="mt-6 text-center font-bold text-foreground text-[20px] leading-[1.4]">
             당신의 하루를 들려주길
             <br />
             기다리고 있어요!
           </h2>
-          <p className="mt-3 text-center text-[14px] text-[#8a8d96] tracking-tight">
+          <p className="mt-3 text-center text-[14px] text-[#8a8d96]">
             작은 기록이 모여 당신의 마음 지도가 완성돼요.
           </p>
           <Link
             to="/record"
             search={{} as any}
-            className="mt-7 inline-flex items-center justify-center rounded-xl bg-[#ececef] px-5 py-3 font-semibold text-foreground text-[14px] tracking-tight hover:bg-[#e2e2e6] transition"
+            className="mt-7 inline-flex items-center justify-center rounded-xl bg-[#ececef] px-5 py-3 font-semibold text-foreground text-[14px] hover:bg-[#e2e2e6] transition"
           >
             일기쓰러 가기
           </Link>

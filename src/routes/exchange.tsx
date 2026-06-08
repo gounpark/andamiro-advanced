@@ -66,17 +66,17 @@ function LoginPrompt() {
       <div className="grid h-20 w-20 place-items-center rounded-3xl mb-6 shadow-md" style={{ background: "var(--primary)" }}>
         <span className="text-white text-[40px]">📖</span>
       </div>
-      <p className="text-[18px] font-bold text-foreground tracking-tight mb-2 text-center">
+      <p className="text-[18px] font-bold text-foreground mb-2 text-center">
         교환일기는 로그인이 필요해요
       </p>
-      <p className="text-[14px] text-[#aaa] tracking-tight mb-8 text-center leading-relaxed">
+      <p className="text-[14px] text-[#aaa] mb-8 text-center leading-relaxed">
         로그인하면 누가 일기를 읽었는지,<br />
         누가 댓글을 달았는지 확인할 수 있어요.
       </p>
       <Link
         to="/login"
         search={{ redirect: "/exchange" }}
-        className="w-full flex items-center justify-center gap-2 rounded-2xl py-4 font-bold text-white text-[16px] tracking-tight active:scale-[0.99] transition"
+        className="w-full flex items-center justify-center gap-2 rounded-2xl py-4 font-bold text-white text-[16px] active:scale-[0.99] transition"
         style={{ background: "var(--primary)" }}
       >
         Google로 로그인하기
@@ -167,7 +167,7 @@ function ExchangeListPage() {
               key={t}
               type="button"
               onClick={() => setTab(t)}
-              className={`flex-1 text-[14px] font-semibold tracking-[-0.28px] transition ${
+              className={`flex-1 text-[14px] font-semibold transition ${
                 tab === t
                   ? "text-[#4283f3] border-b-2 border-[#4283f3] pt-[12px] pb-[14px]"
                   : "text-[#bbb] py-[12px]"
@@ -236,12 +236,12 @@ function ExchangeListPage() {
             />
           </div>
           {inviteError && (
-            <p className="text-[12px] text-red-400 tracking-tight px-1">{inviteError}</p>
+            <p className="text-[12px] text-red-400 px-1">{inviteError}</p>
           )}
           <button
             type="button"
             onClick={handleJoinConfirm}
-            className="mt-2 w-full rounded-2xl py-3.5 font-bold text-white text-[16px] tracking-tight active:scale-[0.99] transition"
+            className="mt-2 w-full rounded-2xl py-3.5 font-bold text-white text-[16px] active:scale-[0.99] transition"
             style={{ background: "var(--primary)" }}
           >
             열람하기
@@ -249,7 +249,7 @@ function ExchangeListPage() {
           <button
             type="button"
             onClick={() => setInviteDiary(null)}
-            className="w-full rounded-2xl py-2.5 text-[14px] text-[#999] tracking-tight"
+            className="w-full rounded-2xl py-2.5 text-[14px] text-[#999]"
           >
             취소
           </button>
@@ -298,10 +298,10 @@ function EmptyMy() {
       <div className="grid h-20 w-20 place-items-center rounded-full bg-[var(--primary)]/10 mb-5">
         <BookOpen className="h-9 w-9 text-[var(--primary)]" strokeWidth={1.9} />
       </div>
-      <p className="text-[18px] font-bold text-foreground tracking-tight mb-2">
+      <p className="text-[18px] font-bold text-foreground mb-2">
         아직 공유한 일기가 없어요
       </p>
-      <p className="text-[14px] text-[#aaa] tracking-tight leading-relaxed mb-8">
+      <p className="text-[14px] text-[#aaa] leading-relaxed mb-8">
         일기를 만들고 소중한 사람에게
         <br />
         초대 링크를 공유해 보세요.
@@ -316,10 +316,10 @@ function EmptyShared() {
       <div className="grid h-20 w-20 place-items-center rounded-full bg-[#f4f6fa] mb-5">
         <BookOpen className="h-9 w-9 text-[#bbb]" strokeWidth={1.9} />
       </div>
-      <p className="text-[18px] font-bold text-foreground tracking-tight mb-2">
+      <p className="text-[18px] font-bold text-foreground mb-2">
         아직 공유받은 일기가 없어요
       </p>
-      <p className="text-[14px] text-[#aaa] tracking-tight leading-relaxed">
+      <p className="text-[14px] text-[#aaa] leading-relaxed">
         초대 링크를 받으면 여기에 표시돼요.
       </p>
     </div>
@@ -370,11 +370,11 @@ function DiaryCard({ diary, showAuthor, commentCount, onMenuOpen }: { diary: Exc
       )}
 
       <div className="min-w-0 flex-1">
-        <p className="max-w-[170px] truncate text-[16px] font-bold text-[#222] tracking-[-0.3px] leading-normal">
+        <p className="max-w-[170px] truncate text-[16px] font-bold text-[#222] leading-normal">
           {diary.title}
         </p>
 
-        <div className="mt-1.5 flex items-center gap-1.5 text-[12px] text-[#999] tracking-[-0.12px] leading-none">
+        <div className="mt-1.5 flex items-center gap-1.5 text-[12px] text-[#999] leading-none">
           {showAuthor ? (
             <span className="max-w-[88px] truncate">
               {diary.authorName}
@@ -448,7 +448,7 @@ export function InviteLinkButton({ diary }: { diary: ExchangeDiary }) {
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
         </svg>
       )}
-      <span className="text-[12px] font-medium text-foreground tracking-tight">
+      <span className="text-[12px] font-medium text-foreground">
         {copied ? "복사됨!" : "초대 링크 복사"}
       </span>
     </button>

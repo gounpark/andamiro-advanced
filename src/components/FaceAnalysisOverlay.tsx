@@ -288,7 +288,7 @@ export function FaceAnalysisOverlay({ onClose, onComplete }: FaceAnalysisOverlay
               className="h-10 w-10 rounded-full border-[3px] animate-spin"
               style={{ borderColor: "rgba(255,255,255,0.12)", borderTopColor: "rgba(255,255,255,0.65)" }}
             />
-            <p className="text-white/50 text-[14px] tracking-tight">
+            <p className="text-white/50 text-[14px]">
               {!modelsReady ? "AI 모델 로드 중..." : "카메라 준비 중..."}
             </p>
           </div>
@@ -365,7 +365,7 @@ export function FaceAnalysisOverlay({ onClose, onComplete }: FaceAnalysisOverlay
                 return (
                   <div key={key} className="flex items-center gap-[8px]">
                     <span
-                      className="text-[12px] shrink-0 tracking-tight"
+                      className="text-[12px] shrink-0"
                       style={{ color: "rgba(255,255,255,0.75)", width: "40px" }}
                     >
                       {label}
@@ -402,7 +402,7 @@ export function FaceAnalysisOverlay({ onClose, onComplete }: FaceAnalysisOverlay
         <button
           type="button"
           onClick={handleClose}
-          className="flex-1 h-[52px] rounded-[12px] text-white font-medium text-[16px] tracking-[-0.48px]"
+          className="flex-1 h-[52px] rounded-[12px] text-white font-medium text-[16px]"
           style={{
             background: "rgba(255,255,255,0.15)",
             border: "1px solid rgba(255,255,255,0.20)",
@@ -417,7 +417,7 @@ export function FaceAnalysisOverlay({ onClose, onComplete }: FaceAnalysisOverlay
           type="button"
           onClick={handleComplete}
           disabled={!expressions}
-          className="flex-1 h-[52px] rounded-[12px] text-white font-medium text-[16px] tracking-[-0.48px] transition disabled:opacity-35"
+          className="flex-1 h-[52px] rounded-[12px] text-white font-medium text-[16px] transition disabled:opacity-35"
           style={{ background: "#4283f3" }}
         >
           기록 완료

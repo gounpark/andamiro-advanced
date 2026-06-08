@@ -26,7 +26,7 @@ export function LoadingScreen({
           className="h-7 w-7 rounded-full border-[3px] border-[#ddd] animate-spin"
           style={{ borderTopColor: "var(--primary, #4B82F5)" }}
         />
-        <p className="text-[14px] tracking-tight text-[#aaa]">{message}</p>
+        <p className="text-[14px] text-[#aaa]">{message}</p>
       </div>
     </PageShell>
   );

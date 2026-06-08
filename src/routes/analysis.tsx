@@ -590,8 +590,8 @@ function AnalysisPage() {
           {/* 점수 카드 */}
           <section className="bg-white px-5 pt-8 pb-10">
             <div style={fadeIn(1)}>
-              <p className="text-[14px] text-[#9a9aa3] tracking-tight">데일리 채팅 분석</p>
-              <h2 className="mt-1.5 font-bold text-foreground text-[20px] tracking-tight">
+              <p className="text-[14px] text-[#9a9aa3]">데일리 채팅 분석</p>
+              <h2 className="mt-1.5 font-bold text-foreground text-[20px]">
                 오늘의 감정 점수
               </h2>
             </div>
@@ -617,11 +617,11 @@ function AnalysisPage() {
           >
             <div className="flex flex-col items-center">
               <img src={iconChat} alt="" className="h-[52px] w-[52px] object-contain" />
-              <h3 className="mt-2 font-bold text-foreground text-[18px] tracking-tight">
+              <h3 className="mt-2 font-bold text-foreground text-[18px]">
                 {summaryTitle}
               </h3>
             </div>
-            <p className="mt-4 text-[14px] leading-[1.75] text-foreground/85 tracking-tight">
+            <p className="mt-4 text-[14px] leading-[1.75] text-foreground/85">
               {summaryBody}
             </p>
 
@@ -629,7 +629,7 @@ function AnalysisPage() {
               <span className="inline-block rounded-md px-2 py-0.5 text-[12px] font-semibold text-white bg-[#786359]">
                 채팅 요약
               </span>
-              <p className="mt-2 text-[13.5px] leading-[1.7] text-foreground/85 tracking-tight">
+              <p className="mt-2 text-[13.5px] leading-[1.7] text-foreground/85">
                 {chatRecap}
               </p>
             </div>
@@ -643,7 +643,7 @@ function AnalysisPage() {
           >
             <div className="flex flex-col items-center">
               <img src={iconAiBook} alt="" className="h-[52px] w-[52px] object-contain" />
-              <h3 className="mt-2 font-bold text-foreground text-[18px] tracking-tight">
+              <h3 className="mt-2 font-bold text-foreground text-[18px]">
                 내일은 이렇게 준비해보세요!
               </h3>
             </div>
@@ -655,10 +655,10 @@ function AnalysisPage() {
                     {t.num}
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground text-[16px] tracking-tight">
+                    <p className="font-semibold text-foreground text-[16px]">
                       {t.title}
                     </p>
-                    <p className="mt-0.5 text-[14px] text-foreground/65 tracking-tight">{t.body}</p>
+                    <p className="mt-0.5 text-[14px] text-foreground/65">{t.body}</p>
                   </div>
                 </li>
               ))}
@@ -670,7 +670,7 @@ function AnalysisPage() {
             <Link
               to="/advice"
               search={{ empty: false }}
-              className="flex w-full items-center justify-center bg-white py-3.5 font-semibold text-[var(--primary)] text-[16px] tracking-tight border border-[var(--primary)]/20 active:scale-[0.99] transition rounded-2xl shadow-none"
+              className="flex w-full items-center justify-center bg-white py-3.5 font-semibold text-[var(--primary)] text-[16px] border border-[var(--primary)]/20 active:scale-[0.99] transition rounded-2xl shadow-none"
             >
               조언 바로가기
             </Link>
@@ -691,7 +691,7 @@ function AnalysisPage() {
                 }
                 navigate({ to: "/exchange/create", search: { invite: undefined } });
               }}
-              className="flex w-full items-center justify-center gap-2 bg-white py-3.5 font-semibold text-[var(--primary)] text-[16px] tracking-tight border border-[var(--primary)]/20 active:scale-[0.99] transition rounded-2xl shadow-none"
+              className="flex w-full items-center justify-center gap-2 bg-white py-3.5 font-semibold text-[var(--primary)] text-[16px] border border-[var(--primary)]/20 active:scale-[0.99] transition rounded-2xl shadow-none"
             >
               <BookOpen className="h-4 w-4" />
               교환일기로 만들기
@@ -699,7 +699,7 @@ function AnalysisPage() {
             <Link
               to="/"
               search={{} as any}
-              className="flex w-full items-center justify-center rounded-2xl bg-[var(--primary)] py-3.5 font-semibold text-white text-[16px] tracking-tight shadow-md active:scale-[0.99] transition"
+              className="flex w-full items-center justify-center rounded-2xl bg-[var(--primary)] py-3.5 font-semibold text-white text-[16px] shadow-md active:scale-[0.99] transition"
             >
               완료
             </Link>
@@ -754,11 +754,11 @@ function ScoreGauge({ score, label }: { score: number; label: string }) {
 
       {/* 중앙 라벨 */}
       <div className="absolute inset-x-0 flex flex-col items-center" style={{ top: 44 }}>
-        <span className="text-[14px] font-semibold text-foreground/80 tracking-tight">{label}</span>
-        <div className="mt-2 font-extrabold text-foreground text-[38px] leading-none tracking-tight">
+        <span className="text-[14px] font-semibold text-foreground/80">{label}</span>
+        <div className="mt-2 font-extrabold text-foreground text-[38px] leading-none">
           {score}
         </div>
-        <div className="mt-1.5 text-[10px] font-semibold text-[#9a9aa3] tracking-[0.22em]">
+        <div className="mt-1.5 text-[10px] font-semibold text-[#9a9aa3]">
           SCORE
         </div>
       </div>
@@ -774,8 +774,8 @@ function polar(cx: number, cy: number, r: number, angleDeg: number) {
 function MetricBar({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex flex-col items-start">
-      <span className="text-[12px] text-foreground/70 tracking-tight">{label}</span>
-      <span className="mt-1 text-[12px] font-semibold text-foreground tracking-tight">
+      <span className="text-[12px] text-foreground/70">{label}</span>
+      <span className="mt-1 text-[12px] font-semibold text-foreground">
         {value}
         <span className="ml-0.5 text-[10px] font-normal text-[#9a9aa3]">/100점</span>
       </span>
@@ -1081,7 +1081,7 @@ function EmotionReportPage({
           className="bg-white border-b border-[#f0f0f0]"
           title={
             <div className="flex flex-col items-center gap-1">
-              <span className="font-semibold text-foreground text-[16px] tracking-tight">{stepTitles[step]}</span>
+              <span className="font-semibold text-foreground text-[16px]">{stepTitles[step]}</span>
               <StepDots current={step} />
             </div>
           }
@@ -1110,13 +1110,13 @@ function EmotionReportPage({
                 ) : (
                   <div className="rounded-2xl bg-[#f3f4f8] aspect-video flex flex-col items-center justify-center gap-2">
                     <span className="text-3xl">🎙</span>
-                    <p className="text-[14px] text-[#999] tracking-tight">
+                    <p className="text-[14px] text-[#999]">
                       음성으로만 기록되었어요
                     </p>
                   </div>
                 )}
                 {record.videoUrl && duration > 0 && (
-                  <p className="mt-2 text-[12px] text-[#9a9aa3] tracking-tight text-center">
+                  <p className="mt-2 text-[12px] text-[#9a9aa3] text-center">
                     녹화 시간 {formatSec(duration)}
                   </p>
                 )}
@@ -1124,8 +1124,8 @@ function EmotionReportPage({
 
               {/* AI 분석 결과 */}
               <section className="mx-4 mt-4 rounded-2xl bg-white p-6 shadow-sm">
-                <p className="text-[12px] text-[#9a9aa3] tracking-tight mb-1">AI 감정 분석</p>
-                <h2 className="font-bold text-foreground text-[18px] tracking-tight mb-4">
+                <p className="text-[12px] text-[#9a9aa3] mb-1">AI 감정 분석</p>
+                <h2 className="font-bold text-foreground text-[18px] mb-4">
                   오늘 표정에서 이런 감정이 보였어요
                 </h2>
                 {aiMoodMeta && (
@@ -1136,7 +1136,7 @@ function EmotionReportPage({
                       className="h-14 w-14 object-contain shrink-0"
                     />
                     <div>
-                      <p className="font-bold text-foreground text-[20px] tracking-tight">
+                      <p className="font-bold text-foreground text-[20px]">
                         {aiMoodMeta.label}
                       </p>
                       {record.aiConfidence != null && (
@@ -1150,7 +1150,7 @@ function EmotionReportPage({
                               }}
                             />
                           </div>
-                          <span className="text-[12px] text-[#9a9aa3] tracking-tight">
+                          <span className="text-[12px] text-[#9a9aa3]">
                             신뢰도 {Math.round(record.aiConfidence * 100)}%
                           </span>
                         </div>
@@ -1187,12 +1187,12 @@ function EmotionReportPage({
               {(record.emotionTimeline ?? []).length >= 2 ? (
                 <section className="mx-4 mt-5 rounded-2xl bg-white p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-1">
-                    <h2 className="font-bold text-foreground text-[18px] tracking-tight">
+                    <h2 className="font-bold text-foreground text-[18px]">
                       감정 흐름 그래프
                     </h2>
                     <span className="text-[10px] text-[#bbb]">ⓘ AI 추정값</span>
                   </div>
-                  <p className="text-[12px] text-[#9a9aa3] tracking-tight mb-4">
+                  <p className="text-[12px] text-[#9a9aa3] mb-4">
                     영상 전체에서 감지된 감정의 변화예요
                   </p>
                   <div className="flex flex-wrap gap-x-3 gap-y-1 mb-4">
@@ -1216,7 +1216,7 @@ function EmotionReportPage({
 
               {stats && (
                 <section className="mx-4 mt-4 rounded-2xl bg-white p-5 shadow-sm">
-                  <h2 className="font-bold text-foreground text-[16px] tracking-tight mb-4">
+                  <h2 className="font-bold text-foreground text-[16px] mb-4">
                     주요 감정 변화
                   </h2>
                   <div className="flex flex-col gap-3">
@@ -1246,8 +1246,8 @@ function EmotionReportPage({
             <div>
               {questions.length > 0 && (
                 <section className="mx-4 mt-5 rounded-2xl bg-white p-5 shadow-sm">
-                  <p className="text-[12px] text-[#9a9aa3] tracking-tight mb-1">AI가 발견한 순간</p>
-                  <h2 className="font-bold text-foreground text-[18px] tracking-tight mb-4">
+                  <p className="text-[12px] text-[#9a9aa3] mb-1">AI가 발견한 순간</p>
+                  <h2 className="font-bold text-foreground text-[18px] mb-4">
                     이 순간 어떤 기분이었나요?
                   </h2>
                   <div className="flex flex-col gap-3">
@@ -1256,7 +1256,7 @@ function EmotionReportPage({
                         key={i}
                         className="rounded-xl bg-[#f7f8fc] border border-[#eaecf4] px-4 py-3.5"
                       >
-                        <p className="text-[14px] leading-relaxed text-foreground/85 tracking-tight whitespace-pre-line">
+                        <p className="text-[14px] leading-relaxed text-foreground/85 whitespace-pre-line">
                           {q}
                         </p>
                       </div>
@@ -1267,8 +1267,8 @@ function EmotionReportPage({
 
               {record.transcript && (
                 <section className="mx-4 mt-4 rounded-2xl bg-white p-5 shadow-sm">
-                  <p className="text-[12px] text-[#9a9aa3] tracking-tight mb-1">🎙 음성 기록</p>
-                  <p className="text-[14px] leading-relaxed text-foreground/85 tracking-tight">
+                  <p className="text-[12px] text-[#9a9aa3] mb-1">🎙 음성 기록</p>
+                  <p className="text-[14px] leading-relaxed text-foreground/85">
                     {record.transcript}
                   </p>
                 </section>
@@ -1286,11 +1286,11 @@ function EmotionReportPage({
           {step === 3 && (
             <div>
               <section className="mx-4 mt-5 rounded-2xl bg-white p-6 shadow-sm">
-                <p className="text-[12px] text-[#9a9aa3] tracking-tight mb-1">오늘의 감정 기록</p>
-                <h2 className="font-bold text-foreground text-[20px] tracking-tight mb-1">
+                <p className="text-[12px] text-[#9a9aa3] mb-1">오늘의 감정 기록</p>
+                <h2 className="font-bold text-foreground text-[20px] mb-1">
                   지금 기분이 어때요?
                 </h2>
-                <p className="text-[14px] text-[#9a9aa3] tracking-tight mb-6">
+                <p className="text-[14px] text-[#9a9aa3] mb-6">
                   AI 분석은 참고용이에요. 내가 느낀 감정을 직접 골라주세요.
                 </p>
                 <div className="grid grid-cols-5 gap-2">
@@ -1328,7 +1328,7 @@ function EmotionReportPage({
             <button
               type="button"
               onClick={goPrev}
-              className="flex-1 flex items-center justify-center rounded-2xl py-3.5 font-semibold text-[16px] tracking-tight border border-[#e0e0e8] text-foreground/70 active:scale-[0.99] transition bg-white"
+              className="flex-1 flex items-center justify-center rounded-2xl py-3.5 font-semibold text-[16px] border border-[#e0e0e8] text-foreground/70 active:scale-[0.99] transition bg-white"
             >
               이전
             </button>
@@ -1337,7 +1337,7 @@ function EmotionReportPage({
             <button
               type="button"
               onClick={goNext}
-              className="flex-1 flex items-center justify-center rounded-2xl bg-[var(--primary)] py-3.5 font-semibold text-white text-[16px] tracking-tight shadow-md active:scale-[0.99] transition"
+              className="flex-1 flex items-center justify-center rounded-2xl bg-[var(--primary)] py-3.5 font-semibold text-white text-[16px] shadow-md active:scale-[0.99] transition"
             >
               다음
             </button>
@@ -1347,7 +1347,7 @@ function EmotionReportPage({
               onClick={handleSave}
               disabled={!selectedMood || saved}
               style={{ touchAction: "manipulation" }}
-              className={`flex-1 flex items-center justify-center rounded-2xl py-3.5 font-bold text-[16px] tracking-tight transition-all shadow-md ${
+              className={`flex-1 flex items-center justify-center rounded-2xl py-3.5 font-bold text-[16px] transition-all shadow-md ${
                 selectedMood && !saved
                   ? "bg-[var(--primary)] text-white active:scale-[0.99]"
                   : "bg-[#e8e8ec] text-[#b8bac2] cursor-not-allowed"
@@ -1467,13 +1467,13 @@ function MoodSelectionStep({
           {/* 타이틀 */}
           <section className="px-6 pt-3">
             <p
-              className="text-[16px] tracking-tight transition-colors duration-300"
+              className="text-[16px] transition-colors duration-300"
               style={{ color: selectedMood === "worst" ? "#ffffff" : "#8a8d96" }}
             >
               AI 분석은 참고용이에요
             </p>
             <h1
-              className="mt-2 font-bold text-[28px] leading-[1.25] tracking-tight transition-colors duration-300"
+              className="mt-2 font-bold text-[28px] leading-[1.25] transition-colors duration-300"
               style={{ color: selectedMood === "worst" ? "#ffffff" : undefined }}
             >
               내가 느낀 감정을
@@ -1487,7 +1487,7 @@ function MoodSelectionStep({
             {/* 말풍선 */}
             <div className="rounded-full bg-white/95 px-5 py-2 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
               {current ? (
-                <span className="font-semibold text-foreground text-[16px] tracking-tight">
+                <span className="font-semibold text-foreground text-[16px]">
                   {current.label}
                 </span>
               ) : (
@@ -1556,8 +1556,8 @@ function MoodSelectionStep({
                 />
               </svg>
             )}
-            <p className="text-[12px] text-[#9a9aa3] tracking-tight">오늘의 감정 기록</p>
-            <h2 className="mt-1 font-bold text-foreground text-[18px] leading-snug tracking-tight">
+            <p className="text-[12px] text-[#9a9aa3]">오늘의 감정 기록</p>
+            <h2 className="mt-1 font-bold text-foreground text-[18px] leading-snug">
               {current
                 ? `${current.label} 기분이었군요! 기록해볼게요.`
                 : "감정을 선택하고 기록 완료하기"}
@@ -1567,7 +1567,7 @@ function MoodSelectionStep({
               disabled={!hasSelection || saved}
               onClick={onSave}
               style={{ touchAction: "manipulation" }}
-              className={`mt-3 flex w-full items-center justify-center rounded-2xl py-3.5 font-semibold text-[16px] tracking-tight transition-all ${
+              className={`mt-3 flex w-full items-center justify-center rounded-2xl py-3.5 font-semibold text-[16px] transition-all ${
                 hasSelection && !saved
                   ? "bg-[var(--primary)] text-white shadow-md active:scale-[0.99]"
                   : "bg-[#e8e8ec] text-[#a8a8b0] cursor-not-allowed"
@@ -1667,8 +1667,8 @@ function SummaryRow({ icon, label, value }: { icon: string; label: string; value
     <div className="flex items-start gap-3">
       <span className="text-[18px] leading-none mt-0.5">{icon}</span>
       <div className="flex-1 min-w-0">
-        <p className="text-[12px] text-[#9a9aa3] tracking-tight">{label}</p>
-        <p className="text-[14px] font-semibold text-foreground tracking-tight mt-0.5">{value}</p>
+        <p className="text-[12px] text-[#9a9aa3]">{label}</p>
+        <p className="text-[14px] font-semibold text-foreground mt-0.5">{value}</p>
       </div>
     </div>
   );

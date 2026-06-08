@@ -148,7 +148,7 @@ function AdviceWithData() {
                   className="h-5 w-5 object-contain animate-cookie-wiggle"
                 />
               </span>
-              <span className="text-foreground/85 tracking-tight text-sm">
+              <span className="text-foreground/85 text-sm">
                 포춘쿠키를 확인하세요!
               </span>
             </Link>
@@ -162,12 +162,12 @@ function AdviceWithData() {
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[12px] text-[#9a9aa3] tracking-tight">4월 20일 월요일</p>
-                <h2 className="mt-1 font-bold text-foreground text-[18px] leading-tight tracking-tight">
+                <p className="text-[12px] text-[#9a9aa3]">4월 20일 월요일</p>
+                <h2 className="mt-1 font-bold text-foreground text-[18px] leading-tight">
                   안정적이고 균형 잡힌 날
                 </h2>
                 <div className="mt-3 flex items-baseline gap-1">
-                  <span className="font-extrabold text-foreground text-[40px] leading-none tracking-tight">
+                  <span className="font-extrabold text-foreground text-[40px] leading-none">
                     80
                   </span>
                   <span className="text-[14px] font-medium text-foreground/70">점</span>
@@ -189,7 +189,7 @@ function AdviceWithData() {
               className="mx-4 rounded-2xl bg-white p-5 shadow-sm"
               style={fadeIn(3)}
             >
-              <p className="text-[13.5px] leading-[1.65] text-foreground/85 tracking-tight">
+              <p className="text-[13.5px] leading-[1.65] text-foreground/85">
                 오늘은 블루(파란색)이 당신에게 긍정적인 에너지를 가져다 줄 거예요!{" "}
                 <span className="text-[var(--primary)]">💙</span>
               </p>
@@ -197,7 +197,7 @@ function AdviceWithData() {
                 {TAGS.map((t) => (
                   <span
                     key={t}
-                    className="rounded-full bg-[#e6eefc] px-3 py-1 text-[12px] font-medium text-[#3b6fff] tracking-tight"
+                    className="rounded-full bg-[#e6eefc] px-3 py-1 text-[12px] font-medium text-[#3b6fff]"
                   >
                     #{t}
                   </span>
@@ -213,11 +213,11 @@ function AdviceWithData() {
             >
               <div className="flex flex-col items-center">
                 <img src={quoteRight} alt="" className="h-10 w-10 object-contain" />
-                <h3 className="mt-1 font-bold text-foreground text-[15.5px] tracking-tight">
+                <h3 className="mt-1 font-bold text-foreground text-[15.5px]">
                   오늘은 이렇게 보내보세요!
                 </h3>
               </div>
-              <p className="mt-4 text-[14px] leading-[1.75] text-foreground/85 tracking-tight">
+              <p className="mt-4 text-[14px] leading-[1.75] text-foreground/85">
                 평온한 마음으로 하루를 차분하게 보내신 점이 정말 좋습니다. 애정 운이 82점으로 높은
                 만큼, 소중한 사람들과의 작은 순간들을 더 의식적으로 챙겨보세요. 습한 날씨 속에서도
                 당신의 따뜻한 에너지가 주변을 밝혀주고 있으니, 내일도 그 평온함을 잃지 않으시길
@@ -257,7 +257,7 @@ function ChatBubble({
       <span className={`inline-block rounded-md px-2 py-0.5 text-[12px] font-semibold ${tagBg}`}>
         {tag}
       </span>
-      <p className="mt-2 text-[12.5px] leading-[1.65] text-foreground/80 tracking-tight">
+      <p className="mt-2 text-[12.5px] leading-[1.65] text-foreground/80">
         {children}
       </p>
     </div>

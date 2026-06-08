@@ -142,10 +142,10 @@ function ExchangeDiaryPage() {
             <div className="grid h-16 w-16 place-items-center rounded-2xl bg-[var(--primary)]/10 mb-4">
               <Lock className="h-7 w-7 text-[var(--primary)]" />
             </div>
-            <p className="font-bold text-foreground text-[18px] tracking-tight mb-1 text-center">
+            <p className="font-bold text-foreground text-[18px] mb-1 text-center">
               비밀번호를 입력해 주세요
             </p>
-            <p className="text-[14px] text-[#aaa] mb-6 text-center tracking-tight leading-relaxed">
+            <p className="text-[14px] text-[#aaa] mb-6 text-center leading-relaxed">
               <span className="font-semibold text-foreground">"{diary.title}"</span>을<br />
               읽으려면 비밀번호가 필요해요.
             </p>
@@ -165,11 +165,11 @@ function ExchangeDiaryPage() {
               />
             </div>
             {pwError && (
-              <p className="text-[12px] text-red-400 mb-2 self-start tracking-tight">{pwError}</p>
+              <p className="text-[12px] text-red-400 mb-2 self-start">{pwError}</p>
             )}
             <button
               type="button"
-              className="w-full mt-2 rounded-2xl py-3.5 font-bold text-white text-[16px] tracking-tight active:scale-[0.99] transition"
+              className="w-full mt-2 rounded-2xl py-3.5 font-bold text-white text-[16px] active:scale-[0.99] transition"
               style={{ background: "var(--primary)" }}
               onClick={handleAuthorize}
             >
@@ -178,7 +178,7 @@ function ExchangeDiaryPage() {
             <button
               type="button"
               onClick={() => navigate({ to: "/exchange", search: { invite: undefined } })}
-              className="mt-2 w-full py-2.5 text-[14px] text-[#999] tracking-tight"
+              className="mt-2 w-full py-2.5 text-[14px] text-[#999]"
             >
               돌아가기
             </button>
@@ -232,7 +232,7 @@ function ExchangeDiaryPage() {
                   {diary.authorName.charAt(0)}
                 </div>
                 <div>
-                  <p className="text-[14px] font-bold text-[#222] tracking-[-0.26px] leading-tight">
+                  <p className="text-[14px] font-bold text-[#222] leading-tight">
                     {diary.authorName}
                   </p>
                   <p className="text-[14px] text-[#666]">
@@ -241,7 +241,7 @@ function ExchangeDiaryPage() {
                 </div>
               </div>
 
-              <h1 className="mb-3 text-[20px] font-bold leading-[26px] tracking-[-0.5px] text-[#222]">
+              <h1 className="mb-3 text-[20px] font-bold leading-[26px] text-[#222]">
                 {diary.title}
               </h1>
 
@@ -250,7 +250,7 @@ function ExchangeDiaryPage() {
                   {diary.keywords.map((k) => (
                     <span
                       key={k}
-                      className="text-[12px] px-2.5 py-0.5 rounded-full font-medium tracking-tight"
+                      className="text-[12px] px-2.5 py-0.5 rounded-full font-medium"
                       style={{ background: "var(--primary)20", color: "var(--primary)" }}
                     >
                       #{k}
@@ -259,7 +259,7 @@ function ExchangeDiaryPage() {
                 </div>
               )}
 
-              <p className="whitespace-pre-wrap text-[16px] leading-[25.5px] tracking-[-0.15px] text-[#333]">
+              <p className="whitespace-pre-wrap text-[16px] leading-[25.5px] text-[#333]">
                 {diary.body}
               </p>
 
@@ -287,7 +287,7 @@ function ExchangeDiaryPage() {
                       />
                     ))}
                   </div>
-                  <span className="text-[14px] text-[#666] tracking-[-0.12px]">
+                  <span className="text-[14px] text-[#666]">
                     {diary.viewerIds.length}명이 읽었어요
                   </span>
                 </button>
@@ -302,7 +302,7 @@ function ExchangeDiaryPage() {
               댓글 {comments.length}
             </p>
             {rootComments.length === 0 && (
-              <p className="py-5 text-center text-[14px] tracking-tight text-[#bbb]">
+              <p className="py-5 text-center text-[14px] text-[#bbb]">
                 첫 댓글을 남겨보세요
               </p>
             )}
@@ -346,7 +346,7 @@ function ExchangeDiaryPage() {
           {replyTo && (
             <div className="flex items-center gap-2 mb-2 px-1">
               <CornerDownRight className="h-3.5 w-3.5 text-[var(--primary)] shrink-0" />
-              <span className="text-[12px] text-[#666] flex-1 truncate tracking-tight">
+              <span className="text-[12px] text-[#666] flex-1 truncate">
                 {replyTo.authorName}에게 답글
               </span>
               <button type="button" onClick={() => setReplyTo(null)}>
@@ -408,10 +408,10 @@ function ExchangeDiaryPage() {
           <div className="absolute inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.6)" }} onClick={() => shareSheetMode === "share" && setShareSheetMode(null)}>
             <div className="relative w-full rounded-t-[20px] bg-white flex flex-col" style={{ height: 396 }} onClick={(e) => e.stopPropagation()}>
               <div className="px-6 pt-[38px] shrink-0">
-                <h3 className="text-center text-[22px] font-bold leading-[26px] tracking-[-0.45px] text-[#111]">
+                <h3 className="text-center text-[22px] font-bold leading-[26px] text-[#111]">
                   {shareSheetMode === "created" ? "공유 일기가 만들어졌어요!" : "친구에게 공유하기"}
                 </h3>
-                <p className="mt-[6px] text-center text-[14px] leading-[19.5px] tracking-[-0.13px] text-[#999]">
+                <p className="mt-[6px] text-center text-[14px] leading-[19.5px] text-[#999]">
                   {shareSheetMode === "created" ? "초대 링크를 보내서 친구에게 공유해 보세요." : "초대 링크로 친구를 일기에 초대해 보세요."}
                 </p>
               </div>
@@ -422,7 +422,7 @@ function ExchangeDiaryPage() {
                 <button
                   type="button"
                   onClick={() => handleCopyLink(diary)}
-                  className="flex h-[52px] flex-1 items-center justify-center gap-1.5 rounded-[12px] border border-[#4283f3] bg-white text-[16px] font-medium tracking-[-0.48px] text-[#4283f3] active:scale-[0.99] transition"
+                  className="flex h-[52px] flex-1 items-center justify-center gap-1.5 rounded-[12px] border border-[#4283f3] bg-white text-[16px] font-medium text-[#4283f3] active:scale-[0.99] transition"
                 >
                   {copied ? <Check className="h-4 w-4" /> : null}
                   {copied ? "복사됨" : "링크 복사"}
@@ -430,7 +430,7 @@ function ExchangeDiaryPage() {
                 <button
                   type="button"
                   onClick={() => handleShareDiary(diary)}
-                  className="flex h-[52px] w-[198px] shrink-0 items-center justify-center rounded-[12px] bg-[#4283f3] text-[16px] font-medium tracking-[-0.48px] text-white active:scale-[0.99] transition"
+                  className="flex h-[52px] w-[198px] shrink-0 items-center justify-center rounded-[12px] bg-[#4283f3] text-[16px] font-medium text-white active:scale-[0.99] transition"
                 >
                   친구에게 공유
                 </button>
@@ -502,7 +502,7 @@ function ReadersSheet({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 pt-4 pb-3 shrink-0">
-          <h3 className="text-[16px] font-bold tracking-tight text-[#222]">
+          <h3 className="text-[16px] font-bold text-[#222]">
             이 일기를 읽은 사람 ({diary.viewerIds.length})
           </h3>
           <button
@@ -521,7 +521,7 @@ function ReadersSheet({
             return (
               <div key={vid} className="flex items-center gap-3 py-2.5">
                 <ReaderAvatar id={vid} name={name} avatar={avatar} size={40} />
-                <span className="text-[16px] tracking-tight text-[#333]">{name}</span>
+                <span className="text-[16px] text-[#333]">{name}</span>
               </div>
             );
           })}
@@ -549,7 +549,7 @@ function InviteCopyPill({ diary }: { diary: ExchangeDiary }) {
     <button
       type="button"
       onClick={handleCopy}
-      className="flex h-9 items-center gap-1.5 rounded-full border border-[#e6e6e6] bg-white px-3.5 text-[14px] font-medium tracking-tight text-[var(--primary)] active:scale-[0.97] transition"
+      className="flex h-9 items-center gap-1.5 rounded-full border border-[#e6e6e6] bg-white px-3.5 text-[14px] font-medium text-[var(--primary)] active:scale-[0.97] transition"
     >
       {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
       {copied ? "복사됨" : "초대 링크 복사"}
@@ -596,7 +596,7 @@ function CommentItem({
       <div className="flex-1 min-w-0">
         {/* 작성자 이름 + 시간 — Figma: 16px bold #222, 14px regular #666 */}
         <div className="flex items-center gap-[6px] py-[2px] mb-[2px]">
-          <span className="text-[16px] font-bold text-[#222] tracking-[-0.26px] whitespace-nowrap">
+          <span className="text-[16px] font-bold text-[#222] whitespace-nowrap">
             {comment.authorName}
           </span>
           <span className="text-[14px] text-[#666]">{relativeTime(comment.createdAt)}</span>

@@ -254,13 +254,13 @@ function RecordPage() {
           {/* 타이틀 */}
           <section className="px-6 pt-3">
             <p
-              className="text-[16px] tracking-tight transition-colors duration-300"
+              className="text-[16px] transition-colors duration-300"
               style={{ color: selected === "worst" ? "#ffffff" : "#8a8d96" }}
             >
               가장 가까운 감정을 골라주세요
             </p>
             <h1
-              className="mt-2 font-bold text-[28px] leading-[1.25] tracking-tight transition-colors duration-300"
+              className="mt-2 font-bold text-[28px] leading-[1.25] transition-colors duration-300"
               style={{ color: selected === "worst" ? "#ffffff" : undefined }}
             >
               지금 기분이 어때요?
@@ -272,7 +272,7 @@ function RecordPage() {
             {/* 말풍선 */}
             <div className="rounded-full bg-white/95 px-5 py-2 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
               {current ? (
-                <span className="font-semibold text-foreground text-[16px] tracking-tight">
+                <span className="font-semibold text-foreground text-[16px]">
                   {current.label}
                 </span>
               ) : (
@@ -345,8 +345,8 @@ function RecordPage() {
                 />
               </svg>
             )}
-            <p className="text-[12px] text-[#9a9aa3] tracking-tight">오늘의 감정톡</p>
-            <h2 className="mt-1 font-bold text-foreground text-[18px] leading-snug tracking-tight">
+            <p className="text-[12px] text-[#9a9aa3]">오늘의 감정톡</p>
+            <h2 className="mt-1 font-bold text-foreground text-[18px] leading-snug">
               {current ? current.cta : "감정 선택하고 대화 시작하기"}
             </h2>
 
@@ -358,7 +358,7 @@ function RecordPage() {
                 if (!selected) return;
                 navigate({ to: "/chat", search: { mood: selected } });
               }}
-              className={`mt-3 flex w-full items-center justify-center rounded-2xl py-3.5 font-semibold text-[16px] tracking-tight transition-all ${
+              className={`mt-3 flex w-full items-center justify-center rounded-2xl py-3.5 font-semibold text-[16px] transition-all ${
                 hasSelection
                   ? "bg-[var(--primary)] text-white shadow-md active:scale-[0.99]"
                   : "bg-[#e8e8ec] text-[#a8a8b0] cursor-not-allowed"

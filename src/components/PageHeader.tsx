@@ -53,7 +53,7 @@ export function PageHeader({
         )}
         {title && (
           <span
-            className={`font-semibold ${titleColor} text-[16px] tracking-tight`}
+            className={`font-semibold ${titleColor} text-[16px]`}
           >
             {title}
           </span>

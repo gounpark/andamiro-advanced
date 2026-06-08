@@ -46,7 +46,7 @@ export function BottomNav({ active }: { active: BottomNavTab }) {
               aria-hidden
               className="h-[26px] w-[26px]"
             />
-            <span className="text-[12px] font-medium tracking-tight">{tab.label}</span>
+            <span className="text-[12px] font-medium">{tab.label}</span>
           </Link>
         );
       })}

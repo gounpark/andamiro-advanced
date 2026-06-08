@@ -47,12 +47,12 @@ export function BottomSheet({
         {(title || subtitle) && (
           <div className="mb-[14px] px-1">
             {title && (
-              <h3 className="font-bold text-[#454545] text-[18px] tracking-[-0.5px] truncate">
+              <h3 className="font-bold text-[#454545] text-[18px] truncate">
                 {title}
               </h3>
             )}
             {subtitle && (
-              <p className="mt-0.5 text-[14px] text-[#999] tracking-tight">{subtitle}</p>
+              <p className="mt-0.5 text-[14px] text-[#999]">{subtitle}</p>
             )}
           </div>
         )}
@@ -116,7 +116,7 @@ export function SheetItem({
 
       <div className="flex-1 min-w-0">
         <p
-          className={`tracking-tight ${textColor} ${
+          className={`${textColor} ${
             rich ? "text-[16px] font-semibold" : "text-[14px] font-medium"
           }`}
         >

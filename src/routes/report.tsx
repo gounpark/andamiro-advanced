@@ -372,10 +372,10 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
                 </Link>
               }
             />
-            <p className="text-[#f8f8f8] text-[20px] tracking-[-0.6px] leading-[1.5]">
+            <p className="text-[#f8f8f8] text-[20px] leading-[1.5]">
               {headerSub}
             </p>
-            <p className="font-semibold text-white text-[22px] tracking-[-0.66px] leading-[1.5]">
+            <p className="font-semibold text-white text-[22px] leading-[1.5]">
               {headerMain}
             </p>
           </div>
@@ -386,10 +386,10 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
             className="mx-4 mt-5 rounded-2xl bg-white px-5 pt-5 pb-5 shadow-sm"
             style={fadeIn(2)}
           >
-            <p className="text-[14px] text-[#a3a7ad] tracking-tight">한 주의 흐름</p>
-            <h3 className="mt-1 font-bold text-[#222] text-[20px] tracking-tight">요일별 에너지</h3>
+            <p className="text-[14px] text-[#a3a7ad]">한 주의 흐름</p>
+            <h3 className="mt-1 font-bold text-[#222] text-[20px]">요일별 에너지</h3>
             {!demo && entries.length < 3 && (
-              <p className="mt-1 text-[12px] text-[#bbb] tracking-tight">
+              <p className="mt-1 text-[12px] text-[#bbb]">
                 기록이 쌓이면 패턴이 보여요!
               </p>
             )}
@@ -412,8 +412,8 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
             className="mx-4 mt-5 rounded-2xl bg-white px-5 pt-5 pb-5 shadow-sm"
             style={fadeIn(3)}
           >
-            <p className="text-[14px] text-[#a3a7ad] tracking-tight">감정 리포트</p>
-            <h3 className="mt-1 font-bold text-[#222] text-[20px] tracking-tight">
+            <p className="text-[14px] text-[#a3a7ad]">감정 리포트</p>
+            <h3 className="mt-1 font-bold text-[#222] text-[20px]">
               자주 느낀 감정
             </h3>
             {!demo && entries.length < 2 ? (
@@ -435,7 +435,7 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
           >
             <div className="flex flex-col items-center gap-2.5">
               <img src={insightHeaderIcon} alt="" className="w-[50px] h-[50px]" />
-              <p className="font-bold text-[#222] text-[20px] tracking-tight">패턴 인사이트</p>
+              <p className="font-bold text-[#222] text-[20px]">패턴 인사이트</p>
             </div>
             <div className="mt-6 flex flex-col gap-[20px]">
               {insights.map((item, i) => (
@@ -488,13 +488,13 @@ function ReportWithData({ demo, entries }: { demo: boolean; entries: DiaryEntry[
                 className="w-[72px] h-[72px] object-contain shrink-0"
               />
               <div className="min-w-0">
-                <p className="text-[12px] font-semibold text-[#C49A3A] tracking-tight uppercase">
+                <p className="text-[12px] font-semibold text-[#C49A3A] uppercase">
                   오늘의 운세
                 </p>
-                <h3 className="mt-0.5 font-bold text-foreground text-[14px] tracking-tight leading-tight">
+                <h3 className="mt-0.5 font-bold text-foreground text-[14px] leading-tight">
                   포춘쿠키가 기다리고 있어요!
                 </h3>
-                <p className="mt-1 text-[12px] text-foreground/60 tracking-tight">
+                <p className="mt-1 text-[12px] text-foreground/60">
                   하루를 마무리하는 작은 선물
                 </p>
               </div>
@@ -552,7 +552,7 @@ function BubbleCluster({ bubbles }: { bubbles: BubbleData[] }) {
           }}
         >
           <strong
-            className="leading-tight tracking-tight"
+            className="leading-tight"
             style={{
               fontSize: b.labelSize * scale,
               color: b.labelColor,

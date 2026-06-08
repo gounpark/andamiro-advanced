@@ -54,13 +54,13 @@ export function EmptyState({
       />
 
       {title && (
-        <h2 className="mt-6 whitespace-pre-line text-center font-bold text-foreground text-[20px] leading-[1.4] tracking-tight">
+        <h2 className="mt-6 whitespace-pre-line text-center font-bold text-foreground text-[20px] leading-[1.4]">
           {title}
         </h2>
       )}
 
       {description && (
-        <p className="mt-3 text-center text-[14px] text-[#8a8d96] tracking-tight leading-relaxed">
+        <p className="mt-3 text-center text-[14px] text-[#8a8d96] leading-relaxed">
           {description}
         </p>
       )}
@@ -69,7 +69,7 @@ export function EmptyState({
         <Link
           to={action.to as "/"}
           search={{} as never}
-          className="mt-7 inline-flex items-center justify-center rounded-xl bg-[#ececef] px-6 py-3 font-semibold text-foreground text-[14px] tracking-tight hover:bg-[#e2e2e6] transition active:scale-[0.98]"
+          className="mt-7 inline-flex items-center justify-center rounded-xl bg-[#ececef] px-6 py-3 font-semibold text-foreground text-[14px] hover:bg-[#e2e2e6] transition active:scale-[0.98]"
         >
           {action.label}
         </Link>

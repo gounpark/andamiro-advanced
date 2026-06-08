@@ -353,10 +353,10 @@ function ChatPage() {
         <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-5 py-5 scrollbar-hide">
           {/* 인사말 */}
           <div className="mb-3">
-            <h2 className="font-bold text-foreground text-[20px] leading-[1.35] tracking-tight whitespace-pre-line">
+            <h2 className="font-bold text-foreground text-[20px] leading-[1.35] whitespace-pre-line">
               {greeting.title}
             </h2>
-            <p className="mt-2 text-[14px] text-[#8a8d96] tracking-tight">{greeting.sub}</p>
+            <p className="mt-2 text-[14px] text-[#8a8d96]">{greeting.sub}</p>
           </div>
 
           {/* 추천 칩 */}
@@ -454,7 +454,7 @@ function ChatPage() {
                 send(e.currentTarget.value);
               }}
               placeholder="질문을 입력해 보세요"
-              className="min-w-0 flex-1 bg-transparent px-2 text-[14px] text-foreground placeholder:text-[#b8bac2] outline-none tracking-tight"
+              className="min-w-0 flex-1 bg-transparent px-2 text-[14px] text-foreground placeholder:text-[#b8bac2] outline-none"
             />
 
             <button

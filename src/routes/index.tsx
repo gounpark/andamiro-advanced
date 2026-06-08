@@ -462,10 +462,10 @@ function Index() {
             />
 
             <section className="relative z-10 px-6 pt-2 pb-6">
-              <p className="text-[#f8f8f8] text-[18px] leading-tight tracking-tight">
+              <p className="text-[#f8f8f8] text-[18px] leading-tight">
                 오늘 하루는 어떠셨나요?
               </p>
-              <p className="mt-1 font-semibold text-white text-[22px] leading-tight tracking-tight">
+              <p className="mt-1 font-semibold text-white text-[22px] leading-tight">
                 지금 마음을 가볍게 남겨보세요!
               </p>
               <Link
@@ -475,7 +475,7 @@ function Index() {
                 onTouchStart={preloadRecordAssets}
                 className="mt-4 flex w-full items-center justify-between rounded-lg bg-white px-4 py-2.5 shadow-sm transition-transform active:scale-[0.99]"
               >
-                <span className="font-semibold text-[var(--primary)] text-[14px] tracking-tight">
+                <span className="font-semibold text-[var(--primary)] text-[14px]">
                   오늘 기록 남기러 가기
                 </span>
                 <ArrowRight className="h-5 w-5 text-[var(--primary)]" strokeWidth={2.2} />
@@ -486,7 +486,7 @@ function Index() {
           {/* 캘린더 */}
           <section className="relative z-10 -mt-3 rounded-t-[20px] bg-white px-6 pt-6 pb-6">
             <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-foreground text-[20px] tracking-tight">
+              <h2 className="font-semibold text-foreground text-[20px]">
                 {monthLabel}
               </h2>
               <div className="flex items-center gap-1">
@@ -515,7 +515,7 @@ function Index() {
               {WEEK_LABELS.map((d) => (
                 <div
                   key={d}
-                  className="text-center text-[12px] font-medium text-[#999] tracking-tight"
+                  className="text-center text-[12px] font-medium text-[#999]"
                 >
                   {d}
                 </div>
@@ -549,7 +549,7 @@ function Index() {
           {selectedDay !== null && (
             <section className="relative z-10 border-t border-[#f0f0f0] bg-white px-6 pt-5 pb-6">
               <div className="flex items-baseline gap-2">
-                <h3 className="font-semibold text-foreground text-[16px] tracking-tight">
+                <h3 className="font-semibold text-foreground text-[16px]">
                   {dispMonth}월 {selectedDay}일 {selectedWeekday}요일
                 </h3>
                 <span className="text-[12px] text-[#999]">
@@ -593,7 +593,7 @@ function DemoEmptyEntry() {
       <p className="text-[14px] text-[#888]">아직 작성한 일기가 없어요.</p>
       <button
         type="button"
-        className="mt-3 inline-flex items-center gap-1 font-semibold text-foreground text-[14px] tracking-tight"
+        className="mt-3 inline-flex items-center gap-1 font-semibold text-foreground text-[14px]"
       >
         일기쓰러 가기
         <ChevronRightSm className="h-4 w-4" strokeWidth={2.2} />
@@ -610,7 +610,7 @@ function DemoSingleEntry({ entry, day }: { entry: DemoEntry; day: number }) {
       className="flex w-full items-start justify-between gap-3 rounded-xl bg-[#f7f7f9] px-4 py-4 text-left transition-colors hover:bg-[#f0f0f3]"
     >
       <div className="min-w-0 flex-1">
-        <p className="font-semibold text-foreground text-[14px] tracking-tight">{entry.title}</p>
+        <p className="font-semibold text-foreground text-[14px]">{entry.title}</p>
         <p className="mt-1 text-[12px] leading-relaxed text-[#888]">{entry.description}</p>
       </div>
       <ChevronRightSm className="mt-1 h-4 w-4 shrink-0 text-[#bbb]" strokeWidth={2.2} />
@@ -630,7 +630,7 @@ function DemoEntryList({ entries, day }: { entries: DemoEntry[]; day: number }) 
         >
           <div className="flex items-center gap-3 min-w-0">
             <span className="text-[12px] tabular-nums text-[#888]">{entry.time}</span>
-            <span className="font-semibold text-foreground text-[14px] tracking-tight">
+            <span className="font-semibold text-foreground text-[14px]">
               {entry.title}
             </span>
           </div>
@@ -648,7 +648,7 @@ function EmptyEntry() {
       <p className="text-[14px] text-[#888]">아직 작성한 일기가 없어요.</p>
       <Link
         to="/record"
-        className="mt-3 inline-flex items-center gap-1 font-semibold text-[var(--primary)] text-[14px] tracking-tight"
+        className="mt-3 inline-flex items-center gap-1 font-semibold text-[var(--primary)] text-[14px]"
       >
         기록하러 가기
         <ChevronRightSm className="h-4 w-4" strokeWidth={2.2} />
@@ -671,7 +671,7 @@ function RealSingleEntry({ entry }: { entry: DiaryEntry }) {
       className="flex w-full items-start justify-between gap-3 rounded-xl bg-[#f7f7f9] px-4 py-4 text-left transition-colors hover:bg-[#f0f0f3]"
     >
       <div className="min-w-0 flex-1">
-        <p className="font-semibold text-foreground text-[14px] tracking-tight">
+        <p className="font-semibold text-foreground text-[14px]">
           {emoji} {entry.userMoodLabel}
         </p>
         <p className="mt-1 text-[12px] leading-relaxed text-[#888]">{excerpt}</p>
@@ -696,7 +696,7 @@ function RealEntryList({ entries }: { entries: DiaryEntry[] }) {
               <span className="text-[12px] tabular-nums text-[#888]">
                 {formatEntryTime(entry.createdAt)}
               </span>
-              <span className="font-semibold text-foreground text-[14px] tracking-tight">
+              <span className="font-semibold text-foreground text-[14px]">
                 {emoji} {entry.userMoodLabel}
               </span>
             </div>

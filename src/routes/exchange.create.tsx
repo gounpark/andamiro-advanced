@@ -138,14 +138,14 @@ function ExchangeCreatePage() {
         <div className="flex-1 overflow-y-auto scrollbar-hide">
           <div className="px-6 pb-32 pt-[7px] flex flex-col gap-6">
             {hasAiDraft && (
-              <div className="w-fit rounded-full bg-[#ecf1fe] px-2 py-1.5 text-center text-[12px] font-medium text-[#4a75f7] tracking-[-0.36px]">
+              <div className="w-fit rounded-full bg-[#ecf1fe] px-2 py-1.5 text-center text-[12px] font-medium text-[#4a75f7]">
                 ✦ AI가 오늘의 일기를 작성했어요
               </div>
             )}
 
             {/* 이미지 첨부 */}
             <div>
-              <p className="text-[16px] font-bold text-[#222] tracking-tight mb-2">이미지</p>
+              <p className="text-[16px] font-bold text-[#222] mb-2">이미지</p>
               <div className="flex items-center gap-3">
                 {imageDataUrl && (
                   <div className="relative h-[98px] w-[98px] shrink-0 overflow-hidden rounded-[12px]">
@@ -169,7 +169,7 @@ function ExchangeCreatePage() {
                   className="flex h-[98px] w-[98px] shrink-0 flex-col items-center justify-center rounded-[12px] border border-dashed border-[#ddd] bg-[#fafafa] text-[#999] active:bg-[#f4f4f4] transition"
                 >
                   <Folder className="h-5 w-5" strokeWidth={1.7} />
-                  <span className="text-[16px] font-light leading-3 tracking-[-0.375px]">+</span>
+                  <span className="text-[16px] font-light leading-3">+</span>
                 </button>
               </div>
               <input
@@ -183,7 +183,7 @@ function ExchangeCreatePage() {
 
             {/* 제목 */}
             <label className="block">
-              <span className="text-[16px] font-bold text-[#222] tracking-tight mb-3 block">
+              <span className="text-[16px] font-bold text-[#222] mb-3 block">
                 제목
               </span>
               <input
@@ -196,7 +196,7 @@ function ExchangeCreatePage() {
 
             {/* 본문 */}
             <label className="block">
-              <span className="text-[16px] font-bold text-[#222] tracking-tight mb-2 block">
+              <span className="text-[16px] font-bold text-[#222] mb-2 block">
                 내용
               </span>
               <textarea
@@ -209,7 +209,7 @@ function ExchangeCreatePage() {
 
             {/* 비밀번호 */}
             <label className="block">
-              <span className="text-[16px] font-bold text-[#222] tracking-tight mb-2 block">
+              <span className="text-[16px] font-bold text-[#222] mb-2 block">
                 비밀번호
               </span>
               <input
@@ -220,7 +220,7 @@ function ExchangeCreatePage() {
               />
             </label>
 
-            {error && <p className="text-[12px] text-red-400 -mt-2 tracking-tight">{error}</p>}
+            {error && <p className="text-[12px] text-red-400 -mt-2">{error}</p>}
           </div>
         </div>
 
@@ -229,7 +229,7 @@ function ExchangeCreatePage() {
           <button
             type="button"
             onClick={handleSubmitAttempt}
-            className="w-full rounded-[12px] py-3 font-medium text-white text-[18px] leading-[28px] tracking-tight shadow-[0_4px_2px_rgba(221,221,221,0.2)] active:scale-[0.99] transition"
+            className="w-full rounded-[12px] py-3 font-medium text-white text-[18px] leading-[28px] shadow-[0_4px_2px_rgba(221,221,221,0.2)] active:scale-[0.99] transition"
             style={{ background: "#4283f3" }}
           >
             완료

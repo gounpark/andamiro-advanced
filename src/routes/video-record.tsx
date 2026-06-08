@@ -463,12 +463,12 @@ function VideoRecordPage() {
               </div>
             </div>
 
-            <h2 className="text-white font-bold text-[22px] tracking-tight leading-tight mb-3">
+            <h2 className="text-white font-bold text-[22px] leading-tight mb-3">
               카메라와 마이크를
               <br />
               사용해요
             </h2>
-            <p className="text-white/60 text-[14px] leading-relaxed tracking-tight mb-8">
+            <p className="text-white/60 text-[14px] leading-relaxed mb-8">
               영상 일기를 기록하고
               <br />
               음성으로 오늘의 이야기를 남겨요.
@@ -490,10 +490,10 @@ function VideoRecordPage() {
                     {item.icon}
                   </span>
                   <div>
-                    <p className="text-white font-semibold text-[14px] tracking-tight">
+                    <p className="text-white font-semibold text-[14px]">
                       {item.label}
                     </p>
-                    <p className="text-white/50 text-[12px] tracking-tight">{item.desc}</p>
+                    <p className="text-white/50 text-[12px]">{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -504,11 +504,11 @@ function VideoRecordPage() {
               type="button"
               onClick={handlePermAccept}
               style={{ background: "var(--primary)", touchAction: "manipulation" }}
-              className="w-full rounded-2xl py-4 font-bold text-white text-[16px] tracking-tight shadow-lg"
+              className="w-full rounded-2xl py-4 font-bold text-white text-[16px] shadow-lg"
             >
               허용하고 시작하기
             </button>
-            <p className="mt-3 text-white/30 text-[12px] tracking-tight">
+            <p className="mt-3 text-white/30 text-[12px]">
               권한은 브라우저 설정에서 언제든 변경할 수 있어요
             </p>
           </div>
@@ -527,10 +527,10 @@ function VideoRecordPage() {
               <div className="h-16 w-16 rounded-full border-4 border-white/10 border-t-white/70 animate-spin" />
             </div>
             <div className="flex flex-col items-center gap-1.5">
-              <p className="text-white font-bold text-[18px] tracking-tight">
+              <p className="text-white font-bold text-[18px]">
                 AI가 영상을 분석하고 있어요
               </p>
-              <p className="text-white/50 text-[14px] tracking-tight">잠시만 기다려주세요...</p>
+              <p className="text-white/50 text-[14px]">잠시만 기다려주세요...</p>
             </div>
           </div>
         </div>
@@ -585,10 +585,10 @@ function VideoRecordPage() {
                 "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)",
             }}
           >
-            <p className="text-white text-center font-bold text-[18px] tracking-tight mb-1">
+            <p className="text-white text-center font-bold text-[18px] mb-1">
               녹화를 마칠까요?
             </p>
-            <p className="text-white/60 text-center text-[14px] mb-5 tracking-tight">
+            <p className="text-white/60 text-center text-[14px] mb-5">
               방금 녹화한 영상을 확인해보세요
             </p>
             <div className="flex flex-col gap-3">
@@ -596,7 +596,7 @@ function VideoRecordPage() {
                 type="button"
                 onClick={resetRecording}
                 style={{ touchAction: "manipulation" }}
-                className="flex items-center justify-center gap-2 rounded-2xl bg-white/15 border border-white/20 py-3.5 font-semibold text-white text-[16px] tracking-tight backdrop-blur-sm"
+                className="flex items-center justify-center gap-2 rounded-2xl bg-white/15 border border-white/20 py-3.5 font-semibold text-white text-[16px] backdrop-blur-sm"
               >
                 다시 녹화
               </button>
@@ -604,7 +604,7 @@ function VideoRecordPage() {
                 type="button"
                 onClick={completeRecording}
                 style={{ background: "var(--primary)", touchAction: "manipulation" }}
-                className="flex items-center justify-center gap-2 rounded-2xl py-3.5 font-bold text-white text-[16px] tracking-tight shadow-lg"
+                className="flex items-center justify-center gap-2 rounded-2xl py-3.5 font-bold text-white text-[16px] shadow-lg"
               >
                 기록 완료
               </button>
@@ -665,7 +665,7 @@ function VideoRecordPage() {
           {recordState === "idle" && streamReady && (
             <div className="ml-3 flex-1 flex justify-center pr-10">
               <div className="rounded-full bg-black/60 px-4 py-2 backdrop-blur-sm">
-                <span className="text-white text-[14px] font-medium tracking-tight">
+                <span className="text-white text-[14px] font-medium">
                   오늘 있었던 일을 편하게 말해보세요
                 </span>
               </div>
@@ -727,7 +727,7 @@ function VideoRecordPage() {
         >
           {recordState === "idle" && (
             <>
-              <p className="text-white/60 text-[12px] mb-5 tracking-tight">
+              <p className="text-white/60 text-[12px] mb-5">
                 {streamReady ? "버튼을 눌러 녹화를 시작하세요" : "카메라 준비 중..."}
               </p>
               {/* 셔터 버튼 — touchAction: manipulation 으로 300ms 지연 제거 */}
@@ -745,7 +745,7 @@ function VideoRecordPage() {
 
           {recordState === "recording" && (
             <>
-              <p className="text-white/60 text-[12px] mb-5 tracking-tight">
+              <p className="text-white/60 text-[12px] mb-5">
                 말하는 동안 AI가 녹화 후 분석해드려요
               </p>
               {/* 정지 버튼 */}

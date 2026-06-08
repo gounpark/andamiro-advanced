@@ -35,8 +35,8 @@ function LoginPage() {
     <div className="app-shell">
       <div className="app-frame flex flex-col items-center justify-center px-6 bg-white">
         <div className="flex flex-col items-center mb-10">
-          <h1 className="text-[24px] font-bold text-foreground tracking-tight">안다미로</h1>
-          <p className="text-[14px] text-[#999] mt-1 tracking-tight">AI 감정일기</p>
+          <h1 className="text-[24px] font-bold text-foreground">안다미로</h1>
+          <p className="text-[14px] text-[#999] mt-1">AI 감정일기</p>
         </div>
 
         <button
@@ -55,12 +55,12 @@ function LoginPage() {
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
             </svg>
           )}
-          <span className="text-[16px] font-semibold text-[#454545] tracking-[-0.48px]">
+          <span className="text-[16px] font-semibold text-[#454545]">
             {loading ? "로그인 중..." : "Google 로 로그인"}
           </span>
         </button>
 
-        <p className="mt-4 text-[14px] text-[#999] text-center underline underline-offset-2 tracking-tight">
+        <p className="mt-4 text-[14px] text-[#999] text-center underline underline-offset-2">
           개인정보처리방침
         </p>
       </div>

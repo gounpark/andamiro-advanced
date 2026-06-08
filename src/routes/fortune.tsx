@@ -132,20 +132,20 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
               draggable={false}
             />
 
-            <p className="mt-6 text-[14px] text-white/65 tracking-tight">{FORTUNE_DATE}</p>
+            <p className="mt-6 text-[14px] text-white/65">{FORTUNE_DATE}</p>
 
             <div className="mt-3 flex flex-wrap justify-center gap-2">
               {FORTUNE_CHIPS.map((chip) => (
                 <span
                   key={chip}
-                  className="rounded-md bg-white/10 px-3 py-1.5 text-[14px] font-medium text-white/85 tracking-tight"
+                  className="rounded-md bg-white/10 px-3 py-1.5 text-[14px] font-medium text-white/85"
                 >
                   {chip}
                 </span>
               ))}
             </div>
 
-            <p className="mt-6 whitespace-pre-line text-center text-[16px] leading-[1.7] text-white tracking-tight">
+            <p className="mt-6 whitespace-pre-line text-center text-[16px] leading-[1.7] text-white">
               {FORTUNE_TEXT}
             </p>
           </div>
@@ -155,7 +155,7 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
             <button
               type="button"
               onClick={goBack}
-              className="w-full rounded-2xl bg-white py-4 text-[16px] font-semibold text-foreground tracking-tight shadow-[0_8px_24px_rgba(0,0,0,0.3)] active:scale-[0.99] transition"
+              className="w-full rounded-2xl bg-white py-4 text-[16px] font-semibold text-foreground shadow-[0_8px_24px_rgba(0,0,0,0.3)] active:scale-[0.99] transition"
             >
               확인
             </button>
@@ -224,7 +224,7 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
               className="w-[78%] max-w-[300px] h-auto select-none"
               draggable={false}
             />
-            <p className="mt-5 text-foreground/70 tracking-tight text-base">
+            <p className="mt-5 text-foreground/70 text-base">
               바삭한 쿠키속에 숨겨진{" "}
               <span className="text-[var(--primary)] font-semibold">당신의 행운</span>을
               확인해보세요!
@@ -268,7 +268,7 @@ function FortunePageV2({ demo }: { demo?: boolean }) {
 
         {stage === "idle" && (
           <div className="relative z-10 mx-5 mb-24 rounded-2xl bg-white px-6 py-6 text-center shadow-[0_6px_24px_-10px_rgba(0,0,0,0.12)]">
-            <p className="text-foreground/70 tracking-tight text-base">
+            <p className="text-foreground/70 text-base">
               쿠키를 눌러 오늘의
               <br />
               운세를 확인하세요
@@ -384,7 +384,7 @@ function FortunePageLegacy() {
               className="w-[78%] max-w-[300px] h-auto select-none"
               draggable={false}
             />
-            <p className="mt-5 text-foreground/70 tracking-tight text-base">
+            <p className="mt-5 text-foreground/70 text-base">
               바삭한 쿠키속에 숨겨진{" "}
               <span className="text-[var(--primary)] font-semibold">당신의 행운</span>을
               확인해보세요!
@@ -418,7 +418,7 @@ function FortunePageLegacy() {
                 className="w-full h-auto select-none drop-shadow-[0_12px_24px_rgba(0,0,0,0.12)]"
                 draggable={false}
               />
-              <p className="absolute inset-0 flex items-center justify-center px-10 text-center whitespace-pre-line text-[16px] leading-[1.75] text-foreground tracking-tight">
+              <p className="absolute inset-0 flex items-center justify-center px-10 text-center whitespace-pre-line text-[16px] leading-[1.75] text-foreground">
                 {FORTUNE_TEXT}
               </p>
             </div>
@@ -428,7 +428,7 @@ function FortunePageLegacy() {
         {/* 하단 안내 카드 (idle만) */}
         {stage === "idle" && (
           <div className="relative z-10 mx-5 mb-10 rounded-2xl bg-white px-6 py-6 text-center shadow-[0_6px_24px_-10px_rgba(0,0,0,0.12)]">
-            <p className="mt-5 text-foreground/70 tracking-tight text-base">
+            <p className="mt-5 text-foreground/70 text-base">
               쿠키를 눌러 오늘의
               <br />
               운세를 확인하세요

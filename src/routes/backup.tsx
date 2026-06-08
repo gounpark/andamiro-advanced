@@ -106,7 +106,7 @@ function BackupPage() {
               type="button"
               onClick={toggleAll}
               disabled={diaries.length === 0}
-              className="text-[14px] font-medium text-[#4B82F5] tracking-tight"
+              className="text-[14px] font-medium text-[#4B82F5]"
             >
               {allSelected ? "해제" : "전체선택"}
             </button>
@@ -150,7 +150,7 @@ function BackupPage() {
 
                   {/* 텍스트 */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-[16px] font-semibold text-foreground tracking-tight truncate">
+                    <p className="text-[16px] font-semibold text-foreground truncate">
                       {diary.title}
                     </p>
                     <div className="flex items-center gap-2 mt-1 text-[12px] text-[#999]">
@@ -195,7 +195,7 @@ function BackupPage() {
             type="button"
             onClick={handleDownload}
             disabled={selected.size === 0 || downloading}
-            className="w-full h-[54px] rounded-[14px] bg-[#4B82F5] text-white text-[16px] font-semibold tracking-tight transition disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full h-[54px] rounded-[14px] bg-[#4B82F5] text-white text-[16px] font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {downloading ? "다운로드 중..." : "다운로드 하기"}
           </button>

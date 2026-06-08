@@ -153,10 +153,10 @@ function MyPage() {
             <img src={bgShapeLargeSvg} alt="" aria-hidden className="pointer-events-none absolute -top-2 -right-4 w-[260px] h-[275px] z-0" />
             <img src={bgShapeSmallSvg} alt="" aria-hidden className="pointer-events-none absolute top-[40px] -left-8 w-[142px] h-[196px] z-0" />
             <PageHeader className="bg-transparent" title="마이" titleColor="text-white" />
-            <p className="relative z-10 mt-3 px-6 text-white/85 text-[14px] tracking-tight">
+            <p className="relative z-10 mt-3 px-6 text-white/85 text-[14px]">
               {user ? "안녕하세요," : "로그인하고 더 많은 기능을 사용해보세요"}
             </p>
-            <p className="relative z-10 mt-1 px-6 font-bold text-white text-[20px] leading-tight tracking-tight">
+            <p className="relative z-10 mt-1 px-6 font-bold text-white text-[20px] leading-tight">
               {user ? `${displayName}님` : "안다미로"}
             </p>
           </div>
@@ -176,7 +176,7 @@ function MyPage() {
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="font-semibold text-foreground text-[16px] tracking-tight truncate">
+                <p className="font-semibold text-foreground text-[16px] truncate">
                   {user ? displayName : "로그인이 필요해요"}
                 </p>
                 <p className="text-[12px] text-[#999] truncate">
@@ -206,7 +206,7 @@ function MyPage() {
 
           {/* 통계 */}
           <section className="px-4 mt-4">
-            <p className="px-1 mb-2 text-[12px] text-[#999] tracking-tight">활동요약</p>
+            <p className="px-1 mb-2 text-[12px] text-[#999]">활동요약</p>
             <div className="rounded-2xl bg-white p-3 shadow-sm grid grid-cols-3">
               <Stat value={String(totalCount)} label="전체 일기" />
               <Stat value={String(thisMonth)} label="이번 달 일기" divided />
@@ -222,7 +222,7 @@ function MyPage() {
                 <span className="grid h-7 w-7 place-items-center rounded-full bg-[#f4f6fa] text-[var(--primary)] shrink-0">
                   <Bell className="h-4 w-4" />
                 </span>
-                <span className="flex-1 text-[14px] text-foreground tracking-tight">푸시 알림</span>
+                <span className="flex-1 text-[14px] text-foreground">푸시 알림</span>
                 <Switch
                   checked={exchangeNotif && notif && notifGranted}
                   onCheckedChange={handleExchangeNotifToggle}
@@ -269,7 +269,7 @@ function MyPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-bold text-foreground text-[18px] tracking-tight">닉네임 변경</h3>
+                <h3 className="font-bold text-foreground text-[18px]">닉네임 변경</h3>
                 <button type="button" onClick={() => setEditingName(false)}>
                   <X className="h-5 w-5 text-[#999]" />
                 </button>
@@ -283,15 +283,15 @@ function MyPage() {
                 }}
                 maxLength={20}
                 placeholder="닉네임을 입력해 주세요"
-                className="w-full rounded-xl border border-[#e8eaed] bg-[#f8f9fb] px-4 py-3.5 text-[16px] text-foreground tracking-tight focus:outline-none focus:border-[var(--primary)] mb-1"
+                className="w-full rounded-xl border border-[#e8eaed] bg-[#f8f9fb] px-4 py-3.5 text-[16px] text-foreground focus:outline-none focus:border-[var(--primary)] mb-1"
                 autoFocus
               />
-              <p className="text-[12px] text-[#bbb] text-right mb-4 tracking-tight">{nameInput.length}/20</p>
+              <p className="text-[12px] text-[#bbb] text-right mb-4">{nameInput.length}/20</p>
               <button
                 type="button"
                 onClick={handleNameSave}
                 disabled={nameSaving || !nameInput.trim()}
-                className="w-full rounded-2xl py-3.5 font-bold text-white text-[16px] tracking-tight disabled:opacity-50"
+                className="w-full rounded-2xl py-3.5 font-bold text-white text-[16px] disabled:opacity-50"
                 style={{ background: "var(--primary)" }}
               >
                 {nameSaving ? "저장 중..." : "저장"}
@@ -313,12 +313,12 @@ function MyPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <span className="text-[48px] leading-none">🔔</span>
-              <p className="text-[18px] font-bold text-foreground tracking-tight">알림이 허용되었어요</p>
-              <p className="text-[14px] text-[#999] tracking-tight">새 알림이 오면 알려드릴게요.</p>
+              <p className="text-[18px] font-bold text-foreground">알림이 허용되었어요</p>
+              <p className="text-[14px] text-[#999]">새 알림이 오면 알려드릴게요.</p>
               <button
                 type="button"
                 onClick={() => setShowNotifSuccess(false)}
-                className="mt-2 w-full h-[52px] rounded-[12px] bg-[#4B82F5] text-white text-[16px] font-semibold tracking-tight"
+                className="mt-2 w-full h-[52px] rounded-[12px] bg-[#4B82F5] text-white text-[16px] font-semibold"
               >
                 확인
               </button>
@@ -354,7 +354,7 @@ function MenuLinkRow({
       <span className="grid h-7 w-7 place-items-center rounded-full bg-[#f4f6fa] text-[var(--primary)] shrink-0">
         {icon}
       </span>
-      <span className="flex-1 text-[14px] text-foreground tracking-tight">{label}</span>
+      <span className="flex-1 text-[14px] text-foreground">{label}</span>
       <ChevronRight className="h-4 w-4 text-[#cbcbd1]" strokeWidth={2.2} />
     </>
   );
@@ -384,8 +384,8 @@ function MenuLinkRow({
 function Stat({ value, label, divided }: { value: string; label: string; divided?: boolean }) {
   return (
     <div className={`flex flex-col items-center justify-center py-2 ${divided ? "border-l border-[#eeeeee]" : ""}`}>
-      <span className="text-[22px] font-semibold text-foreground tracking-tight leading-none">{value}</span>
-      <span className="mt-1.5 text-[12px] text-[#999] tracking-tight">{label}</span>
+      <span className="text-[22px] font-semibold text-foreground leading-none">{value}</span>
+      <span className="mt-1.5 text-[12px] text-[#999]">{label}</span>
     </div>
   );
 }
@@ -407,7 +407,7 @@ function Row({
       className={`w-full flex items-center gap-3 px-4 py-3.5 text-left active:bg-[#fafbfc] transition ${last ? "" : "border-b border-[#f5f5f5]"}`}
     >
       <span className="grid h-7 w-7 place-items-center rounded-full bg-[#f4f6fa] text-[var(--primary)] shrink-0">{icon}</span>
-      <span className="flex-1 text-[14px] text-foreground tracking-tight">{label}</span>
+      <span className="flex-1 text-[14px] text-foreground">{label}</span>
       {trailing && <span className="text-[12.5px] text-[#999]">{trailing}</span>}
       {!hideChevron && <ChevronRight className="h-4 w-4 text-[#cbcbd1]" strokeWidth={2.2} />}
     </button>
