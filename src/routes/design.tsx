@@ -246,6 +246,40 @@ const ICON_GROUPS = [
 /* ─────────────────────────────────────────────────────────────
    모션 토큰
    ───────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────
+   라우트 매핑 — 파일명 → 실제 경로 + 레이블
+   ───────────────────────────────────────────────────────────── */
+const ROUTE_MAP: Record<string, { path: string; label: string }> = {
+  "index":               { path: "/",               label: "홈" },
+  "record":              { path: "/record",          label: "기록" },
+  "analysis":            { path: "/analysis",        label: "분석" },
+  "exchange":            { path: "/exchange",         label: "교환일기" },
+  "exchange.create":     { path: "/exchange/create", label: "교환일기 만들기" },
+  "exchange.$roomId":    { path: "/exchange",        label: "교환일기 방" },
+  "my":                  { path: "/my",              label: "마이" },
+  "video-record":        { path: "/video-record",    label: "영상 기록" },
+  "diary":               { path: "/diary",           label: "일기" },
+  "fortune":             { path: "/fortune",         label: "포춘" },
+  "advice":              { path: "/advice",          label: "조언" },
+  "chat":                { path: "/chat",            label: "채팅" },
+  "report":              { path: "/report",          label: "리포트" },
+  "backup":              { path: "/backup",          label: "백업" },
+  "login":               { path: "/login",           label: "로그인" },
+  "BottomNav":           { path: "/",               label: "홈 (내비)" },
+  "BottomSheet":         { path: "/exchange",        label: "교환일기 (시트)" },
+  "Splash":              { path: "/login",           label: "로그인 (스플래시)" },
+  "PageHeader":          { path: "/record",          label: "기록 (헤더)" },
+  "EmptyDiaryState":     { path: "/",               label: "홈 (빈 상태)" },
+  "EmptyState":          { path: "/exchange",        label: "교환일기 (빈 상태)" },
+  "FaceAnalysisOverlay": { path: "/record",          label: "기록 (얼굴 분석)" },
+  "LoadingScreen":       { path: "/login",           label: "로그인 (로딩)" },
+  "HomeScene":           { path: "/",               label: "홈 (3D)" },
+  "FortuneScene":        { path: "/fortune",         label: "포춘 (3D)" },
+  "OutroScene":          { path: "/fortune",         label: "포춘 (아웃트로)" },
+  "__root":              { path: "/",               label: "루트 레이아웃" },
+  "ui/switch":           { path: "/my",             label: "마이 (스위치)" },
+};
+
 const DURATIONS = [100, 150, 200, 300, 500];
 const EASINGS = [
   { name: "ease-out", value: "cubic-bezier(0, 0, 0.2, 1)", usage: "대부분의 UI 전환" },
@@ -290,6 +324,17 @@ export default function DesignPage() {
   const [exported, setExported] = useState(false);
   const pickerRef = useRef<HTMLInputElement>(null);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
+
+  /* 화면 미리보기 드로어 */
+  const [drawer, setDrawer] = useState<{
+    name: string; desc?: string; color?: string; files: string[];
+  } | null>(null);
+  const [drawerFile, setDrawerFile] = useState("");
+  const openDrawer = (token: { name: string; desc?: string; color?: string; files: string[] }, file?: string) => {
+    if (!token.files.length) return;
+    setDrawer(token);
+    setDrawerFile(file ?? token.files[0]);
+  };
 
   /* 초기화 */
   useEffect(() => {
@@ -351,6 +396,16 @@ export default function DesignPage() {
 
   return (
     <div className="min-h-screen bg-[#F7F8FA]" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Pretendard', 'Noto Sans KR', sans-serif" }}>
+
+      {/* ── 화면 미리보기 드로어 ── */}
+      {drawer && (
+        <TokenDrawer
+          token={drawer}
+          activeFile={drawerFile}
+          onFileChange={setDrawerFile}
+          onClose={() => setDrawer(null)}
+        />
+      )}
 
       {/* ── 헤더 ── */}
       <header className="sticky top-0 z-50 border-b border-[#EAECF0] bg-white/95 backdrop-blur-md">
@@ -478,6 +533,7 @@ export default function DesignPage() {
                       const cr = contrast(hex, "#FFFFFF");
                       const wLevel = wcagLevel(cr);
                       const changed = saved[token.key] !== undefined;
+                      const hasScreens = token.usage.length > 0;
                       return (
                         <div key={token.key} className="group rounded-2xl bg-white border border-[#F3F4F6] overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                           {/* 스와치 */}
@@ -523,9 +579,20 @@ export default function DesignPage() {
                               {token.usage.length === 0 ? (
                                 <span className="rounded-full border border-[#FEE2E2] bg-[#FFF5F5] px-2 py-0.5 text-[10px] text-[#F87171]">미사용</span>
                               ) : token.usage.map(u => (
-                                <span key={u} className="rounded-full border border-[#F3F4F6] bg-[#F9FAFB] px-2 py-0.5 text-[10px] text-[#6B7280]">{u}</span>
+                                <button key={u} type="button"
+                                  onClick={() => openDrawer({ name: token.label, desc: token.description, color: hexMap[token.key] ?? token.hex, files: token.usage }, u)}
+                                  className="rounded-full border border-[#F3F4F6] bg-[#F9FAFB] px-2 py-0.5 text-[10px] text-[#6B7280] hover:border-[var(--primary,#4B82F5)] hover:text-[var(--primary,#4B82F5)] hover:bg-[#EEF4FF] transition cursor-pointer">
+                                  {u}
+                                </button>
                               ))}
                             </div>
+                            {hasScreens && (
+                              <button type="button"
+                                onClick={() => openDrawer({ name: token.label, desc: token.description, color: hexMap[token.key] ?? token.hex, files: token.usage })}
+                                className="mt-2.5 w-full flex items-center justify-center gap-1 rounded-lg border border-[#F3F4F6] py-1.5 text-[11px] font-medium text-[#9CA3AF] hover:border-[var(--primary,#4B82F5)] hover:text-[var(--primary,#4B82F5)] hover:bg-[#EEF4FF] transition">
+                                <Eye size={11} /> 화면 보기
+                              </button>
+                            )}
                           </div>
                         </div>
                       );
@@ -607,7 +674,11 @@ export default function DesignPage() {
                     <p className="text-[11px] text-[#9CA3AF] mb-1.5">{row.usage}</p>
                     <div className="flex flex-wrap gap-1">
                       {row.files.map(f => (
-                        <span key={f} className="rounded-full border border-[#F3F4F6] bg-[#F9FAFB] px-2 py-0.5 text-[10px] text-[#6B7280]">{f}</span>
+                        <button key={f} type="button"
+                          onClick={() => openDrawer({ name: row.name, desc: row.usage, files: row.files }, f)}
+                          className="rounded-full border border-[#F3F4F6] bg-[#F9FAFB] px-2 py-0.5 text-[10px] text-[#6B7280] hover:border-[var(--primary,#4B82F5)] hover:text-[var(--primary,#4B82F5)] hover:bg-[#EEF4FF] transition cursor-pointer">
+                          {f}
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -1104,6 +1175,156 @@ function EasingRow({ name, value, usage, primary }: { name: string; value: strin
         <code className="block font-mono text-[10px] text-[#9CA3AF] truncate">{value}</code>
         <p className="text-[11px] text-[#6B7280] mt-0.5">{usage}</p>
       </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   화면 미리보기 드로어
+   ───────────────────────────────────────────────────────────── */
+function TokenDrawer({
+  token,
+  activeFile,
+  onFileChange,
+  onClose,
+}: {
+  token: { name: string; desc?: string; color?: string; files: string[] };
+  activeFile: string;
+  onFileChange: (f: string) => void;
+  onClose: () => void;
+}) {
+  /* 앱 베이스 URL — /design 이전 경로 */
+  const appBase = typeof window !== "undefined"
+    ? window.location.href.split("/design")[0].replace(/\/$/, "")
+    : "";
+  const routeInfo = ROUTE_MAP[activeFile];
+  const iframeSrc = routeInfo ? appBase + routeInfo.path : appBase + "/";
+
+  /* 키보드 닫기 */
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-[100] flex justify-end">
+      {/* 오버레이 */}
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+        onClick={onClose}
+      />
+
+      {/* 패널 */}
+      <div className="relative flex h-full w-[440px] flex-col bg-white shadow-2xl">
+
+        {/* 헤더 */}
+        <div className="flex items-start justify-between border-b border-[#F3F4F6] px-5 py-4 shrink-0">
+          <div className="flex items-center gap-2.5">
+            {token.color && (
+              <div className="h-5 w-5 rounded-full border border-black/10 shrink-0"
+                style={{ background: token.color }} />
+            )}
+            <div>
+              <p className="text-[15px] font-bold text-[#111]">{token.name}</p>
+              {token.desc && (
+                <p className="text-[12px] text-[#9CA3AF] mt-0.5 leading-snug max-w-[300px]">{token.desc}</p>
+              )}
+            </div>
+          </div>
+          <button type="button" onClick={onClose}
+            className="ml-2 shrink-0 rounded-lg p-1.5 text-[#9CA3AF] hover:bg-[#F3F4F6] hover:text-[#374151] transition mt-0.5">
+            <X size={15} />
+          </button>
+        </div>
+
+        {/* 파일 탭 */}
+        <div className="border-b border-[#F9FAFB] px-5 py-3 shrink-0">
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[#C5CAD3]">사용 화면</p>
+          <div className="flex flex-wrap gap-1.5">
+            {token.files.map(f => {
+              const label = ROUTE_MAP[f]?.label ?? f;
+              const isActive = f === activeFile;
+              return (
+                <button key={f} type="button" onClick={() => onFileChange(f)}
+                  className="rounded-full px-3 py-1 text-[11px] font-medium transition"
+                  style={isActive
+                    ? { background: "var(--primary,#4B82F5)", color: "#fff" }
+                    : { background: "#F3F4F6", color: "#6B7280" }}>
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 폰 프레임 */}
+        <div className="flex flex-1 items-center justify-center overflow-auto bg-[#F7F8FA] p-6">
+          <PhoneFrame src={iframeSrc} label={routeInfo?.label ?? activeFile} />
+        </div>
+
+        {/* 하단 경로 표시 */}
+        <div className="border-t border-[#F3F4F6] px-5 py-3 shrink-0 flex items-center gap-2">
+          <span className="text-[10px] text-[#C5CAD3] font-medium">경로</span>
+          <code className="flex-1 text-[11px] font-mono text-[#9CA3AF] truncate">{routeInfo?.path ?? "/"}</code>
+          <a href={appBase + (routeInfo?.path ?? "/")} target="_blank" rel="noreferrer"
+            className="flex items-center gap-1 text-[11px] font-medium text-[var(--primary,#4B82F5)] hover:underline shrink-0">
+            새 탭 <Share2 size={10} />
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   폰 프레임 — iframe을 iPhone 껍데기로 감쌈
+   ───────────────────────────────────────────────────────────── */
+function PhoneFrame({ src, label }: { src: string; label: string }) {
+  const PHONE_W = 390;
+  const PHONE_H = 844;
+  const SCALE = 0.52;
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <div className="flex flex-col items-center gap-3">
+      {/* 폰 외각 */}
+      <div
+        className="relative overflow-hidden rounded-[36px] bg-black"
+        style={{
+          width: PHONE_W * SCALE,
+          height: PHONE_H * SCALE,
+          boxShadow: "0 0 0 3px #1A1A1A, 0 24px 48px rgba(0,0,0,0.30)",
+        }}>
+        {/* 다이나믹 아일랜드 */}
+        <div
+          className="absolute top-0 left-1/2 z-10 -translate-x-1/2 bg-black rounded-b-[12px]"
+          style={{ width: 80 * SCALE, height: 24 * SCALE, marginTop: 6 * SCALE }} />
+
+        {/* 로딩 shimmer */}
+        {!loaded && (
+          <div className="absolute inset-0 flex items-center justify-center bg-[#F7F8FA]">
+            <Loader2 size={20} className="animate-spin text-[#CBD5E1]" />
+          </div>
+        )}
+
+        {/* iframe */}
+        <iframe
+          src={src}
+          title={label}
+          onLoad={() => setLoaded(true)}
+          className="absolute inset-0 border-none bg-white"
+          style={{
+            width: PHONE_W,
+            height: PHONE_H,
+            transformOrigin: "top left",
+            transform: `scale(${SCALE})`,
+            pointerEvents: "auto",
+          }}
+          sandbox="allow-scripts allow-same-origin allow-forms"
+        />
+      </div>
+      <p className="text-[12px] font-semibold text-[#6B7280]">{label}</p>
     </div>
   );
 }
