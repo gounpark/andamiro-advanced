@@ -126,7 +126,7 @@ function NicknameStep({
           type="button"
           onClick={onNext}
           disabled={!valid}
-          className="w-full h-[52px] rounded-[12px] font-medium text-[18px] text-white transition-colors disabled:bg-[#E6E6E6] disabled:text-[#ABABAB] bg-[var(--primary)]"
+          className="w-full h-[52px] rounded-[12px] font-medium text-[18px] text-white transition-colors disabled:bg-[#E6E6E6] disabled:text-[#999] bg-[var(--primary)]"
         >
           다음
         </button>
