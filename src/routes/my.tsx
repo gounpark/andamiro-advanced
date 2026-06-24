@@ -10,8 +10,6 @@ import {
   BookMarked,
   X,
   LogIn,
-  Camera,
-  Check,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { PageHeader } from "@/components/PageHeader";
@@ -21,7 +19,7 @@ import { BottomNav } from "@/components/BottomNav";
 import bgShapeSmallSvg from "@/assets/icons/bg-shape-small.svg";
 import { getDiaryEntries, countThisMonth } from "@/lib/diaryStore";
 import { getMyDiaries, getSharedDiaries } from "@/lib/exchangeStore";
-import { getCachedUser, getAuthDisplayName, setDisplayName, signOut, deleteAccount } from "@/lib/auth";
+import { getCachedUser, getAuthDisplayName, getAuthAgeGroup, getAuthGender, saveOnboardingData, signOut, deleteAccount } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import {
   EXCHANGE_NOTIF_ON_KEY,
@@ -68,30 +66,35 @@ function MyPage() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // ── 닉네임 편집 ───────────────────────────────────────────────────────────
-  const [editingName, setEditingName] = useState(false);
+  // ── 프로필 편집 ───────────────────────────────────────────────────────────
+  const [editingProfile, setEditingProfile] = useState(false);
   const [nameInput, setNameInput] = useState("");
-  const [nameSaving, setNameSaving] = useState(false);
+  const [ageInput, setAgeInput] = useState("");
+  const [genderInput, setGenderInput] = useState<"남성" | "여성" | "">("");
+  const [profileSaving, setProfileSaving] = useState(false);
 
-  const openNameEdit = () => {
+  const openProfileEdit = () => {
     setNameInput(displayName);
-    setEditingName(true);
+    setAgeInput(getAuthAgeGroup() ?? "");
+    setGenderInput((getAuthGender() as "남성" | "여성" | null) ?? "");
+    setEditingProfile(true);
   };
 
-  const handleNameSave = async () => {
-    if (!nameInput.trim() || nameInput.trim() === displayName) {
-      setEditingName(false);
-      return;
-    }
-    setNameSaving(true);
+  const handleProfileSave = async () => {
+    if (!nameInput.trim()) return;
+    setProfileSaving(true);
     try {
-      await setDisplayName(nameInput.trim());
+      await saveOnboardingData({
+        display_name: nameInput.trim(),
+        age_group: ageInput,
+        gender: genderInput,
+      });
       setDisplayNameState(nameInput.trim());
+      setEditingProfile(false);
     } catch {
-      alert("닉네임 저장에 실패했어요.");
+      alert("저장에 실패했어요.");
     } finally {
-      setNameSaving(false);
-      setEditingName(false);
+      setProfileSaving(false);
     }
   };
 
@@ -188,7 +191,7 @@ function MyPage() {
               {user ? (
                 <button
                   type="button"
-                  onClick={openNameEdit}
+                  onClick={openProfileEdit}
                   className="shrink-0 flex items-center gap-1 rounded-full bg-[#f4f6fa] px-3 py-1.5 text-[12px] font-medium text-[var(--primary)] active:scale-[0.97] transition"
                 >
                   프로필 편집
@@ -259,101 +262,113 @@ function MyPage() {
           )}
         </div>
 
-        {/* 닉네임 편집 바텀시트 */}
-        {editingName && (
+        {/* 프로필 편집 바텀시트 */}
+        {editingProfile && (
           <div
             className="absolute inset-0 z-50 flex flex-col"
             style={{ background: "rgba(0,0,0,0.45)" }}
-            onClick={() => setEditingName(false)}
+            onClick={() => setEditingProfile(false)}
           >
-            {/* 시트 */}
             <div
-              className="mt-auto w-full rounded-t-[28px] bg-white"
+              className="mt-auto w-full rounded-t-[28px] bg-white max-h-[88%] flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
               {/* 핸들 */}
-              <div className="flex justify-center pt-3 pb-1">
+              <div className="flex justify-center pt-3 pb-1 shrink-0">
                 <div className="h-1 w-10 rounded-full bg-[#E5E7EB]" />
               </div>
 
               {/* 헤더 */}
-              <div className="flex items-center justify-between px-5 pt-3 pb-4 border-b border-[#F3F4F6]">
+              <div className="flex items-center justify-between px-5 pt-3 pb-4 border-b border-[#F3F4F6] shrink-0">
                 <h3 className="font-bold text-foreground text-[18px]">프로필 편집</h3>
-                <button type="button" onClick={() => setEditingName(false)}
+                <button type="button" onClick={() => setEditingProfile(false)}
                   className="rounded-full p-1.5 hover:bg-[#F3F4F6] transition">
                   <X className="h-5 w-5 text-[#999]" />
                 </button>
               </div>
 
-              {/* 아바타 */}
-              <div className="flex flex-col items-center pt-7 pb-5">
-                <div className="relative">
-                  <div className="h-20 w-20 rounded-full overflow-hidden bg-[var(--primary)]/10 flex items-center justify-center">
-                    {user?.user_metadata?.avatar_url ? (
-                      <img
-                        src={user.user_metadata.avatar_url as string}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <img src={cloverActiveSvg} alt="" className="h-10 w-10" />
-                    )}
-                  </div>
-                  {/* 카메라 배지 */}
-                  <div className="absolute -bottom-0.5 -right-0.5 h-7 w-7 rounded-full bg-[#F3F4F6] border-2 border-white flex items-center justify-center">
-                    <Camera className="h-3.5 w-3.5 text-[#6B7280]" />
-                  </div>
-                </div>
-                <p className="mt-2.5 text-[11px] text-[#C5CAD3]">Google 계정 프로필 사진</p>
-              </div>
-
-              {/* 이름 필드 */}
-              <div className="px-5 pb-3">
-                <label className="block text-[12px] font-semibold text-[#9CA3AF] mb-1.5 uppercase tracking-wide">닉네임</label>
-                <div className="relative">
+              {/* 스크롤 영역 */}
+              <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-5">
+                {/* 닉네임 */}
+                <div>
+                  <label className="block text-[12px] font-semibold text-[#9CA3AF] mb-2 tracking-wide">닉네임</label>
                   <input
                     type="text"
                     value={nameInput}
                     onChange={(e) => setNameInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.nativeEvent.isComposing) handleNameSave();
-                    }}
                     maxLength={20}
                     placeholder="닉네임을 입력해 주세요"
-                    className="w-full rounded-2xl border border-[#E8EAED] bg-[#F8F9FB] px-4 py-3.5 text-[16px] text-foreground focus:outline-none focus:border-[var(--primary)] focus:bg-white transition pr-12"
+                    className="w-full h-[53px] px-[13px] rounded-[10px] border border-[#E6E6E6] text-[16px] text-foreground placeholder:text-[#757575] outline-none focus:border-[var(--primary)] transition-colors"
                     autoFocus
                   />
-                  {nameInput.trim() && nameInput.trim() !== displayName && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full flex items-center justify-center"
-                      style={{ background: "var(--primary)" }}>
-                      <Check className="h-3.5 w-3.5 text-white" />
-                    </div>
-                  )}
                 </div>
-                <p className="text-[11px] text-[#C5CAD3] text-right mt-1">{nameInput.length}/20</p>
-              </div>
 
-              {/* 이메일 필드 (읽기 전용) */}
-              <div className="px-5 pb-6">
-                <label className="block text-[12px] font-semibold text-[#9CA3AF] mb-1.5 uppercase tracking-wide">이메일</label>
-                <div className="w-full rounded-2xl border border-[#F0F0F0] bg-[#F8F9FB] px-4 py-3.5 flex items-center gap-2">
-                  <span className="text-[16px] text-[#B0B7C3] flex-1 truncate">
-                    {user?.email ?? "—"}
-                  </span>
-                  <span className="shrink-0 rounded-full bg-[#F0F0F0] px-2 py-0.5 text-[10px] font-semibold text-[#B0B7C3]">변경 불가</span>
+                {/* 연령대 */}
+                <div>
+                  <label className="block text-[12px] font-semibold text-[#9CA3AF] mb-2 tracking-wide">연령대</label>
+                  <div className="grid grid-cols-3 gap-[8px]">
+                    {(["10대", "20대", "30대", "40대", "50대", "60대 이상"] as const).map((group) => {
+                      const selected = ageInput === group;
+                      return (
+                        <button
+                          key={group}
+                          type="button"
+                          onClick={() => setAgeInput(group)}
+                          className={`py-[12px] rounded-[10px] text-[14px] font-medium border transition-colors ${
+                            selected
+                              ? "border-[var(--primary)] bg-[#F9FBFE] text-[var(--primary)] font-bold"
+                              : "border-[#E6E6E6] bg-white text-[#757575]"
+                          }`}
+                        >
+                          {group}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 성별 */}
+                <div>
+                  <label className="block text-[12px] font-semibold text-[#9CA3AF] mb-2 tracking-wide">성별</label>
+                  <div className="flex gap-[10px]">
+                    {(["남성", "여성"] as const).map((g) => {
+                      const selected = genderInput === g;
+                      const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+                      const img = g === "남성"
+                        ? `${base}/onboarding/gender-male.png`
+                        : `${base}/onboarding/gender-female.png`;
+                      return (
+                        <button
+                          key={g}
+                          type="button"
+                          onClick={() => setGenderInput(g)}
+                          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[10px] border transition-colors ${
+                            selected
+                              ? "border-[var(--primary)] bg-[#F9FBFE]"
+                              : "border-[#E6E6E6] bg-white"
+                          }`}
+                        >
+                          <img src={img} alt={g} className="w-10 h-10 object-contain" />
+                          <span className={`text-[15px] font-medium ${selected ? "text-[var(--primary)] font-bold" : "text-[#757575]"}`}>
+                            {g}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
               {/* 저장 버튼 */}
-              <div className="px-5 pb-10">
+              <div className="px-5 pb-10 pt-3 shrink-0 border-t border-[#F3F4F6]">
                 <button
                   type="button"
-                  onClick={handleNameSave}
-                  disabled={nameSaving || !nameInput.trim()}
-                  className="w-full rounded-2xl py-4 font-bold text-white text-[16px] disabled:opacity-40 transition active:scale-[0.98]"
+                  onClick={handleProfileSave}
+                  disabled={profileSaving || !nameInput.trim()}
+                  className="w-full h-[52px] rounded-[12px] font-bold text-white text-[16px] disabled:opacity-40 transition active:scale-[0.98]"
                   style={{ background: "var(--primary)" }}
                 >
-                  {nameSaving ? "저장 중..." : "저장하기"}
+                  {profileSaving ? "저장 중..." : "저장하기"}
                 </button>
               </div>
             </div>
