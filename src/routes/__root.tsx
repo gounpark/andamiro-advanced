@@ -2,7 +2,7 @@ import { Outlet, Link, createRootRoute, useRouter } from "@tanstack/react-router
 import { useCallback, useEffect, useState } from "react";
 import appCss from "../styles.css?url";
 import { Splash, SPLASH_COMPLETE_KEY } from "@/components/Splash";
-import { getCachedUser, initAuth, signInWithGoogle } from "@/lib/auth";
+import { getCachedUser, initAuth, isOnboardingComplete, signInWithGoogle } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import {
   getCommentsAfter,
@@ -194,6 +194,12 @@ function consumeAuthRedirect(): string | null {
 
 function navigateAfterSignIn(router: ReturnType<typeof useRouter>) {
   if (typeof window === "undefined") return;
+
+  // 온보딩 미완료 신규 유저는 무조건 온보딩으로
+  if (!isOnboardingComplete()) {
+    router.navigate({ to: "/onboarding" });
+    return;
+  }
 
   const redirectTo = consumeAuthRedirect();
   if (!redirectTo && !window.location.pathname.endsWith("/login")) return;

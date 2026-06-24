@@ -51,6 +51,34 @@ export function getAuthDisplayName(): string | null {
   );
 }
 
+// ── 온보딩 완료 여부 ──────────────────────────────────────────────────────────
+export function isOnboardingComplete(): boolean {
+  const meta = _session?.user?.user_metadata;
+  return !!(meta?.onboarding_complete);
+}
+
+export function getAuthAgeGroup(): string | null {
+  return (_session?.user?.user_metadata?.age_group as string | undefined) ?? null;
+}
+
+export function getAuthGender(): string | null {
+  return (_session?.user?.user_metadata?.gender as string | undefined) ?? null;
+}
+
+// ── 온보딩 데이터 저장 ────────────────────────────────────────────────────────
+export async function saveOnboardingData(data: {
+  display_name: string;
+  age_group: string;
+  gender: string;
+}): Promise<void> {
+  const { error } = await supabase.auth.updateUser({
+    data: { ...data, onboarding_complete: true },
+  });
+  if (error) throw new Error(error.message);
+  const { data: session } = await supabase.auth.getSession();
+  _session = session.session;
+}
+
 // ── 닉네임 변경 (Supabase user_metadata에 저장) ───────────────────────────────
 export async function setDisplayName(name: string): Promise<void> {
   const { error } = await supabase.auth.updateUser({
