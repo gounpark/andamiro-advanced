@@ -10,6 +10,8 @@ import {
   BookMarked,
   X,
   LogIn,
+  Camera,
+  Check,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { PageHeader } from "@/components/PageHeader";
@@ -260,42 +262,100 @@ function MyPage() {
         {/* 닉네임 편집 바텀시트 */}
         {editingName && (
           <div
-            className="absolute inset-0 z-50 flex items-end"
-            style={{ background: "rgba(0,0,0,0.4)" }}
+            className="absolute inset-0 z-50 flex flex-col"
+            style={{ background: "rgba(0,0,0,0.45)" }}
             onClick={() => setEditingName(false)}
           >
+            {/* 시트 */}
             <div
-              className="w-full rounded-t-[24px] bg-white px-5 pt-5 pb-10"
+              className="mt-auto w-full rounded-t-[28px] bg-white"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-bold text-foreground text-[18px]">닉네임 변경</h3>
-                <button type="button" onClick={() => setEditingName(false)}>
+              {/* 핸들 */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="h-1 w-10 rounded-full bg-[#E5E7EB]" />
+              </div>
+
+              {/* 헤더 */}
+              <div className="flex items-center justify-between px-5 pt-3 pb-4 border-b border-[#F3F4F6]">
+                <h3 className="font-bold text-foreground text-[18px]">프로필 편집</h3>
+                <button type="button" onClick={() => setEditingName(false)}
+                  className="rounded-full p-1.5 hover:bg-[#F3F4F6] transition">
                   <X className="h-5 w-5 text-[#999]" />
                 </button>
               </div>
-              <input
-                type="text"
-                value={nameInput}
-                onChange={(e) => setNameInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.nativeEvent.isComposing) handleNameSave();
-                }}
-                maxLength={20}
-                placeholder="닉네임을 입력해 주세요"
-                className="w-full rounded-xl border border-[#e8eaed] bg-[#f8f9fb] px-4 py-3.5 text-[16px] text-foreground focus:outline-none focus:border-[var(--primary)] mb-1"
-                autoFocus
-              />
-              <p className="text-[12px] text-[#bbb] text-right mb-4">{nameInput.length}/20</p>
-              <button
-                type="button"
-                onClick={handleNameSave}
-                disabled={nameSaving || !nameInput.trim()}
-                className="w-full rounded-2xl py-3.5 font-bold text-white text-[16px] disabled:opacity-50"
-                style={{ background: "var(--primary)" }}
-              >
-                {nameSaving ? "저장 중..." : "저장"}
-              </button>
+
+              {/* 아바타 */}
+              <div className="flex flex-col items-center pt-7 pb-5">
+                <div className="relative">
+                  <div className="h-20 w-20 rounded-full overflow-hidden bg-[var(--primary)]/10 flex items-center justify-center">
+                    {user?.user_metadata?.avatar_url ? (
+                      <img
+                        src={user.user_metadata.avatar_url as string}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <img src={cloverActiveSvg} alt="" className="h-10 w-10" />
+                    )}
+                  </div>
+                  {/* 카메라 배지 */}
+                  <div className="absolute -bottom-0.5 -right-0.5 h-7 w-7 rounded-full bg-[#F3F4F6] border-2 border-white flex items-center justify-center">
+                    <Camera className="h-3.5 w-3.5 text-[#6B7280]" />
+                  </div>
+                </div>
+                <p className="mt-2.5 text-[11px] text-[#C5CAD3]">Google 계정 프로필 사진</p>
+              </div>
+
+              {/* 이름 필드 */}
+              <div className="px-5 pb-3">
+                <label className="block text-[12px] font-semibold text-[#9CA3AF] mb-1.5 uppercase tracking-wide">닉네임</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={nameInput}
+                    onChange={(e) => setNameInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.nativeEvent.isComposing) handleNameSave();
+                    }}
+                    maxLength={20}
+                    placeholder="닉네임을 입력해 주세요"
+                    className="w-full rounded-2xl border border-[#E8EAED] bg-[#F8F9FB] px-4 py-3.5 text-[16px] text-foreground focus:outline-none focus:border-[var(--primary)] focus:bg-white transition pr-12"
+                    autoFocus
+                  />
+                  {nameInput.trim() && nameInput.trim() !== displayName && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full flex items-center justify-center"
+                      style={{ background: "var(--primary)" }}>
+                      <Check className="h-3.5 w-3.5 text-white" />
+                    </div>
+                  )}
+                </div>
+                <p className="text-[11px] text-[#C5CAD3] text-right mt-1">{nameInput.length}/20</p>
+              </div>
+
+              {/* 이메일 필드 (읽기 전용) */}
+              <div className="px-5 pb-6">
+                <label className="block text-[12px] font-semibold text-[#9CA3AF] mb-1.5 uppercase tracking-wide">이메일</label>
+                <div className="w-full rounded-2xl border border-[#F0F0F0] bg-[#F8F9FB] px-4 py-3.5 flex items-center gap-2">
+                  <span className="text-[16px] text-[#B0B7C3] flex-1 truncate">
+                    {user?.email ?? "—"}
+                  </span>
+                  <span className="shrink-0 rounded-full bg-[#F0F0F0] px-2 py-0.5 text-[10px] font-semibold text-[#B0B7C3]">변경 불가</span>
+                </div>
+              </div>
+
+              {/* 저장 버튼 */}
+              <div className="px-5 pb-10">
+                <button
+                  type="button"
+                  onClick={handleNameSave}
+                  disabled={nameSaving || !nameInput.trim()}
+                  className="w-full rounded-2xl py-4 font-bold text-white text-[16px] disabled:opacity-40 transition active:scale-[0.98]"
+                  style={{ background: "var(--primary)" }}
+                >
+                  {nameSaving ? "저장 중..." : "저장하기"}
+                </button>
+              </div>
             </div>
           </div>
         )}
