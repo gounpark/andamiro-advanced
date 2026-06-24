@@ -86,7 +86,7 @@ function RootComponent() {
     // OAuth 리디렉션 후 세션이 생기면 이전 페이지로 복귀
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN") {
-        navigateAfterSignIn(router);
+        navigateAfterSignIn(router, true); // 신규 로그인 → 온보딩 체크
       }
     });
 
@@ -192,16 +192,18 @@ function consumeAuthRedirect(): string | null {
   return params.get("redirect");
 }
 
-function navigateAfterSignIn(router: ReturnType<typeof useRouter>) {
+function navigateAfterSignIn(router: ReturnType<typeof useRouter>, isFreshSignIn = false) {
   if (typeof window === "undefined") return;
 
-  // 온보딩 미완료 신규 유저는 무조건 온보딩으로
-  if (!isOnboardingComplete()) {
+  const redirectTo = consumeAuthRedirect();
+  const comingFromLogin = !!redirectTo || window.location.pathname.endsWith("/login");
+
+  // 온보딩 체크: 신규 로그인이거나 로그인 페이지에서 왔을 때만
+  if ((isFreshSignIn || comingFromLogin) && !isOnboardingComplete()) {
     router.navigate({ to: "/onboarding" });
     return;
   }
 
-  const redirectTo = consumeAuthRedirect();
   if (!redirectTo && !window.location.pathname.endsWith("/login")) return;
 
   const target = redirectTo || "/my";
