@@ -14,6 +14,7 @@ import { Route as ReportRouteImport } from './routes/report'
 import { Route as RecordRouteImport } from './routes/record'
 import { Route as PresentationRouteImport } from './routes/presentation'
 import { Route as MyRouteImport } from './routes/my'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IntroRouteImport } from './routes/intro'
 import { Route as FortuneRouteImport } from './routes/fortune'
@@ -51,6 +52,11 @@ const PresentationRoute = PresentationRouteImport.update({
 const MyRoute = MyRouteImport.update({
   id: '/my',
   path: '/my',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -132,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/intro': typeof IntroRoute
   '/login': typeof LoginRoute
   '/my': typeof MyRoute
+  '/onboarding': typeof OnboardingRoute
   '/presentation': typeof PresentationRoute
   '/record': typeof RecordRoute
   '/report': typeof ReportRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/intro': typeof IntroRoute
   '/login': typeof LoginRoute
   '/my': typeof MyRoute
+  '/onboarding': typeof OnboardingRoute
   '/presentation': typeof PresentationRoute
   '/record': typeof RecordRoute
   '/report': typeof ReportRoute
@@ -173,6 +181,7 @@ export interface FileRoutesById {
   '/intro': typeof IntroRoute
   '/login': typeof LoginRoute
   '/my': typeof MyRoute
+  '/onboarding': typeof OnboardingRoute
   '/presentation': typeof PresentationRoute
   '/record': typeof RecordRoute
   '/report': typeof ReportRoute
@@ -195,6 +204,7 @@ export interface FileRouteTypes {
     | '/intro'
     | '/login'
     | '/my'
+    | '/onboarding'
     | '/presentation'
     | '/record'
     | '/report'
@@ -215,6 +225,7 @@ export interface FileRouteTypes {
     | '/intro'
     | '/login'
     | '/my'
+    | '/onboarding'
     | '/presentation'
     | '/record'
     | '/report'
@@ -235,6 +246,7 @@ export interface FileRouteTypes {
     | '/intro'
     | '/login'
     | '/my'
+    | '/onboarding'
     | '/presentation'
     | '/record'
     | '/report'
@@ -256,6 +268,7 @@ export interface RootRouteChildren {
   IntroRoute: typeof IntroRoute
   LoginRoute: typeof LoginRoute
   MyRoute: typeof MyRoute
+  OnboardingRoute: typeof OnboardingRoute
   PresentationRoute: typeof PresentationRoute
   RecordRoute: typeof RecordRoute
   ReportRoute: typeof ReportRoute
@@ -304,6 +317,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/intro': {
@@ -420,6 +440,7 @@ const rootRouteChildren: RootRouteChildren = {
   IntroRoute: IntroRoute,
   LoginRoute: LoginRoute,
   MyRoute: MyRoute,
+  OnboardingRoute: OnboardingRoute,
   PresentationRoute: PresentationRoute,
   RecordRoute: RecordRoute,
   ReportRoute: ReportRoute,
